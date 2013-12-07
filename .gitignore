@@ -1,0 +1,35 @@
+.DS_Store
+
+## ANDROID
+# built application files
+platforms/android/*.apk
+platforms/android/*.ap_
+
+# files for the dex VM
+platforms/android/*.dex
+
+# Java class files
+platforms/android/*.class
+
+# generated files
+platforms/android/bin/
+platforms/android/gen/
+
+# Local configuration file (sdk path, etc)
+platforms/android/local.properties
+
+## IOS
+platforms/ios/build/*
+platforms/ios/*.pbxuser
+platforms/ios/!default.pbxuser
+platforms/ios/*.mode1v3
+platforms/ios/!default.mode1v3
+platforms/ios/*.mode2v3
+platforms/ios/!default.mode2v3
+platforms/ios/*.perspectivev3
+platforms/ios/!default.perspectivev3
+platforms/ios/*.xcworkspace
+platforms/ios/!default.xcworkspace
+platforms/ios/xcuserdata
+platforms/ios/profile
+platforms/ios/*.moved-aside
