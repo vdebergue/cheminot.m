@@ -1,0 +1,17 @@
+{
+    "name": "cheminot",
+    "version": "0.1.0",
+    "devDependencies": {
+        "grunt": "latest",
+        "grunt-typescript": "latest",
+        "grunt-contrib-watch": "latest",
+        "grunt-contrib-stylus": "latest",
+        "grunt-contrib-requirejs": "latest",
+        "grunt-contrib-compress": "latest",
+        "grunt-contrib-copy": "latest",
+        "grunt-contrib-clean": "latest",
+        "fluidity": "latest",
+        "stylus": "latest",
+        "grunt-ts" : "latest"
+    }
+}

@@ -1,0 +1,4 @@
+export = IStorage;
+
+interface IStorage {
+}
