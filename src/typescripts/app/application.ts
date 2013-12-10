@@ -33,7 +33,7 @@ export function init(views: seq.IList<IView>) {
             utils.measureF<IStorage>(() => {
                 var x = Storage.db();
                 x.then((db) => {
-                    console.log(ternaryTree.search('chartres', (<any>db).treeStops));
+                    console.log(ternaryTree.search('chart', (<any>db).treeStops));
                 }).fail((e) => {
                     console.error(e);
                 });

@@ -4,22 +4,20 @@ import seq = require('lib/immutable/List');
 import opt = require('lib/immutable/Option');
 import tuple = require('lib/immutable/Tuple');
 
-function suggestions(term: string, maybeNode: opt.IOption<any>): seq.IList<tuple.Tuple2<string, seq.IList<string>>> {
-    function step(term: string, maybeNode: opt.IOption<any>, results: seq.IList<tuple.Tuple2<string, seq.IList<string>>>): seq.IList<tuple.Tuple2<string, seq.IList<string>>> {
-        return maybeNode.map((node) => {
-            var onLeft = step(term, opt.Option(node.left), new seq.Nil<tuple.Tuple2<string, seq.IList<string>>>());
-            var onRight = step(term, opt.Option(node.right), new seq.Nil<tuple.Tuple2<string, seq.IList<string>>>());
-            var onEq = step(term, opt.Option(node.eq), new seq.Nil<tuple.Tuple2<string, seq.IList<string>>>());
-            var prefix = term + node.c;
-            if(node.isEnd) {
-                results.appendOne(new tuple.Tuple2(node.data.stopName, seq.List(node.data.tripIds)));
-            }
-            return results.append(onLeft).append(onRight).append(onEq);
-        }).getOrElse(() => {
-            return results;
-        });
-    }
-    return step(term, maybeNode, new seq.Nil<tuple.Tuple2<string, seq.IList<string>>>());
+function suggestions(maybeNode: opt.IOption<any>): seq.IList<tuple.Tuple2<string, seq.IList<string>>> {
+    return maybeNode.map((node) => {
+        var onLeft = suggestions(opt.Option(node.left));
+        var onRight = suggestions(opt.Option(node.right));
+        var onEq = suggestions(opt.Option(node.eq));
+        var results = seq.List<tuple.Tuple2<string, seq.IList<string>>>();
+        if(node.isEnd) {
+            console.log('end');
+            results = results.appendOne(new tuple.Tuple2(node.data.stopName, seq.List.apply(node.data.tripIds)));
+        }
+        return results.append(onLeft).append(onRight).append(onEq);
+    }).getOrElse(() => {
+        return new seq.Nil<tuple.Tuple2<string, seq.IList<string>>>();
+    });
 }
 
 export function search(term: string, tree: any): seq.IList<tuple.Tuple2<string, seq.IList<string>>> {
@@ -36,10 +34,9 @@ export function search(term: string, tree: any): seq.IList<tuple.Tuple2<string, 
                 } else {
                     if(isLast) {
                         if(node.isEnd) {
-                            results.appendOne(new tuple.Tuple2(node.data.stopName, seq.List(node.data.tripIds)));
+                            results = results.appendOne(new tuple.Tuple2(node.data.stopName, seq.List(node.data.tripIds)));
                         }
-                        results.append(suggestions(term, node.eq));
-                        return results;
+                        return results.append(suggestions(opt.Option(node.eq)));
                     } else {
                         return step(word.tail().mkString(''), opt.Option(node.eq), results);
                     }
