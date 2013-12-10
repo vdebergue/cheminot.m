@@ -9,9 +9,8 @@
     <description>
         A sample Apache Cordova application that responds to the deviceready event.
     </description>
-    <author email="dev@cordova.apache.org" href="http://cordova.io">
-        Apache Cordova Team
-    </author>
+    <author email="sre@cheminot.io" href="http://cordova.io">sre</author>
     <content src="index.html" />
     <access origin="*" />
+    <preference name="Fullscreen" value="true" />
 </widget>

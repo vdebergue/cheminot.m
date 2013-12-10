@@ -2,6 +2,7 @@ declare var Path: any;
 
 import seq = require('./lib/immutable/List');
 import utils = require('./utils/utils');
+import ternaryTree = require('./utils/ternaryTree');
 import IView = require('./views/IView');
 import Storage = require('./db/storage');
 import IStorage = require('./db/IStorage');
@@ -29,7 +30,15 @@ export function init(views: seq.IList<IView>) {
     initViews(views).then(() => {
 
         Path.map('#/').to(() => {
-            utils.measureF<IStorage>(() => { return Storage.db() });
+            utils.measureF<IStorage>(() => {
+                var x = Storage.db();
+                x.then((db) => {
+                    console.log(ternaryTree.search('chartres', (<any>db).treeStops));
+                }).fail((e) => {
+                    console.error(e);
+                });
+                return x;
+            });
             view(views, 'home').show();
         });
 

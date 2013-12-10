@@ -4,8 +4,8 @@ import opt = require('../lib/immutable/Option');
 import Api = require('../ws/api');
 import IStorage = require('./IStorage');
 
-var DB_IN_MEMORY: opt.IOption<IStorage> = new opt.None();
-var DB_IN_BROWSER: opt.IOption<any> = new opt.None();
+var DB_IN_MEMORY: opt.IOption<IStorage> = new opt.None<IStorage>();
+var DB_IN_BROWSER: opt.IOption<any> = new opt.None<any>();
 
 var DB_NAME = 'cheminot';
 var TABLE_NAME = 'graphs';
@@ -32,14 +32,14 @@ function indexedDB(): Q.Promise<any> {
 
 function loadFromBrowser(): Q.Promise<opt.IOption<IStorage>> {
     return indexedDB().then<opt.IOption<IStorage>>((cheminotDB) => {
-        var d = Q.defer<IStorage>();
+        var d = Q.defer<opt.IOption<IStorage>>();
         var tx = cheminotDB.transaction(TABLE_NAME, "readonly");
         var graphCache = tx.objectStore(TABLE_NAME);
         var index = graphCache.index(INDEX_NAME);
         var request = index.get(KEY);
         request.onsuccess = () => {
             var maybeData = request.result ? request.result.data : null;
-            d.resolve(opt.Option(maybeData));
+            d.resolve(opt.Option<IStorage>(maybeData));
         }
         request.onerror = () => {
             console.log('error while getting ' + KEY + ' from indexed DB');
@@ -68,6 +68,7 @@ export function db(): Q.Promise<IStorage> {
     if(DB_IN_MEMORY.isEmpty()) {
         loadFromBrowser().then((maybeCheminotDB) => {
             maybeCheminotDB.map((db) => {
+                console.log(db);
                 d.resolve(db);
             }).getOrElse(() => {
                 Api.db().then((db) => {
