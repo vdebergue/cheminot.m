@@ -7,8 +7,8 @@ module.exports = function(grunt) {
                 livereload: true
             },
             scripts: {
-                files: ['src/stylus/**/*.styl', 'src/typescripts/**/*.ts'],
-                tasks: ['stylus:dev', 'ts:dev'],
+                files: ['src/stylus/**/*.styl', 'src/typescripts/**/*.ts', 'src/templates/**/*.html'],
+                tasks: ['stylus:dev', 'ts:dev', 'copy:dev'],
                 options: {
                 }
             }

@@ -41,7 +41,8 @@ class View {
     }
 
     bindEvent(type: string, selector: string, fn: (e: Event) => boolean): void {
-        this.$scope().on(type, selector, fn);
+        var fnWithContext = <any>$.proxy(fn, this);
+        this.$scope().on(type, selector, fnWithContext);
     }
 
     header = {

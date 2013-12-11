@@ -27,18 +27,15 @@ function view(views: seq.IList<IView>, name: string): IView {
 }
 
 export function init(views: seq.IList<IView>) {
-    initViews(views).then(() => {
 
+    utils.measureF<IStorage>(() => {
+        return Storage.loadDB();
+    }).fail((e) => {
+        console.error(e);
+    });
+
+    initViews(views).then(() => {
         Path.map('#/').to(() => {
-            utils.measureF<IStorage>(() => {
-                var x = Storage.db();
-                x.then((db) => {
-                    console.log(ternaryTree.search('chart', (<any>db).treeStops));
-                }).fail((e) => {
-                    console.error(e);
-                });
-                return x;
-            });
             view(views, 'home').show();
         });
 

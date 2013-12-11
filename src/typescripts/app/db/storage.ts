@@ -63,12 +63,12 @@ function persistDB(db: IStorage): Q.Promise<void> {
     });
 }
 
-export function db(): Q.Promise<IStorage> {
+export function loadDB(): Q.Promise<IStorage> {
     var d = Q.defer<IStorage>();
     if(DB_IN_MEMORY.isEmpty()) {
         loadFromBrowser().then((maybeCheminotDB) => {
             maybeCheminotDB.map((db) => {
-                console.log(db);
+                DB_IN_MEMORY = new opt.Some(db);
                 d.resolve(db);
             }).getOrElse(() => {
                 Api.db().then((db) => {
@@ -85,4 +85,15 @@ export function db(): Q.Promise<IStorage> {
         d.resolve(DB_IN_MEMORY);
     }
     return d.promise;
+}
+
+export function maybeDB(): opt.IOption<IStorage> {
+    return DB_IN_MEMORY;
+}
+
+export function db(): IStorage {
+    return maybeDB().getOrElse(() => {
+        console.error('DB not initialized !');
+        return null;
+    });
 }

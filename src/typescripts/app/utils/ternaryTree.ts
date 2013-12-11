@@ -4,14 +4,13 @@ import seq = require('lib/immutable/List');
 import opt = require('lib/immutable/Option');
 import tuple = require('lib/immutable/Tuple');
 
-function suggestions(maybeNode: opt.IOption<any>): seq.IList<tuple.Tuple2<string, seq.IList<string>>> {
+function suggestions(maybeNode: opt.IOption<any>, limit: number): seq.IList<tuple.Tuple2<string, seq.IList<string>>> {
     return maybeNode.map((node) => {
-        var onLeft = suggestions(opt.Option(node.left));
-        var onRight = suggestions(opt.Option(node.right));
-        var onEq = suggestions(opt.Option(node.eq));
+        var onLeft = suggestions(opt.Option(node.left), limit);
+        var onRight = suggestions(opt.Option(node.right), limit);
+        var onEq = suggestions(opt.Option(node.eq), limit);
         var results = seq.List<tuple.Tuple2<string, seq.IList<string>>>();
         if(node.isEnd) {
-            console.log('end');
             results = results.appendOne(new tuple.Tuple2(node.data.stopName, seq.List.apply(node.data.tripIds)));
         }
         return results.append(onLeft).append(onRight).append(onEq);
@@ -20,7 +19,7 @@ function suggestions(maybeNode: opt.IOption<any>): seq.IList<tuple.Tuple2<string
     });
 }
 
-export function search(term: string, tree: any): seq.IList<tuple.Tuple2<string, seq.IList<string>>> {
+export function search(term: string, tree: any, limit: number): seq.IList<tuple.Tuple2<string, seq.IList<string>>> {
     function step(term: string, maybeNode: opt.IOption<any>, results: seq.IList<tuple.Tuple2<string, seq.IList<string>>>): seq.IList<tuple.Tuple2<string, seq.IList<string>>> {
         return maybeNode.map((node) => {
             var word = seq.List.apply(null, term.split(''));
@@ -36,7 +35,7 @@ export function search(term: string, tree: any): seq.IList<tuple.Tuple2<string, 
                         if(node.isEnd) {
                             results = results.appendOne(new tuple.Tuple2(node.data.stopName, seq.List(node.data.tripIds)));
                         }
-                        return results.append(suggestions(opt.Option(node.eq)));
+                        return results.append(suggestions(opt.Option(node.eq), limit));
                     } else {
                         return step(word.tail().mkString(''), opt.Option(node.eq), results);
                     }
