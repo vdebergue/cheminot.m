@@ -2,25 +2,24 @@
 
 import seq = require('lib/immutable/List');
 import opt = require('lib/immutable/Option');
-import tuple = require('lib/immutable/Tuple');
 
-function suggestions(maybeNode: opt.IOption<any>, limit: number): seq.IList<tuple.Tuple2<string, seq.IList<string>>> {
+function suggestions(maybeNode: opt.IOption<any>, limit: number): seq.IList<any> {
     return maybeNode.map((node) => {
         var onLeft = suggestions(opt.Option(node.left), limit);
         var onRight = suggestions(opt.Option(node.right), limit);
         var onEq = suggestions(opt.Option(node.eq), limit);
-        var results = seq.List<tuple.Tuple2<string, seq.IList<string>>>();
+        var results = seq.List<any>();
         if(node.isEnd) {
-            results = results.appendOne(new tuple.Tuple2(node.data.stopName, seq.List.apply(node.data.tripIds)));
+            results = results.appendOne(node.data);
         }
         return results.append(onLeft).append(onRight).append(onEq);
     }).getOrElse(() => {
-        return new seq.Nil<tuple.Tuple2<string, seq.IList<string>>>();
+        return new seq.Nil<any>();
     });
 }
 
-export function search(term: string, tree: any, limit: number): seq.IList<tuple.Tuple2<string, seq.IList<string>>> {
-    function step(term: string, maybeNode: opt.IOption<any>, results: seq.IList<tuple.Tuple2<string, seq.IList<string>>>): seq.IList<tuple.Tuple2<string, seq.IList<string>>> {
+export function search(term: string, tree: any, limit: number): seq.IList<any> {
+    function step(term: string, maybeNode: opt.IOption<any>, results: seq.IList<any>): seq.IList<any> {
         return maybeNode.map((node) => {
             var word = seq.List.apply(null, term.split(''));
             if(!word.isEmpty()) {
@@ -33,7 +32,7 @@ export function search(term: string, tree: any, limit: number): seq.IList<tuple.
                 } else {
                     if(isLast) {
                         if(node.isEnd) {
-                            results = results.appendOne(new tuple.Tuple2(node.data.stopName, seq.List(node.data.tripIds)));
+                            results = results.appendOne(node.data);
                         }
                         return results.append(suggestions(opt.Option(node.eq), limit));
                     } else {
@@ -47,5 +46,5 @@ export function search(term: string, tree: any, limit: number): seq.IList<tuple.
             return results;
         });
     }
-    return step(term, opt.Option(tree), new seq.Nil<tuple.Tuple2<string, seq.IList<string>>>());
+    return step(term, opt.Option(tree), new seq.Nil<any>());
 }

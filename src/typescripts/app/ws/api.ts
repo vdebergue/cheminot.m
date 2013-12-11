@@ -1,16 +1,14 @@
 /// <reference path='../../dts/Q.d.ts'/>
 
-import IStorage = require('../db/IStorage');
+var DB: any;
 
-var DB: IStorage;
-
-export function db(): Q.Promise<IStorage> {
-    var d = Q.defer<IStorage>();
+export function db(): Q.Promise<any> {
+    var d = Q.defer<any>();
     var url = 'http://localhost:9000/api/db';
     $.ajax({
         url: url,
         success: (data) => {
-            d.resolve(<IStorage>data);
+            d.resolve(data);
         },
         error: () => {
             d.reject("Failed to load DB !");

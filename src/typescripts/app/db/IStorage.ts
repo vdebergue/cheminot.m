@@ -1,4 +1,0 @@
-export = IStorage;
-
-interface IStorage {
-}

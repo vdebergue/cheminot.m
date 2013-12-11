@@ -2,9 +2,8 @@
 
 import opt = require('../lib/immutable/Option');
 import Api = require('../ws/api');
-import IStorage = require('./IStorage');
 
-var DB_IN_MEMORY: opt.IOption<IStorage> = new opt.None<IStorage>();
+var DB_IN_MEMORY: opt.IOption<any> = new opt.None<any>();
 var DB_IN_BROWSER: opt.IOption<any> = new opt.None<any>();
 
 var DB_NAME = 'cheminot';
@@ -14,7 +13,7 @@ var KEY = 'current';
 
 function indexedDB(): Q.Promise<any> {
     return DB_IN_BROWSER.getOrElse(() => {
-        var d = Q.defer<IStorage>();
+        var d = Q.defer<any>();
         var request = window.indexedDB.open(DB_NAME);
         request.onupgradeneeded = () => {
             var cheminotDB = request.result;
@@ -30,16 +29,16 @@ function indexedDB(): Q.Promise<any> {
     });
 }
 
-function loadFromBrowser(): Q.Promise<opt.IOption<IStorage>> {
-    return indexedDB().then<opt.IOption<IStorage>>((cheminotDB) => {
-        var d = Q.defer<opt.IOption<IStorage>>();
+function loadFromBrowser(): Q.Promise<opt.IOption<any>> {
+    return indexedDB().then<opt.IOption<any>>((cheminotDB) => {
+        var d = Q.defer<opt.IOption<any>>();
         var tx = cheminotDB.transaction(TABLE_NAME, "readonly");
         var graphCache = tx.objectStore(TABLE_NAME);
         var index = graphCache.index(INDEX_NAME);
         var request = index.get(KEY);
         request.onsuccess = () => {
             var maybeData = request.result ? request.result.data : null;
-            d.resolve(opt.Option<IStorage>(maybeData));
+            d.resolve(opt.Option<any>(maybeData));
         }
         request.onerror = () => {
             console.log('error while getting ' + KEY + ' from indexed DB');
@@ -49,7 +48,7 @@ function loadFromBrowser(): Q.Promise<opt.IOption<IStorage>> {
     });
 }
 
-function persistDB(db: IStorage): Q.Promise<void> {
+function persistDB(db: any): Q.Promise<void> {
     console.log(db);
     return indexedDB().then((cheminotDB) => {
         var d = Q.defer<void>();
@@ -63,8 +62,8 @@ function persistDB(db: IStorage): Q.Promise<void> {
     });
 }
 
-export function loadDB(): Q.Promise<IStorage> {
-    var d = Q.defer<IStorage>();
+export function loadDB(): Q.Promise<any> {
+    var d = Q.defer<any>();
     if(DB_IN_MEMORY.isEmpty()) {
         loadFromBrowser().then((maybeCheminotDB) => {
             maybeCheminotDB.map((db) => {
@@ -87,11 +86,11 @@ export function loadDB(): Q.Promise<IStorage> {
     return d.promise;
 }
 
-export function maybeDB(): opt.IOption<IStorage> {
+export function maybeDB(): opt.IOption<any> {
     return DB_IN_MEMORY;
 }
 
-export function db(): IStorage {
+export function db(): any {
     return maybeDB().getOrElse(() => {
         console.error('DB not initialized !');
         return null;

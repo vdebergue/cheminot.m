@@ -5,7 +5,6 @@ import utils = require('./utils/utils');
 import ternaryTree = require('./utils/ternaryTree');
 import IView = require('./views/IView');
 import Storage = require('./db/storage');
-import IStorage = require('./db/IStorage');
 
 function initViews(views: seq.IList<IView>): Q.Promise<seq.IList<IView>> {
     return utils.sequencePromises<IView>(
@@ -28,8 +27,10 @@ function view(views: seq.IList<IView>, name: string): IView {
 
 export function init(views: seq.IList<IView>) {
 
-    utils.measureF<IStorage>(() => {
+    utils.measureF<any>(() => {
         return Storage.loadDB();
+    }).then((DB) => {
+        return null;
     }).fail((e) => {
         console.error(e);
     });
