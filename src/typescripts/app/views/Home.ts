@@ -45,7 +45,7 @@ class Home extends View implements IView {
         var $suggestions = super.$scope().find('.suggestions');
         $suggestions.empty();
         suggestions.foreach((s) => {
-            $suggestions.prepend('<li>'+ s.name +'</li>');
+            $suggestions.prepend('<li id="'+ s.id +'">'+ s.name +'</li>');
         });
     }
 
@@ -55,10 +55,17 @@ class Home extends View implements IView {
     }
 
     onStartStopKeyUp(e: Event): boolean {
-        var db = Storage.db();
+        var stopsTree = Storage.stops();
         var term = this.$scope().find('input[name=start]').val();
-        var stops = TernaryTree.search(term.toLowerCase(), db.treeStops, 20);
-        this.suggest(stops);
+        var founds = TernaryTree.search(term.toLowerCase(), stopsTree, 20);
+        founds.headOption().foreach((h) => {
+            Storage.tripsByIds(h.tripIds || []).then((trips) => {
+                console.log(trips);
+            }).fail((e) => {
+                console.error(e);
+            });
+        });
+        this.suggest(founds);
         return true;
     }
 }

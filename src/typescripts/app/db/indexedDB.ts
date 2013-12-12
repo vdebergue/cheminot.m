@@ -5,7 +5,7 @@ import opt = require('../lib/immutable/Option');
 var DB_NAME = 'cheminot';
 
 function createRoutesStore(db: any): void {
-    var store = db.createObjectStore('routes');
+    var store = db.createObjectStore('routes', { keyPath: 'id' });
     store.createIndex("by_id", "id", { unique: true });
 }
 
@@ -15,7 +15,7 @@ function createTripsStore(db: any): void {
 }
 
 function createCacheStore(db: any): void {
-    var store = db.createObjectStore('cache');
+    var store = db.createObjectStore('cache', { keyPath: 'key' });
     store.createIndex("by_key", "key", { unique: true });
 }
 
@@ -32,10 +32,13 @@ export function db(): Q.Promise<any> {
         var indexedDB = request.result;
         d.resolve(request.result);
     }
+    request.onerror = () => {
+        d.resolve('Failed to get indexedDB');
+    }
     return d.promise;
 }
 
-function get(db: any, storeName: string, indexName: string, key: string): Q.Promise<opt.IOption<any>> {
+export function get(storeName: string, indexName: string, key: string): Q.Promise<opt.IOption<any>> {
     return db().then((DB) => {
         var d = Q.defer<opt.IOption<any>>();
         var tx = DB.transaction(storeName, "readonly");
@@ -54,7 +57,7 @@ function get(db: any, storeName: string, indexName: string, key: string): Q.Prom
     });
 }
 
-function put(db: any, storeName: string, value: any): Q.Promise<void> {
+export function put(storeName: string, value: any): Q.Promise<void> {
     return db().then((DB) => {
         var d = Q.defer<void>();
         var tx = DB.transaction(storeName, "readwrite");

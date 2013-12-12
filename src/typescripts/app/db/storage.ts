@@ -2,97 +2,85 @@
 
 import opt = require('../lib/immutable/Option');
 import Api = require('../ws/api');
+import IndexedDB = require('./indexedDB');
 
-var DB_IN_MEMORY: opt.IOption<any> = new opt.None<any>();
-var DB_IN_BROWSER: opt.IOption<any> = new opt.None<any>();
+var STOPS: opt.IOption<any> = new opt.None<any>();
 
-var DB_NAME = 'cheminot';
-var TABLE_NAME = 'graphs';
-var INDEX_NAME = 'by_name';
-var KEY = 'current';
-
-function indexedDB(): Q.Promise<any> {
-    return DB_IN_BROWSER.getOrElse(() => {
-        var d = Q.defer<any>();
-        var request = window.indexedDB.open(DB_NAME);
-        request.onupgradeneeded = () => {
-            var cheminotDB = request.result;
-            DB_IN_BROWSER = new opt.Some(cheminotDB);
-            var graphCache = cheminotDB.createObjectStore(TABLE_NAME, {keyPath: "name"});
-            graphCache.createIndex(INDEX_NAME, "name", {unique: true});
-        }
-        request.onsuccess = () => {
-            var indexedDB = request.result;
-            d.resolve(request.result);
-        }
-        return d.promise;
-    });
-}
-
-function loadFromBrowser(): Q.Promise<opt.IOption<any>> {
-    return indexedDB().then<opt.IOption<any>>((cheminotDB) => {
-        var d = Q.defer<opt.IOption<any>>();
-        var tx = cheminotDB.transaction(TABLE_NAME, "readonly");
-        var graphCache = tx.objectStore(TABLE_NAME);
-        var index = graphCache.index(INDEX_NAME);
-        var request = index.get(KEY);
-        request.onsuccess = () => {
-            var maybeData = request.result ? request.result.data : null;
-            d.resolve(opt.Option<any>(maybeData));
-        }
-        request.onerror = () => {
-            console.log('error while getting ' + KEY + ' from indexed DB');
-            d.reject('Error while DB from indexedDB !');
-        };
-        return d.promise;
-    });
-}
-
-function persistDB(db: any): Q.Promise<void> {
-    console.log(db);
-    return indexedDB().then((cheminotDB) => {
-        var d = Q.defer<void>();
-        var tx = cheminotDB.transaction(TABLE_NAME, "readwrite");
-        var graphs = tx.objectStore(TABLE_NAME);
-        graphs.put({ name: KEY, data: db});
-        tx.oncomplete = () => {
-            d.resolve(null);
-        }
-        return d.promise;
-    });
-}
-
-export function loadDB(): Q.Promise<any> {
+export function installDB(): Q.Promise<void> {
+    console.log('Installing DB...');
     var d = Q.defer<any>();
-    if(DB_IN_MEMORY.isEmpty()) {
-        loadFromBrowser().then((maybeCheminotDB) => {
-            maybeCheminotDB.map((db) => {
-                DB_IN_MEMORY = new opt.Some(db);
-                d.resolve(db);
+    if(STOPS.isEmpty()) {
+        IndexedDB.get('cache', 'by_key', 'treeStops').then((maybeStops) => {
+            maybeStops.map((stops) => {
+                console.log('Stops from cache');
+                STOPS = new opt.Some(stops);
+                d.resolve(null);
             }).getOrElse(() => {
                 Api.db().then((db) => {
-                    DB_IN_MEMORY = new opt.Some(db);
-                    persistDB(db).then(() => {
-                        d.resolve(db);
+                    console.log('All from API');
+                    STOPS = new opt.Some(db.stops);
+                    Q.all([
+                        persistRoutes(db.routes),
+                        persistTrips(db.trips),
+                        persistStops(db.treeStops)
+                    ]).then(() => {
+                        console.log('PERSIST DONE');
+                        d.resolve(null);
+                    }).fail((reason) => {
+                        console.error(reason);
                     });
                 }).fail((reason) => {
+                    console.error(reason);
                     d.reject(reason);
                 });
             });
+        }).fail((e) => {
+            console.error(e);
         });
     } else {
-        d.resolve(DB_IN_MEMORY);
+        d.resolve(null);
     }
     return d.promise;
 }
 
-export function maybeDB(): opt.IOption<any> {
-    return DB_IN_MEMORY;
+function persistRoutes(routes: any): Q.Promise<void> {
+    var promises = routes.map((route) => {
+        return IndexedDB.put('routes', route);
+    });
+    return Q.all(promises).then(() => {
+        return null;
+    });
 }
 
-export function db(): any {
-    return maybeDB().getOrElse(() => {
+function persistTrips(trips: any): Q.Promise<void> {
+    var promises = trips.map((trip) => {
+        return IndexedDB.put('trips', trip);
+    });
+    return Q.all(promises).then(() => {
+        return null;
+    });
+}
+
+function persistStops(treeStops: any): Q.Promise<void> {
+    return IndexedDB.put('cache', { key: 'treeStops', value: treeStops });
+}
+
+export function maybeStops(): opt.IOption<any> {
+    return STOPS;
+}
+
+export function stops(): any {
+    return maybeStops().map((stops) => {
+        return stops.value;
+    }).getOrElse(() => {
         console.error('DB not initialized !');
         return null;
     });
+}
+
+export function tripsByIds(ids: Array<string>): Q.Promise<Array<any>> {
+    var promises = ids.map((id) => {
+        return IndexedDB.get('trips', 'by_id', id);
+    });
+    return Q.all(promises);
 }

@@ -28,8 +28,9 @@ function view(views: seq.IList<IView>, name: string): IView {
 export function init(views: seq.IList<IView>) {
 
     utils.measureF<any>(() => {
-        return Storage.loadDB();
-    }).then((DB) => {
+        return Storage.installDB();
+    }).then(() => {
+        console.log('DONE !');
         return null;
     }).fail((e) => {
         console.error(e);
