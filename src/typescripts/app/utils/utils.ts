@@ -1,6 +1,17 @@
 /// <reference path='../../dts/Q.d.ts'/>
 
 import seq = require('lib/immutable/List');
+import opt = require('lib/immutable/Option');
+
+export function flattenOptionPromise<T>(maybePromise: opt.IOption<Q.Promise<T>>): Q.Promise<opt.IOption<T>> {
+    return maybePromise.map((p) => {
+        return p.then((t) => {
+            return new opt.Some<T>(t);
+        });
+    }).getOrElse(() => {
+        return Q(new opt.None<T>());
+    });
+}
 
 export function sequencePromises<T>(promises: seq.IList<Q.Promise<T>>): Q.Promise<seq.IList<T>> {
     function step(promises: seq.IList<Q.Promise<T>>, acc: Q.Promise<seq.IList<T>>): Q.Promise<seq.IList<T>> {

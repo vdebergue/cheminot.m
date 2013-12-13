@@ -1,16 +1,14 @@
 /// <reference path='../../dts/Q.d.ts'/>
 /// <reference path='../../dts/zepto.d.ts'/>
 
+import App = require('../application');
+import Storage = require('../db/storage');
 import seq = require('lib/immutable/List');
 import opt = require('lib/immutable/Option');
-import tuple = require('lib/immutable/Tuple');
 import IView = require('./IView');
 import View = require('./View');
 import Templating = require('./templating')
-import Storage = require('../db/storage');
 import TernaryTree = require('../utils/ternaryTree');
-
-declare var array_intersect;
 
 export = Home;
 
@@ -51,7 +49,7 @@ class Home extends View implements IView {
         $suggestions.empty();
         suggestions.foreach((s) => {
             $suggestions.prepend('<li id="'+ s.id +'">'+ s.name +'</li>');
-            $suggestions.find('li:first-child').data('data', JSON.stringify(s));
+            $suggestions.find('li:first-child').data('station-name', s.name);
         });
     }
 
@@ -79,38 +77,15 @@ class Home extends View implements IView {
         var $suggestion = $(e.currentTarget);
         var $suggestions = $suggestion.parent();
         if($suggestions.is('.start')) {
-            var data = JSON.stringify($suggestion.data('data'));
-            $suggestions.data('start', data);
+            var name = $suggestion.data('station-name');
+            $suggestions.data('start', name);
         } else if($suggestions.is('.end')) {
-            var data = JSON.stringify($suggestion.data('data'));
-            $suggestions.data('end', data);
+            var name = $suggestion.data('station-name');
+            $suggestions.data('end', name);
         }
         opt.Option<any>($suggestions.data('start')).foreach((start) => {
             opt.Option<any>($suggestions.data('end')).foreach((end) => {
-                var tripIds = array_intersect((id) => {
-                    return id;
-                }, start.tripIds, end.tripIds);
-
-                opt.Option<any>(tripIds[0]).foreach((oneTripId) => {
-                    Storage.getTripDirection(start.id, end.id, oneTripId).then((direction) => {
-                        return Storage.tripsByIds(tripIds || [], direction).then((trips) => {
-                            var stopTimes: Array<number> = trips.flatMap<any>((trip) => {
-                                return seq.List.apply(null, trip.stopTimes).find((stopTime) => {
-                                    return stopTime.stop.id === start.id;
-                                });
-                            }).map((stopTime) => {
-                                return stopTime.departure;
-                            }).asArray();
-                            stopTimes.sort((a,b) => {
-                                return a -b;
-                            }).map((x) => {
-                                return new Date(x);
-                            });
-                        })
-                    }).fail((e) => {
-                        console.error(e);
-                    });
-                });
+                App.navigateToTimetable(start, end);
             });
         });
         return true;

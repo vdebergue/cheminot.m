@@ -2,9 +2,9 @@ declare var Path: any;
 
 import seq = require('./lib/immutable/List');
 import utils = require('./utils/utils');
-import ternaryTree = require('./utils/ternaryTree');
 import IView = require('./views/IView');
 import Storage = require('./db/storage');
+import Planner = require('./models/Planner');
 
 function initViews(views: seq.IList<IView>): Q.Promise<seq.IList<IView>> {
     return utils.sequencePromises<IView>(
@@ -37,8 +37,18 @@ export function init(views: seq.IList<IView>) {
     });
 
     initViews(views).then(() => {
+
         Path.map('#/').to(() => {
             view(views, 'home').show();
+        });
+
+        Path.map('#/timetable/:start/:end').to(function() {
+            var start = this.params['start'];
+            var end = this.params['end'];
+            Planner.scheduleFor(start, end).then((schedule) => {
+                console.log(schedule);
+            });
+            view(views, 'timetable').show();
         });
 
         Path.rescue(() => {
@@ -49,10 +59,11 @@ export function init(views: seq.IList<IView>) {
         if(!window.location.hash) {
             navigate('/');
         }
+
     });
 }
 
-export function navigate(path: string): boolean {
+function navigate(path: string): boolean {
     var hash = "#" + path;
     if(window.location.hash !== hash) {
         window.location.hash = hash;
@@ -60,4 +71,12 @@ export function navigate(path: string): boolean {
     } else {
         return false;
     }
+}
+
+export function navigateToTimetable(start: string, end: string): void {
+    navigate('/timetable/' + start + '/' + end);
+}
+
+export function navigateToHome(): void {
+    navigate('/');
 }
