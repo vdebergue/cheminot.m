@@ -4,14 +4,10 @@ import opt = require('../lib/immutable/Option');
 
 var DB_NAME = 'cheminot';
 
-function createRoutesStore(db: any): void {
-    var store = db.createObjectStore('routes', { keyPath: 'id' });
-    store.createIndex("by_id", "id", { unique: true });
-}
-
 function createTripsStore(db: any): void {
     var store = db.createObjectStore('trips', { keyPath: 'id' });
     store.createIndex("by_id", "id", { unique: true });
+    store.createIndex("by_id_direction", ["id", "direction"]);
 }
 
 function createCacheStore(db: any): void {
@@ -24,7 +20,6 @@ export function db(): Q.Promise<any> {
     var request = window.indexedDB.open(DB_NAME);
     request.onupgradeneeded = () => {
         var db = request.result;
-        createRoutesStore(db);
         createTripsStore(db);
         createCacheStore(db);
     }
@@ -38,7 +33,7 @@ export function db(): Q.Promise<any> {
     return d.promise;
 }
 
-export function get(storeName: string, indexName: string, key: string): Q.Promise<opt.IOption<any>> {
+export function get(storeName: string, indexName: string, key: any): Q.Promise<opt.IOption<any>> {
     return db().then((DB) => {
         var d = Q.defer<opt.IOption<any>>();
         var tx = DB.transaction(storeName, "readonly");
