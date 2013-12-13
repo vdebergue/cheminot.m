@@ -3,6 +3,7 @@ declare var Path: any;
 import seq = require('./lib/immutable/List');
 import utils = require('./utils/utils');
 import IView = require('./views/IView');
+import Timetable = require('./views/Timetable');
 import Storage = require('./db/storage');
 import Planner = require('./models/Planner');
 
@@ -45,10 +46,13 @@ export function init(views: seq.IList<IView>) {
         Path.map('#/timetable/:start/:end').to(function() {
             var start = this.params['start'];
             var end = this.params['end'];
-            Planner.scheduleFor(start, end).then((schedule) => {
-                console.log(schedule);
+            Planner.schedulesFor(start, end).then((maybeSchedules) => {
+                maybeSchedules.map((schedules) => {
+                    var timetableView = <Timetable> view(views, 'timetable');
+                    timetableView.buildWith(schedules);
+                }).getOrElse(() => {
+                });
             });
-            view(views, 'timetable').show();
         });
 
         Path.rescue(() => {

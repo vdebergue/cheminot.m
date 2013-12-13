@@ -5,11 +5,14 @@ import opt = require('../lib/immutable/Option');
 
 var paths = {
     layout: 'layout.tpl.html',
-    home: 'home.tpl.html',
-    timetable: 'timetable.tpl.html',
-    header: {
-        home: 'header-home.tpl.html',
-        timetable: 'header-timetable.tpl.html'
+    home: {
+        layout: 'layout.tpl.html',
+        header: 'header.tpl.html'
+    },
+    timetable: {
+        layout: 'layout.tpl.html',
+        header: 'header.tpl.html',
+        schedules: 'schedules.tpl.html'
     }
 };
 
@@ -37,19 +40,23 @@ export function layout(): Q.Promise<string> {
     return getTemplate('layout');
 }
 
-export function home(): Q.Promise<string> {
-    return getTemplate('home');
-}
-
-export function timetable(): Q.Promise<string> {
-    return getTemplate('timetable');
-}
-
-export var header = {
-    home(): Q.Promise<string> {
-        return getTemplate('home', opt.Option<string>('header'));
+export var home = {
+    layout(): Q.Promise<string> {
+        return getTemplate('layout', opt.Option<string>('home'));
     },
-    timetable(): Q.Promise<string> {
-        return getTemplate('timetable', opt.Option<string>('header'));
+    header(): Q.Promise<string> {
+        return getTemplate('header', opt.Option<string>('home'));
+    }
+}
+
+export var timetable = {
+    layout(): Q.Promise<string> {
+        return getTemplate('layout', opt.Option<string>('timetable'));
+    },
+    header(): Q.Promise<string> {
+        return getTemplate('header', opt.Option<string>('timetable'));
+    },
+    schedules(): Q.Promise<string> {
+        return getTemplate('schedules', opt.Option<string>('timetable'));
     }
 }

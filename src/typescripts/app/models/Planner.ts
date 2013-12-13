@@ -8,14 +8,14 @@ import utils = require('../utils/utils');
 
 declare var array_intersect;
 
-export function scheduleFor(startName: string, endName: string): Q.Promise<opt.IOption<Schedule>> {
+export function schedulesFor(startName: string, endName: string): Q.Promise<opt.IOption<Schedules>> {
 
     var stopsTree = Storage.stops();
     var maybeStart: opt.IOption<any> = TernaryTree.search(startName.toLowerCase(), stopsTree, 1).headOption();
     var maybeEnd: opt.IOption<any> = TernaryTree.search(endName.toLowerCase(), stopsTree, 1).headOption();
 
-    return utils.flattenOptionPromise<Schedule>(
-        maybeStart.flatMap<Q.Promise<Schedule>>((start) => {
+    return utils.flattenOptionPromise<Schedules>(
+        maybeStart.flatMap<Q.Promise<Schedules>>((start) => {
             return maybeEnd.map((end) => {
                 var tripIds = array_intersect((id) => { return id; }, start.tripIds, end.tripIds);
                 var oneTripId = tripIds[0];
@@ -26,7 +26,7 @@ export function scheduleFor(startName: string, endName: string): Q.Promise<opt.I
                                 return stopTime.stop.id === start.id;
                             });
                         });
-                        return new Schedule(start, stopTimes)
+                        return new Schedules(start, stopTimes)
                     });
                 });
             });
@@ -34,7 +34,7 @@ export function scheduleFor(startName: string, endName: string): Q.Promise<opt.I
     );
 }
 
-export class Schedule {
+export class Schedules {
 
     station: any;
     stopTimes: seq.IList<any>;

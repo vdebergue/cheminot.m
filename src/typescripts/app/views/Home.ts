@@ -22,7 +22,7 @@ class Home extends View implements IView {
     }
 
     setup(): Q.Promise<void> {
-        return super.ensure(Templating.home).then(() => {
+        return super.ensure(Templating.home.layout).then(() => {
             this.bindEvents();
         });
     }
@@ -34,7 +34,7 @@ class Home extends View implements IView {
     }
 
     show(): Q.Promise<void> {
-        return Templating.header.home().then((tpl) => {
+        return Templating.home.header().then((tpl) => {
             this.header.update(tpl);
         });
     }
