@@ -1,0 +1,7 @@
+<dl id="<%= trip.id %>">
+  <% trip.stops.foreach(function(stop) { %>
+  <dt>Name</dt><dd><%= stop.name %></dd>
+  <dt>Arrival</dt><dd><%= stop.arrival %></dd>
+  <dt>Departure</dt><dd><%= stop.departure %></dd>
+  <% }); %>
+</dl>

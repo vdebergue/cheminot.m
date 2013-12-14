@@ -1,6 +1,7 @@
 /// <reference path='../../dts/Q.d.ts'/>
 /// <reference path='../../dts/zepto.d.ts'/>
 
+import App = require('../application');
 import IView = require('./IView');
 import View = require('./View');
 import Templating = require('./templating')
@@ -26,6 +27,7 @@ class Timetable extends View implements IView {
     }
 
     bindEvents(): void {
+        super.bindEvent('click', '.schedules > li', this.onScheduleSelected);
     }
 
     show(): Q.Promise<void> {
@@ -38,9 +40,11 @@ class Timetable extends View implements IView {
         return null;
     }
 
-    private static formatTime(dateAsString: string): string {
-        var date = new Date(dateAsString);
-        return date.getHours() + ':' + date.getMinutes();
+   onScheduleSelected(e: Event): boolean {
+        var $schedule = $(e.currentTarget);
+        var tripId = $schedule.data('trip');
+        App.navigateToTrip(tripId);
+        return false;
     }
 
     buildWith(schedules: planner.Schedules): Q.Promise<void> {
@@ -48,8 +52,8 @@ class Timetable extends View implements IView {
             var $scope = this.$scope();
             var data = schedules.stopTimes.map((stopTime) => {
                 return {
-                    departure: Timetable.formatTime(stopTime.departure),
-                    arrival: Timetable.formatTime(stopTime.arrival),
+                    departure: planner.StopTime.formatTime(stopTime.departure),
+                    arrival: planner.StopTime.formatTime(stopTime.arrival),
                     tripId: stopTime.tripId,
                 };
             });

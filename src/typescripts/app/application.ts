@@ -4,6 +4,7 @@ import seq = require('./lib/immutable/List');
 import utils = require('./utils/utils');
 import IView = require('./views/IView');
 import Timetable = require('./views/Timetable');
+import Trip = require('./views/Trip');
 import Storage = require('./db/storage');
 import Planner = require('./models/Planner');
 
@@ -55,6 +56,17 @@ export function init(views: seq.IList<IView>) {
             });
         });
 
+        Path.map('#/trip/:id').to(function() {
+            var tripId = this.params['id'];
+            Storage.tripById(tripId).then((maybeTrip) => {
+                maybeTrip.map((trip) => {
+                    var tripView = <Trip> view(views, 'trip');
+                    tripView.buildWith(trip);
+                }).getOrElse(() => {
+                });
+            });
+        });
+
         Path.rescue(() => {
             navigate('/');
         });
@@ -83,4 +95,8 @@ export function navigateToTimetable(start: string, end: string): void {
 
 export function navigateToHome(): void {
     navigate('/');
+}
+
+export function navigateToTrip(tripId: string): void {
+    navigate('/trip/' + tripId);
 }

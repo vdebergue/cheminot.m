@@ -13,6 +13,11 @@ var paths = {
         layout: 'layout.tpl.html',
         header: 'header.tpl.html',
         schedules: 'schedules.tpl.html'
+    },
+    trip: {
+        layout: 'layout.tpl.html',
+        header: 'header.tpl.html',
+        details: 'details.tpl.html'
     }
 };
 
@@ -58,5 +63,17 @@ export var timetable = {
     },
     schedules(): Q.Promise<string> {
         return getTemplate('schedules', opt.Option<string>('timetable'));
+    }
+}
+
+export var trip = {
+    layout(): Q.Promise<string> {
+        return getTemplate('layout', opt.Option<string>('trip'));
+    },
+    header(): Q.Promise<string> {
+        return getTemplate('header', opt.Option<string>('trip'));
+    },
+    details(): Q.Promise<string> {
+        return getTemplate('details', opt.Option<string>('trip'));
     }
 }

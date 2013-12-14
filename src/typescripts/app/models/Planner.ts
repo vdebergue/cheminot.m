@@ -35,12 +35,31 @@ export function schedulesFor(startName: string, endName: string): Q.Promise<opt.
 }
 
 export class Schedules {
-
     station: any;
     stopTimes: seq.IList<any>;
 
     constructor(station: any, stopTimes: seq.IList<any>) {
         this.station = station;
         this.stopTimes = stopTimes;
+    }
+}
+
+export class Trip {
+    id: string;
+    service: any;
+    stopTimes: seq.IList<any>;
+
+    constructor(id: string, service: any, stopTimes: seq.IList<any>) {
+        this.id = id;
+        this.service = service;
+        this.stopTimes = stopTimes;
+    }
+}
+
+export class StopTime {
+
+    public static formatTime(dateAsString: string): string {
+        var date = new Date(dateAsString);
+        return date.getHours() + ':' + date.getMinutes();
     }
 }

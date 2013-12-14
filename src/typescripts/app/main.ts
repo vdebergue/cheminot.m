@@ -4,10 +4,12 @@ import seq = require('./lib/immutable/List');
 import IView = require('./views/IView');
 import Home = require('./views/Home');
 import Timetable = require('./views/Timetable');
+import Trip = require('./views/Trip');
 import App = require('./application');
 
 $(document).ready(function() {
-    var home = new Home('#viewport', '#home');
-    var timetable = new Timetable('#viewport', '#timetable');
-    App.init(seq.List<IView>(home, timetable));
+    var homeView = new Home('#viewport', '#home');
+    var timetableView = new Timetable('#viewport', '#timetable');
+    var tripView = new Trip('#viewport', '#trip');
+    App.init(seq.List<IView>(homeView, timetableView, tripView));
 });

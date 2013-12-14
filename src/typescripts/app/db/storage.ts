@@ -69,9 +69,13 @@ export function stops(): any {
     });
 }
 
+export function tripById(id: string): Q.Promise<opt.IOption<any>> {
+    return IndexedDB.get('trips', 'by_id', id);
+}
+
 export function tripsByIds(ids: Array<string>, direction: string): Q.Promise<seq.IList<any>> {
     var promises = ids.map((id) => {
-        var keyRange = (<any>IDBKeyRange).bound(
+        var keyRange = (<any>IDBKeyRange).bound( //TODO
             [id, direction],
             [id, direction]
         );
