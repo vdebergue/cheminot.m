@@ -24,11 +24,11 @@ class View {
 
     ensure(tmpl: () => Q.Promise<string>): Q.Promise<void> {
         return this.ensureLayout().then(() => {
-            if(!this.exists()) {
-                return tmpl().then((tmpl) => {
+            return tmpl().then((tmpl) => {
+                if(!this.exists()) {
                     this.$container().prepend(tmpl);
-                })
-            }
+                }
+            });
         });
     }
 

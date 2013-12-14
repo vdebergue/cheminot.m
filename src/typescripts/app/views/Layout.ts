@@ -17,12 +17,10 @@ class Layout {
     }
 
     static setup(): Q.Promise<void> {
-        if(!this.exists()) {
-            return Templating.layout().then((tmpl) => {
+        return Templating.layout().then((tmpl) => {
+            if(!this.exists()) {
                 this.$body().prepend(tmpl);
-            });
-        } else {
-            return Q<void>(null);
-        }
+            }
+        });
     }
 }

@@ -51,6 +51,7 @@ export function init(views: seq.IList<IView>) {
                 maybeSchedules.map((schedules) => {
                     var timetableView = <Timetable> view(views, 'timetable');
                     timetableView.buildWith(schedules);
+                    timetableView.show();
                 }).getOrElse(() => {
                 });
             });
@@ -62,6 +63,7 @@ export function init(views: seq.IList<IView>) {
                 maybeTrip.map((trip) => {
                     var tripView = <Trip> view(views, 'trip');
                     tripView.buildWith(trip);
+                    tripView.show();
                 }).getOrElse(() => {
                 });
             });
