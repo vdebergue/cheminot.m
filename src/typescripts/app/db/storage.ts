@@ -19,8 +19,10 @@ export function installDB(): Q.Promise<void> {
             }).getOrElse(() => {
                 Api.db().then((db) => {
                     console.log('All from API');
-                    STOPS = new opt.Some(db.stops);
+                    STOPS = new opt.Some(db.treeStops);
                     Q.all([
+                        IndexedDB.clearTripsStore(),
+                        IndexedDB.clearCacheStore(),
                         persistTrips(db.trips),
                         persistStops(db.treeStops)
                     ]).then(() => {
@@ -75,11 +77,7 @@ export function tripById(id: string): Q.Promise<opt.IOption<any>> {
 
 export function tripsByIds(ids: Array<string>, direction: string): Q.Promise<seq.IList<any>> {
     var promises = ids.map((id) => {
-        var keyRange = (<any>IDBKeyRange).bound( //TODO
-            [id, direction],
-            [id, direction]
-        );
-        return IndexedDB.get('trips', 'by_id_direction', keyRange);
+        return IndexedDB.get('trips', 'by_id_direction', [id, direction]);
     });
     return Q.all<seq.IList<any>>(promises).then((trips) => {
         return seq.List.apply(null, trips).flatten();

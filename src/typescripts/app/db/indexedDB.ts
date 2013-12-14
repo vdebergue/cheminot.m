@@ -69,3 +69,29 @@ export function put(storeName: string, value: any): Q.Promise<void> {
         return d.promise;
     });
 }
+
+function clearStore(name: string): Q.Promise<void> {
+    return db().then((DB) => {
+        var d = Q.defer<void>();
+        var tx = DB.transaction(name, "readwrite");
+        var store = tx.objectStore(name);
+        store.clear();
+        tx.oncomplete = () => {
+            d.resolve(null);
+        }
+        tx.onerror = () => {
+            var errorMessage = 'An error occured while deleting store ' + name;
+            console.error(errorMessage);
+            d.reject(errorMessage);
+        }
+        return d.promise;
+    });
+}
+
+export function clearTripsStore(): Q.Promise<void> {
+    return clearStore("trips");
+}
+
+export function clearCacheStore(): Q.Promise<void> {
+    return clearStore("cache");
+}
