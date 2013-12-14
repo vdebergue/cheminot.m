@@ -30,12 +30,14 @@ function view(views: seq.IList<IView>, name: string): IView {
 export function init(views: seq.IList<IView>) {
 
     utils.measureF<any>(() => {
-        return Storage.installDB();
+        return Storage.installDB((percent) => {
+            $('progress').val(percent);
+        });
     }).then(() => {
-        console.log('DONE !');
+        utils.log('DONE !');
         return null;
     }).fail((e) => {
-        console.error(e);
+        utils.error(e);
     });
 
     initViews(views).then(() => {

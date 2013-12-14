@@ -2,42 +2,46 @@
 
 import seq = require('../lib/immutable/List');
 import opt = require('../lib/immutable/Option');
+import utils = require('../utils/utils');
 import Api = require('../ws/api');
 import IndexedDB = require('./indexedDB');
 
 var STOPS: opt.IOption<any> = new opt.None<any>();
 
-export function installDB(): Q.Promise<void> {
-    console.log('Installing DB...');
+export function installDB(progress: (percent: number) => void): Q.Promise<void> {
+    utils.log('Installing DB...');
     var d = Q.defer<any>();
     if(STOPS.isEmpty()) {
-        IndexedDB.get('cache', 'by_key', 'treeStops').then((maybeStops) => {
-            maybeStops.map((stops) => {
-                console.log('Stops from cache');
-                STOPS = new opt.Some(stops.value);
-                d.resolve(null);
-            }).getOrElse(() => {
-                Api.db().then((db) => {
-                    console.log('All from API');
-                    STOPS = new opt.Some(db.treeStops);
-                    Q.all([
-                        IndexedDB.clearTripsStore(),
-                        IndexedDB.clearCacheStore(),
-                        persistTrips(db.trips),
-                        persistStops(db.treeStops)
-                    ]).then(() => {
-                        console.log('PERSIST DONE');
-                        d.resolve(null);
+        utils.log('Database is empty !');
+        clearDatabase().then(() => {
+            IndexedDB.get('cache', 'by_key', 'treeStops').then((maybeStops) => {
+                maybeStops.map((stops) => {
+                    utils.log('Stops from cache');
+                    STOPS = new opt.Some(stops.value);
+                    d.resolve(null);
+                }).getOrElse(() => {
+                    utils.log('Getting it from API !');
+                    Api.db().then((db) => {
+                        utils.log('All from API');
+                        STOPS = new opt.Some(db.treeStops);
+                        Q.all([
+                            clearDatabase(),
+                            persistTrips(db.trips),
+                            persistStops(db.treeStops)
+                        ]).then(() => {
+                            utils.log('PERSIST DONE');
+                            d.resolve(null);
+                        }).fail((reason) => {
+                            utils.error(reason);
+                        });
                     }).fail((reason) => {
-                        console.error(reason);
+                        utils.error(reason);
+                        d.reject(reason);
                     });
-                }).fail((reason) => {
-                    console.error(reason);
-                    d.reject(reason);
                 });
+            }).fail((e) => {
+                utils.error(e);
             });
-        }).fail((e) => {
-            console.error(e);
         });
     } else {
         d.resolve(null);
@@ -66,7 +70,7 @@ export function stops(): any {
     return maybeStops().map((stops) => {
         return stops;
     }).getOrElse(() => {
-        console.error('DB not initialized !');
+        utils.error('DB not initialized !');
         return null;
     });
 }
@@ -109,4 +113,17 @@ export function getTripDirection(startId: string, stopId: string, tripId: string
             return null;
         });
     });
+}
+
+function clearDatabase(): Q.Promise<void> {
+    utils.log('Clearing database');
+    return Q.all([
+        IndexedDB.clearTripsStore(),
+        IndexedDB.clearCacheStore()
+    ]).then(() => {
+        return null;
+    });
+}
+
+export function progress(f: (percent: number) => void): void {
 }

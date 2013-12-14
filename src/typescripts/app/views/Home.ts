@@ -54,7 +54,6 @@ class Home extends View implements IView {
     }
 
     onButtonClick(e: Event): boolean {
-        console.log('haaa');
         return true;
     }
 

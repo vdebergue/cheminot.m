@@ -31,7 +31,19 @@ export function sequencePromises<T>(promises: seq.IList<Q.Promise<T>>): Q.Promis
 }
 
 export function error(message: string) {
-    console.error(message);
+    if(isMobile()) {
+        alert('ERROR ' + message);
+    } else {
+        console.log(message);
+    }
+}
+
+export function log(message: string) {
+    if(isMobile()) {
+        alert('INFO : ' + message);
+    } else {
+        console.error(message);
+    }
 }
 
 export function measureF<T>(f: () => Q.Promise<T>): Q.Promise<T> {
@@ -39,7 +51,22 @@ export function measureF<T>(f: () => Q.Promise<T>): Q.Promise<T> {
     var promise = f();
     return promise.then((t) => {
         var end = Date.now();
-        console.log(end - start);
+        var result = (end - start) / 1000;
+        log(result + 's');
         return t;
     });
+}
+
+export function isMobile() { 
+    if(navigator.userAgent.match(/Android/i) ||
+       navigator.userAgent.match(/webOS/i) ||
+       navigator.userAgent.match(/iPhone/i) ||
+       navigator.userAgent.match(/iPad/i) ||
+       navigator.userAgent.match(/iPod/i) ||
+       navigator.userAgent.match(/BlackBerry/i) ||
+       navigator.userAgent.match(/Windows Phone/i)){
+        return true;
+    } else {
+        return false;
+    }
 }
