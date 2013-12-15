@@ -30,7 +30,7 @@ export function sequencePromises<T>(promises: seq.IList<Q.Promise<T>>): Q.Promis
     return step(promises, Q(new seq.Nil<T>()))
 }
 
-export function error(message: string) {
+export function error<A>(message: A) {
     if(isMobile()) {
         alert('ERROR ' + message);
     } else {
@@ -38,11 +38,11 @@ export function error(message: string) {
     }
 }
 
-export function log(message: string) {
+export function log<A>(message: A) {
     if(isMobile()) {
         alert('INFO : ' + message);
     } else {
-        console.error(message);
+        console.log(message);
     }
 }
 

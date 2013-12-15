@@ -26,8 +26,8 @@ export function installDB(progress: (percent: number) => void): Q.Promise<void> 
                         STOPS = new opt.Some(db.treeStops);
                         Q.all([
                             clearDatabase(),
-                            persistTrips(db.trips),
-                            persistStops(db.treeStops)
+                            persistStops(db.treeStops),
+                            persistTrips(progress, db.trips)
                         ]).then(() => {
                             utils.log('PERSIST DONE');
                             d.resolve(null);
@@ -49,9 +49,10 @@ export function installDB(progress: (percent: number) => void): Q.Promise<void> 
     return d.promise;
 }
 
-function persistTrips(trips: any): Q.Promise<void> {
+function persistTrips(progress: (percent: number) => void, trips: any): Q.Promise<void> {
+    var PROGRESS = new Progress(progress, trips.length);
     var promises = trips.map((trip) => {
-        return IndexedDB.put('trips', trip);
+        return IndexedDB.put('trips', trip).then(PROGRESS.onTripAdded(), this);
     });
     return Q.all(promises).then(() => {
         return null;
@@ -117,7 +118,7 @@ export function getTripDirection(startId: string, stopId: string, tripId: string
 
 function clearDatabase(): Q.Promise<void> {
     utils.log('Clearing database');
-    return Q.all([
+    return Q.all<void>([
         IndexedDB.clearTripsStore(),
         IndexedDB.clearCacheStore()
     ]).then(() => {
@@ -125,5 +126,24 @@ function clearDatabase(): Q.Promise<void> {
     });
 }
 
-export function progress(f: (percent: number) => void): void {
+class Progress {
+
+    private progress: (percent: number) => void;
+    private tripsSize: number;
+    private tripsAdded: number;
+    private currentProgress: number;
+
+    constructor(progress: (percent: number) => void, tripsSize: number) {
+        this.progress = progress;
+        this.tripsSize = tripsSize;
+        this.tripsAdded = 0;
+    }
+
+    onTripAdded(): () => Q.Promise<void> {
+        return () => {
+            this.tripsAdded += 1;
+            var percent = (this.tripsAdded * 100 / this.tripsSize)
+            return Q(this.progress(percent));
+        }
+    }
 }
