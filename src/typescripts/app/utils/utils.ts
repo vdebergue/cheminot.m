@@ -13,21 +13,18 @@ export function flattenOptionPromise<T>(maybePromise: opt.IOption<Q.Promise<T>>)
     });
 }
 
-export function sequencePromises<T>(promises: seq.IList<Q.Promise<T>>): Q.Promise<seq.IList<T>> {
-    function step(promises: seq.IList<Q.Promise<T>>, acc: Q.Promise<seq.IList<T>>): Q.Promise<seq.IList<T>> {
-        if(promises.isEmpty()) {
-            return acc;
-        } else {
-            return promises.head().then<seq.IList<T>>((h) => {
-                return acc.then<seq.IList<T>>((xxx) => {
-                    var accumulated: Q.Promise<seq.IList<T>> = Q<seq.IList<T>>(xxx.prependOne(h));
-                    var t: seq.IList<Q.Promise<T>> = promises.tail();
-                    return step(t, accumulated);
-                });
+export function sequencePromises<T>(seq: Array<T>, f: (t: T) => Q.Promise<T>): Q.Promise<Array<T>> {
+    if(seq.length === 0) {
+        return Q([]);
+    } else {
+        var h = seq[0];
+        var t = seq.slice(1);
+        return f(h).then<Array<T>>((t1) => {
+            return sequencePromises(t, f).then((t2) => {
+                return [t1].concat(t2)
             });
-        }
+        });
     }
-    return step(promises, Q(new seq.Nil<T>()))
 }
 
 export function error<A>(message: A) {
@@ -46,13 +43,13 @@ export function log<A>(message: A) {
     }
 }
 
-export function measureF<T>(f: () => Q.Promise<T>): Q.Promise<T> {
+export function measureF<T>(f: () => Q.Promise<T>, id: string = ''): Q.Promise<T> {
     var start = Date.now();
     var promise = f();
     return promise.then((t) => {
         var end = Date.now();
         var result = (end - start) / 1000;
-        log(result + 's');
+        log('[' + id + '] ' + result + 's');
         return t;
     });
 }

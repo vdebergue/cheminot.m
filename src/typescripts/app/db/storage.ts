@@ -28,13 +28,14 @@ export function installDB(progress: (percent: number) => void): Q.Promise<void> 
                         TRIPS = new opt.Some(db.trips.data);
                         Q.all([
                             clearDatabase(),
-                            persistStops(db.treeStops),
-                            persistTrips(progress, db.trips)
+                            utils.measureF(() => persistStops(db.treeStops), 'persistStops'),
                         ]).then(() => {
-                            utils.log('PERSIST DONE');
-                            delete TRIPS;
-                            TRIPS = new opt.None<Array<any>>();
-                            d.resolve(null);
+                            utils.measureF(() => persistTrips(progress, db.trips), 'persistTrips').then(() => {
+                                utils.log('PERSIST DONE');
+                                delete TRIPS;
+                                TRIPS = new opt.None<Array<any>>();
+                                d.resolve(null);
+                            });
                         }).fail((reason) => {
                             utils.error(reason);
                         });
@@ -53,22 +54,25 @@ export function installDB(progress: (percent: number) => void): Q.Promise<void> 
     return d.promise;
 }
 
-function persistTrips(progress: (percent: number) => void, trips: any): Q.Promise<void> {
-    var PROGRESS = new Progress(progress, trips.size);
-    var promises = Object.keys(trips.data).map((tripId) => {
-        var trip = trips.data[tripId];
-        return IndexedDB.put('trips', trip).then(PROGRESS.onTripAdded(), this);
+function persistTrips(progress: (percent: number) => void, tripsData: any): Q.Promise<void> {
+    utils.log(tripsData.size + ' trips to import');
+    var PROGRESS = new Progress(progress, tripsData.size);
+    var trips: Array<any> = Object.keys(tripsData.data).map((tripId) => {
+        return <any>tripsData.data[tripId];
     });
-    return Q.all(promises).then(() => {
+    var f = (trip: any) => {
+        utils.log('start');
+        return IndexedDB.put('trips', trip).then(PROGRESS.onTripAdded());
+    }
+
+    return utils.sequencePromises(trips, f).then(() => {
         return null;
     });
 }
 
 function persistStops(treeStops: any): Q.Promise<void> {
-    return Q.delay(
-        IndexedDB.put('cache', { key: 'treeStops', value: treeStops }),
-        20
-    );
+    utils.log('Persisting treeStops');
+    return IndexedDB.put('cache', { key: 'treeStops', value: treeStops });
 }
 
 export function maybeStops(): opt.IOption<any> {
@@ -167,6 +171,8 @@ class Progress {
     private tripsSize: number;
     private tripsAdded: number;
     private currentProgress: number;
+    private putMeanTimeRef: number = 5; //ms
+    private currentPutMeanTimes: Array<number> = [];
 
     constructor(progress: (percent: number) => void, tripsSize: number) {
         this.progress = progress;
@@ -178,7 +184,12 @@ class Progress {
         return () => {
             this.tripsAdded += 1;
             var percent = (this.tripsAdded * 100 / this.tripsSize)
+            utils.log('end');
             return Q(this.progress(percent));
         }
+    }
+
+    delay(): number {
+        return 1;
     }
 }

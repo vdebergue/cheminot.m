@@ -9,13 +9,14 @@ import Storage = require('./db/storage');
 import Planner = require('./models/Planner');
 
 function initViews(views: seq.IList<IView>): Q.Promise<seq.IList<IView>> {
-    return utils.sequencePromises<IView>(
-        views.map((view) => {
-            return view.setup().then(() => {
-                return view;
-            });
-        })
-    );
+    var f = (view: IView) => {
+        return view.setup().then(() => {
+            return view;
+        });
+    };
+    return utils.sequencePromises<IView>(views.asArray(), f).then((views) => {
+        return seq.List.apply(null, views);
+    });
 }
 
 function view(views: seq.IList<IView>, name: string): IView {
@@ -33,7 +34,7 @@ export function init(views: seq.IList<IView>) {
         return Storage.installDB((percent) => {
             $('progress').val(percent);
         });
-    }).then(() => {
+    }, 'all').then(() => {
         utils.log('DONE !');
         return null;
     }).fail((e) => {
