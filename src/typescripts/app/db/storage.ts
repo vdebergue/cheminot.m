@@ -16,7 +16,7 @@ export function installDB(): Q.Promise<void> {
         utils.log('Database is empty !');
         IndexedDB.get('cache', 'by_key', 'treeStops').then((maybeStops) => {
             IndexedDB.get('cache', 'by_key', 'trips').then((maybeTrips) => {
-                if(maybeStops.isDefined() || maybeTrips.isDefined()) {
+                if(maybeStops.isDefined() && maybeTrips.isDefined()) {
                     maybeStops.map((stops) => {
                         maybeTrips.map((trips) => {
                             STOPS = new opt.Some(stops.value);
@@ -42,7 +42,13 @@ export function installDB(): Q.Promise<void> {
                         d.reject(reason);
                     });
                 }
+            }).fail((reason) => {
+                utils.error(reason);
+                d.reject(reason);
             });
+        }).fail((reason) => {
+            utils.error(reason);
+            d.reject(reason);
         });
     } else {
         d.resolve(null);
@@ -57,6 +63,10 @@ function persistTrips(tripsData: any): Q.Promise<void> {
 function persistStops(treeStops: any): Q.Promise<void> {
     utils.log('Persisting treeStops');
     return IndexedDB.put('cache', { key: 'treeStops', value: treeStops });
+}
+
+export function isInitialized(): boolean {
+    return maybeTrips().isDefined() && maybeStops().isDefined();
 }
 
 export function maybeStops(): opt.IOption<any> {

@@ -3,6 +3,8 @@
 import seq = require('lib/immutable/List');
 import opt = require('lib/immutable/Option');
 
+var DEBUG: boolean = true;
+
 export function flattenOptionPromise<T>(maybePromise: opt.IOption<Q.Promise<T>>): Q.Promise<opt.IOption<T>> {
     return maybePromise.map((p) => {
         return p.then((t) => {
@@ -28,18 +30,22 @@ export function sequencePromises<T>(seq: Array<T>, f: (t: T) => Q.Promise<T>): Q
 }
 
 export function error<A>(message: A) {
-    if(isMobile()) {
-        alert('ERROR ' + message);
-    } else {
-        console.log(message);
+    if(DEBUG) {
+        if(isMobile()) {
+            alert('ERROR ' + message);
+        } else {
+            console.log(message);
+        }
     }
 }
 
 export function log<A>(message: A) {
-    if(isMobile()) {
-        alert('INFO : ' + message);
-    } else {
-        console.log(message);
+    if(DEBUG) {
+        if(isMobile()) {
+            alert('INFO : ' + message);
+        } else {
+            console.log(message);
+        }
     }
 }
 

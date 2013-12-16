@@ -1,8 +1,67 @@
 @import 'reset';
+@import 'colors';
 
-global-reset();
+global-reset()
+
+font-family-light() {
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+}
+
+font-family-medium() {
+    font-family: "HelveticaNeue-Medium", "Helvetica Neue Medium", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+}
 
 * {
     -webkit-font-smoothing: antialiased
     border: 1px #000 solid
+    font-family-light()
+}
+
+h1 {
+    font-size: 34px
+    font-family-medium()
+}
+
+input {
+    box-sizing: border-box
+    height: 68px
+    width: 100%
+    font-size: 24px
+    color: grey-light
+    outline: none
+
+    &:focus {
+        border-color: blue
+    }
+
+    &[type=text] {
+        border-radius: 12px
+    }
+}
+
+header, #viewport {
+    padding: 16px
+}
+
+header {
+    height: 88px
+    background: blue
+    color: #FFF
+    box-sizing: border-box
+}
+
+.view {
+    &.hidden {
+        display: none
+    }
+}
+
+.list {
+    li {
+        height: 88px
+        font-size: 34px
+        border-top: 1px solid grey-light
+        box-sizing: border-box
+        color: grey
+    }
 }

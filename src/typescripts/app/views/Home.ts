@@ -8,7 +8,10 @@ import opt = require('lib/immutable/Option');
 import IView = require('./IView');
 import View = require('./View');
 import Templating = require('./templating')
+import utils = require('../utils/utils')
 import TernaryTree = require('../utils/ternaryTree');
+
+declare var tmpl;
 
 export = Home;
 
@@ -36,6 +39,7 @@ class Home extends View implements IView {
     show(): Q.Promise<void> {
         return Templating.home.header().then((tpl) => {
             this.header.update(tpl);
+            super.showContainer();
         });
     }
 
@@ -43,13 +47,18 @@ class Home extends View implements IView {
         return null;
     }
 
-    suggest(suggestions: seq.IList<any>): void {
+    suggest(suggestions: seq.IList<any>): Q.Promise<void> {
         var $scope = super.$scope();
         var $suggestions = $scope.find('.suggestions');
         $suggestions.empty();
-        suggestions.foreach((s) => {
-            $suggestions.prepend('<li id="'+ s.id +'">'+ s.name +'</li>');
-            $suggestions.find('li:first-child').data('station-name', s.name);
+        return Templating.home.suggestions().then((t) => {
+            var data = suggestions.map((s) => {
+                return {
+                    name: s.name
+                };
+            });
+            var dom = tmpl(t, { stations: data });
+            $suggestions.html(dom);
         });
     }
 

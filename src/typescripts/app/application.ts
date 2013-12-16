@@ -30,20 +30,28 @@ function view(views: seq.IList<IView>, name: string): IView {
 
 export function init(views: seq.IList<IView>) {
 
-    utils.measureF<any>(() => {
-        return Storage.installDB();
-    }, 'all').then(() => {
-        utils.log('DONE !');
-        return null;
-    }).fail((e) => {
-        utils.error(e);
-    });
+    var isInitialized = () => {
+        if(!Storage.isInitialized()) {
+            navigateToInit();
+        }
+    }
 
     initViews(views).then(() => {
 
         Path.map('#/').to(() => {
-            view(views, 'home').show();
+            utils.measureF<any>(() => {
+                return Storage.installDB();
+            }, 'all').then(() => {
+                navigateToHome();
+                return null;
+            }).fail((e) => {
+                utils.error(e);
+            });
         });
+
+        Path.map('#/home').to(() => {
+            view(views, 'home').show();
+        }).enter(isInitialized);
 
         Path.map('#/timetable/:start/:end').to(function() {
             var start = this.params['start'];
@@ -56,7 +64,7 @@ export function init(views: seq.IList<IView>) {
                 }).getOrElse(() => {
                 });
             });
-        });
+        }).enter(isInitialized);
 
         Path.map('#/trip/:id').to(function() {
             var tripId = this.params['id'];
@@ -68,7 +76,7 @@ export function init(views: seq.IList<IView>) {
                 }).getOrElse(() => {
                 });
             });
-        });
+        }).enter(isInitialized);
 
         Path.rescue(() => {
             navigate('/');
@@ -78,7 +86,6 @@ export function init(views: seq.IList<IView>) {
         if(!window.location.hash) {
             navigate('/');
         }
-
     });
 }
 
@@ -92,14 +99,18 @@ function navigate(path: string): boolean {
     }
 }
 
-export function navigateToTimetable(start: string, end: string): void {
-    navigate('/timetable/' + start + '/' + end);
+export function navigateToInit(): void {
+    navigate('/');
 }
 
 export function navigateToHome(): void {
-    navigate('/');
+    navigate('/home');
 }
 
 export function navigateToTrip(tripId: string): void {
     navigate('/trip/' + tripId);
+}
+
+export function navigateToTimetable(start: string, end: string): void {
+    navigate('/timetable/' + start + '/' + end);
 }

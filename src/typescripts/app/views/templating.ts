@@ -7,7 +7,8 @@ var paths = {
     layout: 'layout.tpl.html',
     home: {
         layout: 'layout.tpl.html',
-        header: 'header.tpl.html'
+        header: 'header.tpl.html',
+        suggestions: 'suggestions.tpl.html'
     },
     timetable: {
         layout: 'layout.tpl.html',
@@ -51,6 +52,9 @@ export var home = {
     },
     header(): Q.Promise<string> {
         return getTemplate('header', opt.Option<string>('home'));
+    },
+    suggestions(): Q.Promise<string> {
+        return getTemplate('suggestions', opt.Option<string>('home'));
     }
 }
 

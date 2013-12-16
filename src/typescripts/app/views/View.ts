@@ -40,6 +40,10 @@ class View {
         return $(this.scope);
     }
 
+    showContainer(): void {
+        this.$scope().show();
+    }
+
     bindEvent(type: string, selector: string, fn: (e: Event) => boolean): void {
         var fnWithContext = <any>$.proxy(fn, this);
         this.$scope().on(type, selector, fnWithContext);

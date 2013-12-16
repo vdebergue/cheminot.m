@@ -1,9 +1,14 @@
-<section id="home">
+<section class="view hidden" id="home">
   <form>
-    <label for="start">Start</label>
-    <input name="start" type="text">
-    <label for="end">End</label>
-    <input name="end" type="text">
+    <input name="start" type="text" placeholder="Départ">
+    <input name="end" type="text" placeholder="Arrivée">
   </form>
-  <ul class="suggestions"></ul>
+  <div class="when">
+    <button class="today">Aujourd'hui</button>
+    <button class="tomorrow">Demain</button>
+    <button class="later">Plus tard</button>
+  </div>
+  <div class="stations list">
+    <ul class="suggestions"></ul>
+  </div>
 </section>
