@@ -20,7 +20,7 @@ export function schedulesFor(startName: string, endName: string): Q.Promise<opt.
                 var tripIds = array_intersect((id) => { return id; }, start.tripIds, end.tripIds);
                 var oneTripId = tripIds[0];
                 return Storage.getTripDirection(start.id, end.id, oneTripId).then((direction) => {
-                    return Storage.tripsByIds(tripIds || [], direction).then((trips) => {
+                    return Storage.tripsByIds(seq.List.apply(null, tripIds), direction).then((trips) => {
                         var stopTimes = trips.flatMap<any>((trip) => {
                             return seq.List.apply(null, trip.stopTimes).find((stopTime) => {
                                 return stopTime.stop.id === start.id;
