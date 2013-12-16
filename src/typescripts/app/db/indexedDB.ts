@@ -4,12 +4,6 @@ import opt = require('../lib/immutable/Option');
 
 var DB_NAME = 'cheminot';
 
-function createTripsStore(db: any): void {
-    var store = db.createObjectStore('trips', { keyPath: 'id' });
-    store.createIndex("by_id", "id", { unique: true });
-    store.createIndex("by_id_direction", ["id", "direction"]);
-}
-
 function createCacheStore(db: any): void {
     var store = db.createObjectStore('cache', { keyPath: 'key' });
     store.createIndex("by_key", "key", { unique: true });
@@ -20,7 +14,6 @@ export function db(): Q.Promise<any> {
     var request = window.indexedDB.open(DB_NAME);
     request.onupgradeneeded = () => {
         var db = request.result;
-        createTripsStore(db);
         createCacheStore(db);
     }
     request.onsuccess = () => {
@@ -86,10 +79,6 @@ function clearStore(name: string): Q.Promise<void> {
         }
         return d.promise;
     });
-}
-
-export function clearTripsStore(): Q.Promise<void> {
-    return clearStore("trips");
 }
 
 export function clearCacheStore(): Q.Promise<void> {

@@ -31,9 +31,7 @@ function view(views: seq.IList<IView>, name: string): IView {
 export function init(views: seq.IList<IView>) {
 
     utils.measureF<any>(() => {
-        return Storage.installDB((percent) => {
-            $('progress').val(percent);
-        });
+        return Storage.installDB();
     }, 'all').then(() => {
         utils.log('DONE !');
         return null;
