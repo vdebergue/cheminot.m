@@ -1,14 +1,17 @@
 <section class="view hidden" id="home">
-  <form>
-    <input name="start" type="text" placeholder="Départ">
-    <input name="end" type="text" placeholder="Arrivée">
-  </form>
-  <div class="when">
-    <button class="today">Aujourd'hui</button>
-    <button class="tomorrow">Demain</button>
-    <button class="later">Plus tard</button>
+  <div class="container">
+    <form>
+      <input name="start" type="text" placeholder="Départ">
+      <input name="end" type="text" placeholder="Arrivée">
+    </form>
+    <div class="when">
+      <button class="active">Aujourd'hui</button>
+      <button>Demain</button>
+      <button>Plus tard</button>
+    </div>
   </div>
   <div class="stations list">
-    <ul class="suggestions"></ul>
+    <h2>Stations<h2>
+        <ul class="suggestions"></ul>
   </div>
 </section>

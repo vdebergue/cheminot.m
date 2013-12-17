@@ -18,36 +18,49 @@ font-family-medium() {
 }
 
 h1 {
-    font-size: 34px
+    font-size: 17px
     font-family-medium()
 }
 
 input {
     box-sizing: border-box
-    height: 68px
+    height: 34px
     width: 100%
-    font-size: 24px
+    font-size: 12px;
     color: grey-light
     outline: none
+    border: 1px solid grey
 
     &:focus {
         border-color: blue
     }
 
     &[type=text] {
-        border-radius: 12px
+        border-radius: 6px
     }
 }
 
-header, #viewport {
-    padding: 16px
+header, .container {
+    padding: 8px
 }
 
 header {
-    height: 88px
+    height: 44px
     background: blue
     color: #FFF
     box-sizing: border-box
+    padding-top: 13px;
+    padding-left: 8px
+
+    h1 {
+        margin: auto
+        width: 95px
+    }
+
+    .back {
+        top: 8px
+        position: absolute;
+    }
 }
 
 .view {
@@ -58,10 +71,26 @@ header {
 
 .list {
     li {
-        height: 88px
-        font-size: 34px
+        padding: 14px 8px 14px 8px
+        height: 44px
+        font-size: 17px
         border-top: 1px solid grey-light
         box-sizing: border-box
-        color: grey
+        color: grey-dark
+    }
+}
+
+button {
+    display: inline-block
+    border: 1px solid green
+    outline: none
+    color: green
+    border-radius: 4px
+    background: #FFF
+    font-size: 14px
+
+    &.active {
+        background: green
+        color: #FFF
     }
 }

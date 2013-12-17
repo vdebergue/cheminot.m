@@ -13,7 +13,6 @@ export function installDB(): Q.Promise<void> {
     utils.log('Installing DB...');
     var d = Q.defer<any>();
     if(STOPS.isEmpty()) {
-        utils.log('Database is empty !');
         IndexedDB.get('cache', 'by_key', 'treeStops').then((maybeStops) => {
             IndexedDB.get('cache', 'by_key', 'trips').then((maybeTrips) => {
                 if(maybeStops.isDefined() && maybeTrips.isDefined()) {
@@ -27,7 +26,7 @@ export function installDB(): Q.Promise<void> {
                 } else {
                     utils.log('Getting it from API !');
                     Api.db().then((db) => {
-                        utils.log('All from API');
+                        utils.log('DONE !');
                         STOPS = new opt.Some(db.treeStops);
                         TRIPS = new opt.Some(db.trips.data);
                         Q.all([
