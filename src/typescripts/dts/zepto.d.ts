@@ -1297,6 +1297,8 @@ interface ZeptoCollection {
 	**/
 	off(events: ZeptoEventHandlers, selector?: string): ZeptoCollection;
 
+    tap(fn: (e: Event) => boolean): ZeptoCollection;
+
 	/**
 	* Add event handlers to the elements in collection. Multiple event types can be passed in a space-separated string, or as an object where event types are keys and handlers are values. If a CSS selector is given, the handler function will only be called when an event originates from an element that matches the selector.
 	* Event handlers are executed in the context of the element to which the handler is attached, or the matching element in case a selector is provided. When an event handler returns false, preventDefault() is called for the current event, preventing the default browser action such as following links.

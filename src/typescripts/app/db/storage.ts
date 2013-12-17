@@ -29,24 +29,25 @@ export function installDB(): Q.Promise<void> {
                         utils.log('DONE !');
                         STOPS = new opt.Some(db.treeStops);
                         TRIPS = new opt.Some(db.trips.data);
-                        Q.all([
-                            clearDatabase(),
-                            utils.measureF(() => persistStops(db.treeStops), 'persistStops'),
-                            utils.measureF(() => persistTrips(db.trips), 'persistTrips')
-                        ]).fail((reason) => {
-                            utils.error(reason);
+                        clearDatabase().then(() => {
+                            return utils.measureF(() => persistStops(db.treeStops), 'persistStops');
+                        }).then(() => {
+                            return utils.measureF(() => persistTrips(db.trips), 'persistTrips')
+                        }).fail((reason) => {
+                            utils.error(JSON.stringify(reason));
                         });
                     }).fail((reason) => {
-                        utils.error(reason);
+                        utils.error(JSON.stringify(reason));
                         d.reject(reason);
                     });
                 }
             }).fail((reason) => {
-                utils.error(reason);
+                utils.error(JSON.stringify(reason));
                 d.reject(reason);
             });
         }).fail((reason) => {
-            utils.error(reason);
+            $('body').html(JSON.stringify(reason))
+            utils.error(JSON.stringify(reason));
             d.reject(reason);
         });
     } else {

@@ -1,4 +1,5 @@
 @import 'colors';
+@import 'font';
 
 #home {
 
@@ -11,15 +12,26 @@
 
     .when {
         text-align: center
+        margin-bottom: 7px
     }
 
     .stations {
+        border-top: 1px solid grey-dark
+
         h2 {
+            padding-top: 13px
+            padding-bottom: 13px
+            box-sizing: border-box
             display: none
-            font-size: 17px
+            font-size: font-size-title()
             width: 59px
             margin: 0 auto
             color: blue
+        }
+
+        ul {
+            overflow-y: scroll
+            height: 300px
         }
     }
 

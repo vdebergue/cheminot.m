@@ -43,7 +43,6 @@ export function init(views: seq.IList<IView>) {
                 return Storage.installDB();
             }, 'all').then(() => {
                 navigateToHome();
-                return null;
             }).fail((e) => {
                 utils.error(e);
             });

@@ -31,9 +31,10 @@ class Home extends View implements IView {
     }
 
     bindEvents(): void {
-        this.header.bindEvent('click', 'button', this.onButtonClick)
         super.bindEvent('keyup', 'input[name=start], input[name=end]', this.onStationKeyUp);
-        super.bindEvent('click', '.suggestions > li', this.onSuggestionTouch);
+        super.bindEvent('click', '.suggestions > li', this.onSuggestionSelected);
+        super.bindEvent('tap', 'button', this.onDaySelected);
+        this.header.bindEvent('click', '.when button:not(.active)', this.onButtonClick)
     }
 
     show(): Q.Promise<void> {
@@ -51,6 +52,9 @@ class Home extends View implements IView {
         var $scope = super.$scope();
         var $suggestions = $scope.find('.suggestions');
         $suggestions.empty();
+        if(!suggestions.isEmpty()) {
+            $scope.find('.stations').addClass('searching');
+        }
         return Templating.home.suggestions().then((t) => {
             var data = suggestions.map((s) => {
                 return {
@@ -71,31 +75,56 @@ class Home extends View implements IView {
         var $scope = super.$scope();
         var $input = $(e.currentTarget);
         var term = $input.val();
-        if($input.is('[name=start]')) {
-            $scope.find('.suggestions').removeClass('end').addClass('start');
+        if(term.trim() === '') {
+            this.clearSuggestions();
         } else {
-            $scope.find('.suggestions').removeClass('start').addClass('end');
+            if($input.is('[name=start]')) {
+                $scope.find('.suggestions').removeClass('end').addClass('start');
+            } else {
+                $scope.find('.suggestions').removeClass('start').addClass('end');
+            }
+            var founds = TernaryTree.search(term.toLowerCase(), stopsTree, 20);
+            this.suggest(founds);
         }
-        var founds = TernaryTree.search(term.toLowerCase(), stopsTree, 20);
-        this.suggest(founds);
         return true;
     }
 
-    onSuggestionTouch(e: Event): boolean {
+    clearSuggestions(): void {
+        var $scope = this.$scope();
+        $scope.find('.stations').removeClass('searching');
+        $scope.find('.suggestions').empty();
+    }
+
+    onSuggestionSelected(e: Event): boolean {
         var $suggestion = $(e.currentTarget);
         var $suggestions = $suggestion.parent();
+
         if($suggestions.is('.start')) {
-            var name = $suggestion.data('station-name');
+            var name = $suggestion.data('name');
             $suggestions.data('start', name);
+            var $start = this.$scope().find('[name=start]');
+            $start.val(name);
+            $start.siblings('[name=end]').get(0).focus();
+            this.clearSuggestions();
         } else if($suggestions.is('.end')) {
-            var name = $suggestion.data('station-name');
+            var name = $suggestion.data('name');
             $suggestions.data('end', name);
+            this.$scope().find('[name=end]').val(name);
+            this.clearSuggestions();
         }
+
         opt.Option<any>($suggestions.data('start')).foreach((start) => {
             opt.Option<any>($suggestions.data('end')).foreach((end) => {
                 App.navigateToTimetable(start, end);
             });
         });
+        return true;
+    }
+
+    onDaySelected(e: Event): boolean {
+        var $btn = $(e.currentTarget);
+        $btn.siblings('button.active').removeClass('active');
+        $btn.addClass('active');
         return true;
     }
 }
