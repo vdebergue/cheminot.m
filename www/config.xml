@@ -5,5 +5,5 @@
     <author email="sre@cheminot.io" href="http://cordova.io">sre</author>
     <content src="index.html" />
     <access origin="*" />
-    <preference name="Fullscreen" value="true" />
+    <preference name="Fullscreen" value="false" />
 </widget>
