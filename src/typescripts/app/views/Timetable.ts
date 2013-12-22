@@ -30,14 +30,26 @@ class Timetable extends View implements IView {
         super.bindEvent('click', '.schedules > li', this.onScheduleSelected);
     }
 
+    adaptSchedulesHeight(): void {
+        var htmlOffset = $('html').offset();
+        var headerOffset = $('header').offset();
+        var $schedules = this.$scope().find('.schedules');
+        var schedulesOffset = $schedules.offset();
+        var height = htmlOffset.height - schedulesOffset.top - headerOffset.height;
+        $schedules.css('height', height);
+    }
+
     show(): Q.Promise<void> {
         return Templating.timetable.header().then((tpl) => {
             this.header.update(tpl);
+            super.showView();
+            this.adaptSchedulesHeight();
         });
     }
 
     hide(): Q.Promise<void> {
-        return null;
+        this.$scope().addClass('hidden')
+        return Q<void>(null);
     }
 
    onScheduleSelected(e: Event): boolean {
@@ -50,7 +62,9 @@ class Timetable extends View implements IView {
     buildWith(schedules: planner.Schedules): Q.Promise<void> {
         return Templating.timetable.schedules().then((t) => {
             var $scope = this.$scope();
-            var data = schedules.stopTimes.map((stopTime) => {
+            var data = schedules.stopTimes.asArray().sort((a, b) => {
+                return a.departure - b.departure;
+            }).map((stopTime) => {
                 return {
                     departure: planner.StopTime.formatTime(stopTime.departure),
                     arrival: planner.StopTime.formatTime(stopTime.arrival),
@@ -58,7 +72,7 @@ class Timetable extends View implements IView {
                 };
             });
             var dom = tmpl(t, { schedules: data });
-            $scope.append(dom);
+            $scope.find('.schedules').html(dom);
         });
     }
 }

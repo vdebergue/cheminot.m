@@ -32,6 +32,7 @@ class Trip extends View implements IView {
     show(): Q.Promise<void> {
         return Templating.trip.header().then((tpl) => {
             this.header.update(tpl);
+            super.showView();
         });
     }
 

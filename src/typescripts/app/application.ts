@@ -28,12 +28,34 @@ function view(views: seq.IList<IView>, name: string): IView {
     });
 }
 
+function viewsBut(views: seq.IList<IView>, exclude: string): seq.IList<IView> {
+    return views.filterNot((view) => {
+        return view.name === exclude;
+    });
+}
+
 export function init(views: seq.IList<IView>) {
+
+    var onEnter = (viewName: string) => {
+        return () => {
+            if(isInitialized()) {
+                hideOtherViews(viewName);
+            }
+        };
+    }
 
     var isInitialized = () => {
         if(!Storage.isInitialized()) {
             navigateToInit();
+            return false;
         }
+        return true;
+    }
+
+    var hideOtherViews = (but: string) => {
+        return viewsBut(views, but).foreach((view) => {
+            view.hide();
+        });
     }
 
     initViews(views).then(() => {
@@ -50,7 +72,7 @@ export function init(views: seq.IList<IView>) {
 
         Path.map('#/home').to(() => {
             view(views, 'home').show();
-        }).enter(isInitialized);
+        }).enter(onEnter('home'));
 
         Path.map('#/timetable/:start/:end').to(function() {
             var start = this.params['start'];
@@ -63,7 +85,7 @@ export function init(views: seq.IList<IView>) {
                 }).getOrElse(() => {
                 });
             });
-        }).enter(isInitialized);
+        }).enter(onEnter('timetable'));
 
         Path.map('#/trip/:id').to(function() {
             var tripId = this.params['id'];
@@ -75,7 +97,7 @@ export function init(views: seq.IList<IView>) {
                 }).getOrElse(() => {
                 });
             });
-        }).enter(isInitialized);
+        }).enter(onEnter('trip'));
 
         Path.rescue(() => {
             navigate('/');

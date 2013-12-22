@@ -40,8 +40,9 @@ class View {
         return $(this.scope);
     }
 
-    showContainer(): void {
-        this.$scope().show();
+    showView(): void {
+        console.log('here');
+        this.$scope().removeClass('hidden');
     }
 
     bindEvent(type: string, selector: string, fn: (e: Event) => boolean): void {

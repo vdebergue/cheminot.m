@@ -32,20 +32,32 @@ class Home extends View implements IView {
 
     bindEvents(): void {
         super.bindEvent('keyup', 'input[name=start], input[name=end]', this.onStationKeyUp);
+        super.bindEvent('blur', 'input[name=start], input[name=end]', this.onStationBlur);
         super.bindEvent('click', '.suggestions > li', this.onSuggestionSelected);
         super.bindEvent('tap', 'button', this.onDaySelected);
         this.header.bindEvent('click', '.when button:not(.active)', this.onButtonClick)
     }
 
+    adaptSuggestionsHeight(): void {
+        var htmlOffset = $('html').offset();
+        var headerOffset = $('header').offset();
+        var $suggestions = this.$scope().find('.suggestions');
+        var suggestionsOffset = $suggestions.offset();
+        var height = htmlOffset.height - suggestionsOffset.top - headerOffset.height;
+        $suggestions.css('height', height);
+    }
+
     show(): Q.Promise<void> {
         return Templating.home.header().then((tpl) => {
             this.header.update(tpl);
-            super.showContainer();
+            super.showView();
+            this.adaptSuggestionsHeight();
         });
     }
 
     hide(): Q.Promise<void> {
-        return null;
+        this.$scope().addClass('hidden')
+        return Q<void>(null);
     }
 
     suggest(suggestions: seq.IList<any>): Q.Promise<void> {
@@ -89,36 +101,52 @@ class Home extends View implements IView {
         return true;
     }
 
+    onStationBlur(e: Event): boolean {
+        var $input = $(e.currentTarget);
+        var $suggestions = this.$scope().find('.suggestions');
+        var name = this.$scope().find('.suggestions li:first-child').text();
+        $input.val(name);
+        $suggestions.attr('data-name', name);
+        this.onceSelected(name);
+        return true;
+    }
+
     clearSuggestions(): void {
         var $scope = this.$scope();
         $scope.find('.stations').removeClass('searching');
         $scope.find('.suggestions').empty();
     }
 
-    onSuggestionSelected(e: Event): boolean {
-        var $suggestion = $(e.currentTarget);
-        var $suggestions = $suggestion.parent();
-
+    onceSelected(name: string): void {
+        var $suggestions = this.$scope().find('.suggestions');
         if($suggestions.is('.start')) {
-            var name = $suggestion.data('name');
-            $suggestions.data('start', name);
+            $suggestions.attr('data-start', name);
             var $start = this.$scope().find('[name=start]');
             $start.val(name);
             $start.siblings('[name=end]').get(0).focus();
             this.clearSuggestions();
         } else if($suggestions.is('.end')) {
-            var name = $suggestion.data('name');
-            $suggestions.data('end', name);
+            $suggestions.attr('data-end', name);
             this.$scope().find('[name=end]').val(name);
             this.clearSuggestions();
         }
+        this.lookForTrip();
+    }
 
-        opt.Option<any>($suggestions.data('start')).foreach((start) => {
-            opt.Option<any>($suggestions.data('end')).foreach((end) => {
+    onSuggestionSelected(e: Event): boolean {
+        var $suggestion = $(e.currentTarget);
+        var name = $suggestion.attr('data-name');
+        this.onceSelected(name);
+        return true;
+    }
+
+    lookForTrip(): void {
+        var $suggestions = this.$scope().find('.suggestions');
+        opt.Option<any>($suggestions.attr('data-start')).foreach((start) => {
+            opt.Option<any>($suggestions.attr('data-end')).foreach((end) => {
                 App.navigateToTimetable(start, end);
             });
         });
-        return true;
     }
 
     onDaySelected(e: Event): boolean {

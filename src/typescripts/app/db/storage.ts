@@ -19,7 +19,7 @@ export function installDB(): Q.Promise<void> {
                     maybeStops.map((stops) => {
                         maybeTrips.map((trips) => {
                             STOPS = new opt.Some(stops.value);
-                            TRIPS = new opt.Some(trips.value);
+                            TRIPS = new opt.Some(trips.value.data);
                             d.resolve(null);
                         });
                     });
@@ -108,7 +108,7 @@ export function tripsByIds(ids: seq.IList<string>, direction: string): Q.Promise
 }
 
 export function getTripDirection(startId: string, stopId: string, tripId: string): Q.Promise<string> {
-
+    console.log(startId, stopId, tripId)
     var direction = (trip: any) => {
         var stationIds = seq.List.apply(null, trip.stopTimes).collect((stopTime) => {
             if(stopTime.stop.id == startId || stopTime.stop.id == stopId) {
