@@ -1,4 +1,5 @@
 /// <reference path='../../dts/Q.d.ts'/>
+/// <reference path='../../dts/moment.d.ts'/>
 
 import opt = require('lib/immutable/Option');
 import seq = require('lib/immutable/List');
@@ -59,7 +60,7 @@ export class Trip {
 export class StopTime {
 
     public static formatTime(dateAsString: string): string {
-        var date = new Date(dateAsString);
-        return date.getHours() + ':' + date.getMinutes();
+        var date = moment(dateAsString);
+        return date.format('hh:mm:ss')
     }
 }

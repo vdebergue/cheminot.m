@@ -33,3 +33,4 @@ platforms/ios/!default.xcworkspace
 platforms/ios/xcuserdata
 platforms/ios/profile
 platforms/ios/*.moved-aside
+component.json

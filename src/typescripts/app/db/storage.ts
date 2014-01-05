@@ -13,42 +13,43 @@ export function installDB(): Q.Promise<void> {
     utils.log('Installing DB...');
     var d = Q.defer<any>();
     if(STOPS.isEmpty()) {
-        IndexedDB.get('cache', 'by_key', 'treeStops').then((maybeStops) => {
-            IndexedDB.get('cache', 'by_key', 'trips').then((maybeTrips) => {
-                if(maybeStops.isDefined() && maybeTrips.isDefined()) {
-                    maybeStops.map((stops) => {
-                        maybeTrips.map((trips) => {
-                            STOPS = new opt.Some(stops.value);
-                            TRIPS = new opt.Some(trips.value.data);
-                            d.resolve(null);
+        clearDatabase().then(() => {
+            IndexedDB.get('cache', 'by_key', 'treeStops').then((maybeStops) => {
+                IndexedDB.get('cache', 'by_key', 'trips').then((maybeTrips) => {
+                    if(maybeStops.isDefined() && maybeTrips.isDefined()) {
+                        maybeStops.map((stops) => {
+                            maybeTrips.map((trips) => {
+                                STOPS = new opt.Some(stops.value);
+                                TRIPS = new opt.Some(trips.value.data);
+                                d.resolve(null);
+                            });
                         });
-                    });
-                } else {
-                    utils.log('Getting it from API !');
-                    Api.db().then((db) => {
-                        utils.log('DONE !');
-                        STOPS = new opt.Some(db.treeStops);
-                        TRIPS = new opt.Some(db.trips.data);
-                        clearDatabase().then(() => {
-                            return utils.measureF(() => persistStops(db.treeStops), 'persistStops');
-                        }).then(() => {
-                            return utils.measureF(() => persistTrips(db.trips), 'persistTrips')
+                    } else {
+                        utils.log('Getting it from API !');
+                        utils.measureF(() => Api.db(), 'fetchApi').then((db) => {
+                            STOPS = new opt.Some(db.treeStops);
+                            TRIPS = new opt.Some(db.trips.data);
+                            return clearDatabase().then(() => {
+                                return utils.measureF(() => persistStops(db.treeStops), 'persistStops');
+                            }).then(() => {
+                                return utils.measureF(() => persistTrips(db.trips), 'persistTrips')
+                            }).then(() => {
+                                d.resolve(null);
+                            });
                         }).fail((reason) => {
                             utils.error(JSON.stringify(reason));
+                            d.reject(reason);
                         });
-                    }).fail((reason) => {
-                        utils.error(JSON.stringify(reason));
-                        d.reject(reason);
-                    });
-                }
+                    }
+                }).fail((reason) => {
+                    utils.error(JSON.stringify(reason));
+                    d.reject(reason);
+                });
             }).fail((reason) => {
+                $('body').html(JSON.stringify(reason))
                 utils.error(JSON.stringify(reason));
                 d.reject(reason);
             });
-        }).fail((reason) => {
-            $('body').html(JSON.stringify(reason))
-            utils.error(JSON.stringify(reason));
-            d.reject(reason);
         });
     } else {
         d.resolve(null);

@@ -72,7 +72,7 @@ class Timetable extends View implements IView {
                 };
             });
             var dom = tmpl(t, { schedules: data });
-            $scope.find('.schedules').html(dom);
+            $scope.append(dom);
         });
     }
 }

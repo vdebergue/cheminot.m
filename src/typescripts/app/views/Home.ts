@@ -47,6 +47,10 @@ class Home extends View implements IView {
         $suggestions.css('height', height);
     }
 
+    reset(): void {
+        //Do nothing!
+    }
+
     show(): Q.Promise<void> {
         return Templating.home.header().then((tpl) => {
             this.header.update(tpl);

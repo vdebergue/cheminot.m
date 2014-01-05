@@ -7,5 +7,6 @@ interface IView {
     setup(): Q.Promise<void>;
     hide(): Q.Promise<void>;
     show(): Q.Promise<void>;
+    reset(): void;
     bindEvents(): void;
 }
