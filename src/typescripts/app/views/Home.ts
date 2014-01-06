@@ -47,10 +47,10 @@ class Home extends View implements IView {
 
     bindEvents(): void {
         super.bindEvent('keyup', 'input[name=start], input[name=end]', this.onStationKeyUp);
-        //super.bindEvent('blur', 'input[name=start], input[name=end]', this.onStationBlur);
-        //super.bindEvent('click', '.suggestions > li', this.onSuggestionSelected);
-        //super.bindEvent('tap', 'button', this.onDaySelected);
-        //this.header.bindEvent('click', '.when button:not(.active)', this.onButtonClick)
+        super.bindEvent('blur', 'input[name=start], input[name=end]', this.onStationBlur);
+        super.bindEvent('focus', 'input[name=start], input[name=end]', this.onStationFocus);
+        super.bindEvent('tap', '.suggestions > li', this.onSuggestionSelected);
+        super.bindEvent('tap', 'button', this.onDaySelected);
     }
 
     reset(): void {
@@ -89,10 +89,6 @@ class Home extends View implements IView {
         });
     }
 
-    onButtonClick(e: Event): boolean {
-        return true;
-    }
-
     onStationKeyUp(e: Event): boolean {
         var stopsTree = Storage.stops();
         var $scope = super.$scope();
@@ -101,24 +97,9 @@ class Home extends View implements IView {
         if(term.trim() === '') {
             this.clearSuggestions();
         } else {
-            if($input.is('[name=start]')) {
-                $scope.find('.suggestions').removeClass('end').addClass('start');
-            } else {
-                $scope.find('.suggestions').removeClass('start').addClass('end');
-            }
             var founds = TernaryTree.search(term.toLowerCase(), stopsTree, 20);
             this.suggest(founds);
         }
-        return true;
-    }
-
-    onStationBlur(e: Event): boolean {
-        var $input = $(e.currentTarget);
-        var $suggestions = this.$scope().find('.suggestions');
-        var name = this.$scope().find('.suggestions li:first-child').text();
-        $input.val(name);
-        $suggestions.attr('data-name', name);
-        this.onceSelected(name);
         return true;
     }
 
@@ -129,6 +110,7 @@ class Home extends View implements IView {
     }
 
     onceSelected(name: string): void {
+        console.log('onceSelected');
         var $suggestions = this.$scope().find('.suggestions');
         if($suggestions.is('.start')) {
             $suggestions.attr('data-start', name);
@@ -144,6 +126,34 @@ class Home extends View implements IView {
         this.lookForTrip();
     }
 
+    onStationFocus(e: Event): boolean {
+        var $input = $(e.currentTarget);
+        var $suggestions = this.$scope().find('.suggestions');
+        if($input.is('[name=start]')) {
+            $suggestions.removeClass('end').addClass('start');
+        } else {
+            $suggestions.removeClass('start').addClass('end');
+        }
+        return true;
+    }
+
+    onStationBlur(e: Event): boolean {
+        var $input = $(e.currentTarget);
+        var $suggestions = this.$scope().find('.suggestions');
+        var justSelected = false;
+        if($suggestions.is('.start')) {
+            justSelected = !!$suggestions.attr('data-start');
+        } else if($suggestions.is('.end')) {
+            justSelected = !!$suggestions.attr('data-end');
+        }
+        if(!justSelected) {
+            var name = this.$scope().find('.suggestions li:first-child').text();
+            $input.val(name);
+            this.onceSelected(name);
+        }
+        return true;
+    }
+
     onSuggestionSelected(e: Event): boolean {
         var $suggestion = $(e.currentTarget);
         var name = $suggestion.attr('data-name');
@@ -155,7 +165,8 @@ class Home extends View implements IView {
         var $suggestions = this.$scope().find('.suggestions');
         opt.Option<any>($suggestions.attr('data-start')).foreach((start) => {
             opt.Option<any>($suggestions.attr('data-end')).foreach((end) => {
-                App.navigateToTimetable(start, end);
+                //App.navigateToTimetable(start, end);
+                console.log('navigateTo', start, end);
             });
         });
     }
