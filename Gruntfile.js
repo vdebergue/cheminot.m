@@ -34,7 +34,7 @@ module.exports = function(grunt) {
                     import: []
                 },
                 files: {
-                    'www/assets/stylesheets/app/main.css': ['src/stylus/**/*.styl']
+                    'www/assets/stylesheets/app/main.css': ['src/stylus/main.styl']
                 }
             },
             prod: {
