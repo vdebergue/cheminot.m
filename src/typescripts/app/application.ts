@@ -23,17 +23,6 @@ function viewsBut(views: seq.IList<IView>, exclude: string): seq.IList<IView> {
     });
 }
 
-function initViews(views: seq.IList<IView>): Q.Promise<seq.IList<IView>> {
-    var f = (view: IView) => {
-        return view.setup().then(() => {
-            return view;
-        });
-    };
-    return utils.sequencePromises<IView>(views.asArray(), f).then((views) => {
-        return seq.List.apply(null, views);
-    });
-}
-
 export function init(views: seq.IList<IView>) {
 
     function ensureInitApp(viewName: string): Q.Promise<void> {
@@ -48,8 +37,8 @@ export function init(views: seq.IList<IView>) {
             p = Q<void>(null);
         }
         return p.then(() => {
-            view(views, viewName).reset();
             hideOtherViews(viewName);
+            return view(views, viewName).setup();
         });
     }
 
@@ -59,51 +48,49 @@ export function init(views: seq.IList<IView>) {
         });
     }
 
-    initViews(views).then(() => {
-        Path.map('#/').to(() => {
-            ensureInitApp('home').then(() => {
-                view(views, 'home').show();
-            });
+    Path.map('#/').to(() => {
+        ensureInitApp('home').then(() => {
+            view(views, 'home').show();
         });
-
-        Path.map('#/timetable/:start/:end').to(function() {
-            ensureInitApp('timetable').then(() => {
-                var start = this.params['start'];
-                var end = this.params['end'];
-                Planner.schedulesFor(start, end).then((maybeSchedules) => {
-                    maybeSchedules.map((schedules) => {
-                        var timetableView = <Timetable> view(views, 'timetable');
-                        timetableView.buildWith(schedules);
-                        timetableView.show();
-                    }).getOrElse(() => {
-                    });
-                });
-            });
-        });
-
-        Path.map('#/trip/:id').to(function() {
-            ensureInitApp('trip').then(() => {
-                var tripId = this.params['id'];
-                Storage.tripById(tripId).then((maybeTrip) => {
-                    maybeTrip.map((trip) => {
-                        var tripView = <Trip> view(views, 'trip');
-                        tripView.buildWith(trip);
-                        tripView.show();
-                    }).getOrElse(() => {
-                    });
-                });
-            });
-        });
-
-        Path.rescue(() => {
-            navigate('/');
-        });
-
-        Path.listen();
-        if(!window.location.hash) {
-            navigate('/');
-        }
     });
+
+    Path.map('#/timetable/:start/:end').to(function() {
+        ensureInitApp('timetable').then(() => {
+            var start = this.params['start'];
+            var end = this.params['end'];
+            Planner.schedulesFor(start, end).then((maybeSchedules) => {
+                maybeSchedules.map((schedules) => {
+                    var timetableView = <Timetable> view(views, 'timetable');
+                    timetableView.buildWith(schedules);
+                    timetableView.show();
+                }).getOrElse(() => {
+                });
+            });
+        });
+    });
+
+    Path.map('#/trip/:id').to(function() {
+        ensureInitApp('trip').then(() => {
+            var tripId = this.params['id'];
+            Storage.tripById(tripId).then((maybeTrip) => {
+                maybeTrip.map((trip) => {
+                    var tripView = <Trip> view(views, 'trip');
+                    tripView.buildWith(trip);
+                    tripView.show();
+                }).getOrElse(() => {
+                });
+            });
+        });
+    });
+
+    Path.rescue(() => {
+        navigate('/');
+    });
+
+    Path.listen();
+    if(!window.location.hash) {
+        navigate('/');
+    }
 }
 
 function navigate(path: string): boolean {

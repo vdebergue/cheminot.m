@@ -22,17 +22,14 @@ class View {
         return Layout.setup();
     }
 
-    reset(): void {
-        this.$scope().empty();
-    }
-
     ensure(tmpl: () => Q.Promise<string>): Q.Promise<void> {
         return this.ensureLayout().then(() => {
             return tmpl().then((tmpl) => {
                 if(!this.exists()) {
                     this.$container().prepend(tmpl);
                 } else {
-                    this.$scope().empty();
+                    this.$scope().remove();
+                    this.$container().prepend(tmpl);
                 }
             });
         });

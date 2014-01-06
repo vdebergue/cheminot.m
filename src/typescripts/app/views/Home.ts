@@ -54,10 +54,6 @@ class Home extends View implements IView {
         super.bindEvent('touchstart', '.suggestions', this.onScrollingStops);
     }
 
-    reset(): void {
-        //Do nothing!
-    }
-
     show(): Q.Promise<void> {
         return Templating.home.header().then((tpl) => {
             this.header.update(tpl);
@@ -111,7 +107,6 @@ class Home extends View implements IView {
     }
 
     onceSelected(name: string): void {
-        console.log('onceSelected');
         var $suggestions = this.$scope().find('.suggestions');
         if($suggestions.is('.start')) {
             $suggestions.attr('data-start', name);
@@ -149,8 +144,7 @@ class Home extends View implements IView {
         var $suggestions = this.$scope().find('.suggestions');
         opt.Option<any>($suggestions.attr('data-start')).foreach((start) => {
             opt.Option<any>($suggestions.attr('data-end')).foreach((end) => {
-                //App.navigateToTimetable(start, end);
-                console.log('navigateTo', start, end);
+                App.navigateToTimetable(start, end);
             });
         });
     }
