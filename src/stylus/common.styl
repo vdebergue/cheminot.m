@@ -14,6 +14,10 @@ html {
     overflow: hidden
 }
 
+body {
+    height: 100%
+}
+
 h1 {
     font-size-title()
     font-family-medium()
@@ -38,25 +42,22 @@ input {
     }
 }
 
-header {
+.container {
     padding: 8px
 }
 
-.container {
-    padding: 17px 8px 8px 8px
-}
-
 header {
-    position: fixed
+    z-index: 2
+    position: absolute
     top: 0
     left: 0
-    right: 0
+    width: 100%
     height: 44px
     background: blue
     color: #FFF
     box-sizing: border-box
+    padding: 8px
     padding-top: 13px;
-    padding-left: 8px
     
     h1 {
         margin: auto
@@ -65,13 +66,17 @@ header {
     
     .back {
         top: 8px
-        position: absolute;
+        position: absolute
     }
 }
 
-.view {
-    padding-top: 44px
+#viewport {
+    position: absolute
+    width: 100%
+    top: 44px
+}
 
+.view {
     &.hidden {
         display: none
     }

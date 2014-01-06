@@ -12,12 +12,14 @@ import utils = require('../utils/utils')
 import TernaryTree = require('../utils/ternaryTree');
 
 declare var tmpl;
+declare var IScroll;
 
 export = Home;
 
 class Home extends View implements IView {
 
     name: string;
+    myIScroll: any;
 
     constructor(container: string, scope: string) {
         this.name = 'home';
@@ -27,24 +29,28 @@ class Home extends View implements IView {
     setup(): Q.Promise<void> {
         return super.ensure(Templating.home.layout).then(() => {
             this.bindEvents();
+            this.initIScroll();
         });
     }
 
-    bindEvents(): void {
-        super.bindEvent('keyup', 'input[name=start], input[name=end]', this.onStationKeyUp);
-        super.bindEvent('blur', 'input[name=start], input[name=end]', this.onStationBlur);
-        super.bindEvent('click', '.suggestions > li', this.onSuggestionSelected);
-        super.bindEvent('tap', 'button', this.onDaySelected);
-        this.header.bindEvent('click', '.when button:not(.active)', this.onButtonClick)
+    initIScroll(): void {
+        this.myIScroll = new IScroll('#wrapper');
     }
 
     adaptSuggestionsHeight(): void {
         var htmlOffset = $('html').offset();
         var headerOffset = $('header').offset();
-        var $suggestions = this.$scope().find('.suggestions');
-        var suggestionsOffset = $suggestions.offset();
-        var height = htmlOffset.height - suggestionsOffset.top - headerOffset.height;
-        $suggestions.css('height', height);
+        var searchOffset = this.$scope().find('.search').offset();
+        var height = htmlOffset.height - headerOffset.height - searchOffset.height;
+        $('.stations').css('height', height);
+    }
+
+    bindEvents(): void {
+        super.bindEvent('keyup', 'input[name=start], input[name=end]', this.onStationKeyUp);
+        //super.bindEvent('blur', 'input[name=start], input[name=end]', this.onStationBlur);
+        //super.bindEvent('click', '.suggestions > li', this.onSuggestionSelected);
+        //super.bindEvent('tap', 'button', this.onDaySelected);
+        //this.header.bindEvent('click', '.when button:not(.active)', this.onButtonClick)
     }
 
     reset(): void {
@@ -79,6 +85,7 @@ class Home extends View implements IView {
             });
             var dom = tmpl(t, { stations: data });
             $suggestions.html(dom);
+            this.myIScroll.refresh();
         });
     }
 

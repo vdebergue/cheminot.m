@@ -28,15 +28,25 @@
             margin: 0 auto
             color: blue
         }
-
-        ul {
-            overflow-y: scroll
-        }
     }
 
     .stations.searching {
+        position: relative
+
         h2 {
             display: block
+        }
+    }
+
+    #wrapper {
+        overflow: hidden
+        position: absolute
+        width: 100%
+        height: 100%
+
+        .suggestions {
+            position: absolute
+            width: 100%
         }
     }
 }

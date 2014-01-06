@@ -3,7 +3,7 @@
 import seq = require('lib/immutable/List');
 import opt = require('lib/immutable/Option');
 
-var DEBUG: boolean = true;
+var DEBUG: boolean = false;
 
 export function flattenOptionPromise<T>(maybePromise: opt.IOption<Q.Promise<T>>): Q.Promise<opt.IOption<T>> {
     return maybePromise.map((p) => {

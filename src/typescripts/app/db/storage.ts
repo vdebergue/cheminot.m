@@ -13,7 +13,7 @@ export function installDB(): Q.Promise<void> {
     utils.log('Installing DB...');
     var d = Q.defer<any>();
     if(STOPS.isEmpty()) {
-        clearDatabase().then(() => {
+        //clearDatabase().then(() => {
             IndexedDB.get('cache', 'by_key', 'treeStops').then((maybeStops) => {
                 IndexedDB.get('cache', 'by_key', 'trips').then((maybeTrips) => {
                     if(maybeStops.isDefined() && maybeTrips.isDefined()) {
@@ -50,7 +50,7 @@ export function installDB(): Q.Promise<void> {
                 utils.error(JSON.stringify(reason));
                 d.reject(reason);
             });
-        });
+        //});
     } else {
         d.resolve(null);
     }

@@ -30,20 +30,10 @@ class Timetable extends View implements IView {
         super.bindEvent('click', '.schedules > li', this.onScheduleSelected);
     }
 
-    adaptSchedulesHeight(): void {
-        var htmlOffset = $('html').offset();
-        var headerOffset = $('header').offset();
-        var $schedules = this.$scope().find('.schedules');
-        var schedulesOffset = $schedules.offset();
-        var height = htmlOffset.height - schedulesOffset.top - headerOffset.height;
-        $schedules.css('height', height);
-    }
-
     show(): Q.Promise<void> {
         return Templating.timetable.header().then((tpl) => {
             this.header.update(tpl);
             super.showView();
-            this.adaptSchedulesHeight();
         });
     }
 
