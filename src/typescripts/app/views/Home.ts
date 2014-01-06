@@ -40,17 +40,18 @@ class Home extends View implements IView {
     adaptSuggestionsHeight(): void {
         var htmlOffset = $('html').offset();
         var headerOffset = $('header').offset();
-        var searchOffset = this.$scope().find('.search').offset();
-        var height = htmlOffset.height - headerOffset.height - searchOffset.height;
+        var viewOffset = $('#home').offset();
+        var titleHeight = 44;
+        var height = htmlOffset.height - headerOffset.height - viewOffset.height - titleHeight;
         $('.stations').css('height', height);
     }
 
     bindEvents(): void {
         super.bindEvent('keyup', 'input[name=start], input[name=end]', this.onStationKeyUp);
-        super.bindEvent('blur', 'input[name=start], input[name=end]', this.onStationBlur);
         super.bindEvent('focus', 'input[name=start], input[name=end]', this.onStationFocus);
         super.bindEvent('tap', '.suggestions > li', this.onSuggestionSelected);
         super.bindEvent('tap', 'button', this.onDaySelected);
+        super.bindEvent('touchstart', '.suggestions', this.onScrollingStops);
     }
 
     reset(): void {
@@ -137,23 +138,6 @@ class Home extends View implements IView {
         return true;
     }
 
-    onStationBlur(e: Event): boolean {
-        var $input = $(e.currentTarget);
-        var $suggestions = this.$scope().find('.suggestions');
-        var justSelected = false;
-        if($suggestions.is('.start')) {
-            justSelected = !!$suggestions.attr('data-start');
-        } else if($suggestions.is('.end')) {
-            justSelected = !!$suggestions.attr('data-end');
-        }
-        if(!justSelected) {
-            var name = this.$scope().find('.suggestions li:first-child').text();
-            $input.val(name);
-            this.onceSelected(name);
-        }
-        return true;
-    }
-
     onSuggestionSelected(e: Event): boolean {
         var $suggestion = $(e.currentTarget);
         var name = $suggestion.attr('data-name');
@@ -169,6 +153,11 @@ class Home extends View implements IView {
                 console.log('navigateTo', start, end);
             });
         });
+    }
+
+    onScrollingStops(e: Event): boolean {
+        this.$scope().find('input[name=start], input[name=end]').blur();
+        return true;
     }
 
     onDaySelected(e: Event): boolean {

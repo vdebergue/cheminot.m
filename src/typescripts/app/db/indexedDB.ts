@@ -21,7 +21,7 @@ export function db(): Q.Promise<any> {
         d.resolve(request.result);
     }
     request.onerror = () => {
-        d.resolve('Failed to get indexedDB');
+        d.reject('Failed to get indexedDB');
     }
     return d.promise;
 }
