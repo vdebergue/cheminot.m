@@ -8,12 +8,14 @@ import Templating = require('./templating')
 import planner = require('../models/Planner');
 
 declare var tmpl:any;
+declare var IScroll:any;
 
 export = Timetable;
 
 class Timetable extends View implements IView {
 
     name: string;
+    myIScroll: any;
 
     constructor(container: string, scope: string) {
         this.name = 'timetable';
@@ -26,6 +28,19 @@ class Timetable extends View implements IView {
         });
     }
 
+    initIScroll(): void {
+        this.myIScroll = new IScroll('#timetable #wrapper');
+    }
+
+    adaptSuggestionsHeight(): void {
+        var $scope = this.$scope();
+        var htmlOffset = $('html').offset();
+        var headerOffset = $('header').offset();
+        var viewOffset = $scope.offset();
+        var height = htmlOffset.height - headerOffset.height - viewOffset.height;
+        $scope.find('.schedules').css('height', height);
+    }
+
     bindEvents(): void {
         super.bindEvent('tap', '.schedules > li', this.onScheduleSelected);
     }
@@ -34,6 +49,8 @@ class Timetable extends View implements IView {
         return Templating.timetable.header().then((tpl) => {
             this.header.update(tpl);
             super.showView();
+            this.adaptSuggestionsHeight();
+            this.initIScroll();
         });
     }
 
@@ -62,7 +79,7 @@ class Timetable extends View implements IView {
                 };
             });
             var dom = tmpl(t, { schedules: data });
-            $scope.append(dom);
+            $scope.find('.schedules ul').html(dom);
         });
     }
 }

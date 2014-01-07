@@ -59,6 +59,7 @@ export function init(views: seq.IList<IView>) {
             var start = this.params['start'];
             var end = this.params['end'];
             Planner.schedulesFor(start, end).then((maybeSchedules) => {
+                console.log(maybeSchedules);
                 maybeSchedules.map((schedules) => {
                     var timetableView = <Timetable> view(views, 'timetable');
                     timetableView.buildWith(schedules);
@@ -66,6 +67,8 @@ export function init(views: seq.IList<IView>) {
                 }).getOrElse(() => {
                 });
             });
+        }).fail((reason) => {
+            console.log(reason);
         });
     });
 

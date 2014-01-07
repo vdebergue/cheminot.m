@@ -3,7 +3,30 @@
 
 #timetable {
     h2 {
-        font-size: font-size-title()
+        padding-top: 13px
+        padding-bottom: 13px
+        box-sizing: border-box
+        font-size-title()
+        width: 100%
+        margin: 0 auto
         color: blue
+        border-bottom: 1px solid grey-light
+        text-align: center
+    }
+
+    .schedules {
+        position: absolute
+        width: 100%
+        top: 44px
+        overflow: hidden
+
+        ul {
+            position: absolute
+            width: 100%
+
+            > li {
+                text-align: center
+            }
+        }
     }
 }

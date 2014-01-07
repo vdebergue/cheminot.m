@@ -414,6 +414,8 @@ interface ZeptoCollection {
 
     blur(): void;
 
+    selector: string;
+
 	/**
 	* Modify the current collection by adding the results of performing the CSS selector on the whole document, or, if context is given, just inside context elements.
 	* @param selector

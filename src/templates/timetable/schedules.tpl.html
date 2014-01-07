@@ -1,8 +1,6 @@
-<ul class="schedules list">
-  <% schedules.forEach(function(point) { %>
-  <li data-trip="<%= point.tripId %>">
-    <span class="arrival"><%= point.arrival %></span>
-    <span class="departure"><%= point.departure %></span>
-  </li>
-  <% }); %>
-</ul>
+<% schedules.forEach(function(point) { %>
+<li data-trip="<%= point.tripId %>">
+  <span class="arrival"><%= point.arrival %></span>
+  <span class="departure"><%= point.departure %></span>
+</li>
+<% }); %>

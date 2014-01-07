@@ -29,21 +29,21 @@ class Home extends View implements IView {
     setup(): Q.Promise<void> {
         return super.ensure(Templating.home.layout).then(() => {
             this.bindEvents();
-            this.initIScroll();
         });
     }
 
     initIScroll(): void {
-        this.myIScroll = new IScroll('#wrapper');
+        this.myIScroll = new IScroll('#home #wrapper');
     }
 
     adaptSuggestionsHeight(): void {
+        var $scope = this.$scope();
         var htmlOffset = $('html').offset();
         var headerOffset = $('header').offset();
-        var viewOffset = $('#home').offset();
+        var viewOffset = $scope.offset();
         var titleHeight = 44;
         var height = htmlOffset.height - headerOffset.height - viewOffset.height - titleHeight;
-        $('.stations').css('height', height);
+        $scope.find('.stations').css('height', height);
     }
 
     bindEvents(): void {
@@ -59,6 +59,7 @@ class Home extends View implements IView {
             this.header.update(tpl);
             super.showView();
             this.adaptSuggestionsHeight();
+            this.initIScroll();
         });
     }
 
