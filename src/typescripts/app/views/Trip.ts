@@ -8,12 +8,14 @@ import planner = require('../models/Planner');
 import seq = require('lib/immutable/List');
 
 declare var tmpl:any;
+declare var IScroll:any;
 
 export = Trip;
 
 class Trip extends View implements IView {
 
     name: string;
+    myIScroll: any;
 
     constructor(container: string, scope: string) {
         this.name = 'trip';
@@ -26,6 +28,20 @@ class Trip extends View implements IView {
         });
     }
 
+    adaptTripHeight(): void {
+        var $scope = this.$scope();
+        var htmlOffset = $('html').offset();
+        var headerOffset = $('header').offset();
+        var viewOffset = $scope.offset();
+        var titleOffset = 44;
+        var height = htmlOffset.height - headerOffset.height - viewOffset.height - titleOffset;
+        $scope.find('#wrapper').css('height', height);
+    }
+
+    initIScroll(): void {
+        this.myIScroll = new IScroll('#trip #wrapper');
+    }
+
     bindEvents(): void {
     }
 
@@ -33,14 +49,12 @@ class Trip extends View implements IView {
         return Templating.trip.header().then((tpl) => {
             this.header.update(tpl);
             super.showView();
+            this.adaptTripHeight();
+            this.initIScroll();
         });
     }
 
-    hide(): Q.Promise<void> {
-        return null;
-    }
-
-     buildWith(trip: any): Q.Promise<void> {
+    buildWith(trip: any): Q.Promise<void> {
         return Templating.trip.details().then((t) => {
             var $scope = this.$scope();
             var stops = seq.List.apply(null, trip.stopTimes).map((stopTime) => {
@@ -56,7 +70,8 @@ class Trip extends View implements IView {
                     stops: stops
                 }
             });
-            $scope.append(dom);
+            $scope.find('.stops').html(dom);
+            this.myIScroll.refresh();
         });
     }
 }

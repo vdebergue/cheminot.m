@@ -1,9 +1,7 @@
-<ul id="<%= trip.id %>">
-  <% trip.stops.foreach(function(stop) { %>
-  <li>
-    <%= stop.name %>
-    <%= stop.arrival %>
-    <%= stop.departure %>
-  </li>
-  <% }); %>
-</dl>
+<% trip.stops.foreach(function(stop) { %>
+<li>
+  <%= stop.name %>
+  <%= stop.arrival %>
+  <%= stop.departure %>
+</li>
+<% }); %>

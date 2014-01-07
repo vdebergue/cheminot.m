@@ -25,11 +25,10 @@ class Timetable extends View implements IView {
     setup(): Q.Promise<void> {
         return super.ensure(Templating.timetable.layout).then(() => {
             this.bindEvents();
-            this.adaptSuggestionsHeight();
         });
     }
 
-    adaptSuggestionsHeight(): void {
+    adaptTimeTableHeight(): void {
         var $scope = this.$scope();
         var htmlOffset = $('html').offset();
         var headerOffset = $('header').offset();
@@ -51,16 +50,12 @@ class Timetable extends View implements IView {
         return Templating.timetable.header().then((tpl) => {
             this.header.update(tpl);
             super.showView();
+            this.adaptTimeTableHeight();
             this.initIScroll();
         });
     }
 
-    hide(): Q.Promise<void> {
-        this.$scope().addClass('hidden')
-        return Q<void>(null);
-    }
-
-   onScheduleSelected(e: Event): boolean {
+    onScheduleSelected(e: Event): boolean {
         var $schedule = $(e.currentTarget);
         var tripId = $schedule.data('trip');
         App.navigateToTrip(tripId);

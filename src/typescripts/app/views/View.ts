@@ -47,6 +47,11 @@ class View {
         this.$scope().removeClass('hidden');
     }
 
+    hide(): Q.Promise<void> {
+        this.$scope().addClass('hidden')
+        return Q<void>(null);
+    }
+
     bindEvent(type: string, selector: string, fn: (e: Event) => boolean): void {
         var fnWithContext = <any>$.proxy(fn, this);
         this.$scope().on(type, selector, fnWithContext);
