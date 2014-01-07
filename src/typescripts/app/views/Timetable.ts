@@ -5,7 +5,10 @@ import App = require('../application');
 import IView = require('./IView');
 import View = require('./View');
 import Templating = require('./templating')
+import Storage = require('../db/storage');
 import planner = require('../models/Planner');
+import utils = require('../utils/utils');
+import opt = require('../lib/immutable/Option');
 
 declare var tmpl:any;
 declare var IScroll:any;
@@ -62,21 +65,39 @@ class Timetable extends View implements IView {
         return false;
     }
 
-    buildWith(schedules: planner.Schedules): Q.Promise<void> {
+    buildWith(when: Date, schedules: planner.Schedules): Q.Promise<void> {
         return Templating.timetable.schedules().then((t) => {
             var $scope = this.$scope();
-            var data = schedules.stopTimes.asArray().sort((a, b) => {
-                return a.departure - b.departure;
-            }).map((stopTime) => {
-                return {
-                    departure: planner.StopTime.formatTime(stopTime.departure),
-                    arrival: planner.StopTime.formatTime(stopTime.arrival),
-                    tripId: stopTime.tripId,
-                };
+            var tripIds = schedules.stopTimes.map((stopTime) => {
+                return stopTime.tripId;
             });
-            var dom = tmpl(t, { schedules: data });
-            $scope.find('.schedules').html(dom);
-            this.myIScroll.refresh();
+            Storage.tripsByIds(tripIds).then((trips) => {
+                var stopTimes = schedules.stopTimes.collect((stopTime) => {
+                    return trips.find((trip) => {
+                        return trip.id === stopTime.tripId;
+                    }).map((trip) => {
+                        return opt.Option(trip.service).filter(() => {
+                            return planner.Trip.isValidOn(trip, when)
+                        }).map(() => {
+                            return {
+                                timestamp: stopTime.departure,
+                                departure: planner.StopTime.formatTime(stopTime.departure),
+                                arrival: planner.StopTime.formatTime(stopTime.arrival),
+                                tripId: stopTime.tripId,
+                            };
+                        });
+                    }).getOrElse(() => {
+                        utils.oops('Unable to find service data for trip: ' + stopTime.tripId);
+                        return null;
+                    });
+                });
+                var sortedStopTimes = stopTimes.asArray().sort((a:any, b:any) => {
+                    return a.timestamp - b.timestamp;
+                });
+                var dom = tmpl(t, { schedules: sortedStopTimes });
+                $scope.find('.schedules').html(dom);
+                this.myIScroll.refresh();
+            });
         });
     }
 }

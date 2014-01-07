@@ -108,7 +108,7 @@ class Home extends View implements IView {
             $suggestions.attr('data-start', name);
             var $start = this.$scope().find('[name=start]');
             $start.val(name);
-            $start.siblings('[name=end]').get(0).focus();
+            $start.blur();
             this.clearSuggestions();
         } else if($suggestions.is('.end')) {
             $suggestions.attr('data-end', name);
@@ -136,11 +136,16 @@ class Home extends View implements IView {
         return true;
     }
 
+    when(): number {
+        var timestamp = this.$scope().find('.when .active').attr('data-date');
+        return parseInt(timestamp, 10);
+    }
+
     lookForTrip(): void {
         var $suggestions = this.$scope().find('.suggestions');
         opt.Option<any>($suggestions.attr('data-start')).foreach((start) => {
             opt.Option<any>($suggestions.attr('data-end')).foreach((end) => {
-                App.navigateToTimetable(start, end);
+                App.navigateToTimetable(start, end, this.when());
             });
         });
     }

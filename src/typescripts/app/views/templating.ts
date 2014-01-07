@@ -3,6 +3,8 @@
 
 import opt = require('../lib/immutable/Option');
 
+declare var tmpl:any;
+
 var paths = {
     layout: 'layout.tpl.html',
     home: {
@@ -48,7 +50,9 @@ export function layout(): Q.Promise<string> {
 
 export var home = {
     layout(): Q.Promise<string> {
-        return getTemplate('layout', opt.Option<string>('home'));
+        return getTemplate('layout', opt.Option<string>('home')).then((t) => {
+            return tmpl(t, {});
+        });
     },
     header(): Q.Promise<string> {
         return getTemplate('header', opt.Option<string>('home'));

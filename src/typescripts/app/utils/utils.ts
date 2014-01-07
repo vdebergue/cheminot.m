@@ -29,6 +29,10 @@ export function sequencePromises<T>(seq: Array<T>, f: (t: T) => Q.Promise<T>): Q
     }
 }
 
+export function oops(message: string): void {
+    throw new Error(message);
+}
+
 export function error<A>(message: A) {
     if(DEBUG) {
         if(isMobile()) {

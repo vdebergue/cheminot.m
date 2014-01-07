@@ -54,17 +54,20 @@ export function init(views: seq.IList<IView>) {
         });
     });
 
-    Path.map('#/timetable/:start/:end').to(function() {
+    Path.map('#/timetable/:start/:end/:when').to(function() {
         ensureInitApp('timetable').then(() => {
             var start = this.params['start'];
             var end = this.params['end'];
+            var when = parseInt(this.params['when'], 10);
             Planner.schedulesFor(start, end).then((maybeSchedules) => {
                 maybeSchedules.map((schedules) => {
                     var timetableView = <Timetable> view(views, 'timetable');
-                    timetableView.buildWith(schedules);
+                    timetableView.buildWith(new Date(when), schedules);
                     timetableView.show();
                 }).getOrElse(() => {
                 });
+            }).fail((reason) => {
+                console.log(reason);
             });
         });
     });
@@ -73,11 +76,10 @@ export function init(views: seq.IList<IView>) {
         ensureInitApp('trip').then(() => {
             var tripId = this.params['id'];
             Storage.tripById(tripId).then((maybeTrip) => {
-                maybeTrip.map((trip) => {
+                maybeTrip.foreach((trip) => {
                     var tripView = <Trip> view(views, 'trip');
                     tripView.buildWith(trip);
                     tripView.show();
-                }).getOrElse(() => {
                 });
             });
         });
@@ -111,6 +113,6 @@ export function navigateToTrip(tripId: string): void {
     navigate('/trip/' + tripId);
 }
 
-export function navigateToTimetable(start: string, end: string): void {
-    navigate('/timetable/' + start + '/' + end);
+export function navigateToTimetable(start: string, end: string, when: number): void {
+    navigate('/timetable/' + start + '/' + end + '/' + when);
 }

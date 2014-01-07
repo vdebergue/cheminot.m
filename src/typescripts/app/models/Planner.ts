@@ -21,7 +21,7 @@ export function schedulesFor(startName: string, endName: string): Q.Promise<opt.
                 var tripIds = array_intersect((id) => { return id; }, start.tripIds, end.tripIds);
                 var oneTripId = tripIds[0];
                 return Storage.getTripDirection(start.id, end.id, oneTripId).then((direction) => {
-                    return Storage.tripsByIds(seq.List.apply(null, tripIds), direction).then((trips) => {
+                    return Storage.tripsByIds(seq.List.apply(null, tripIds), new opt.Some(direction)).then((trips) => {
                         var stopTimes = trips.flatMap<any>((trip) => {
                             return seq.List.apply(null, trip.stopTimes).find((stopTime) => {
                                 return stopTime.stop.id === start.id;
@@ -46,21 +46,51 @@ export class Schedules {
 }
 
 export class Trip {
-    id: string;
-    service: any;
-    stopTimes: seq.IList<any>;
+    private static isInPeriod(startDate: Date, endDate: Date, when: Date): boolean {
+        var start = moment(startDate);
+        var end = moment(endDate);
+        return !start.isBefore(when) && !end.isAfter(when);
+    }
 
-    constructor(id: string, service: any, stopTimes: seq.IList<any>) {
-        this.id = id;
-        this.service = service;
-        this.stopTimes = stopTimes;
+    private static workToday(calendar: any, when: Date): boolean {
+        var dict = {
+            1: 'monday',
+            2: 'tuesday',
+            3: 'wednesday',
+            4: 'thursday',
+            5: 'friday',
+            6: 'saturday',
+            7: 'sunday'
+        };
+        return dict[when.getDay()] === '1';
+    }
+
+    private static isException(calendarDates: any, when: Date): boolean {
+        var exception = new Date(calendarDates.date);
+        var mwhen = moment(when);
+        if(mwhen.isSame(when, 'year') && mwhen.isSame(when, 'month') && mwhen.isSame(when, 'day')) {
+            return calendarDates.exceptionType === '2';
+        } else {
+            return false;
+        }
+    }
+
+    public static isValidOn(trip: any, when: Date): boolean {
+        var startDate = new Date(trip.service.calendar.startDate);
+        var endDate = new Date(trip.service.calendar.endDate);
+        var calendar = trip.service.calendar;
+        var calendarDates = trip.service.calendarDates;
+        if(Trip.isInPeriod(startDate, endDate, when)) {
+            return !Trip.workToday(calendar, when) && !Trip.isException(calendarDates, when);
+        } else {
+            return true;
+        }
     }
 }
 
 export class StopTime {
-
     public static formatTime(dateAsString: string): string {
         var date = moment(dateAsString);
-        return date.format('hh:mm:ss')
+        return date.format('HH:mm:ss')
     }
 }

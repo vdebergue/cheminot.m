@@ -100,16 +100,17 @@ export function tripById(id: string): Q.Promise<opt.IOption<any>> {
     return Q(opt.Option(trips()[id]));
 }
 
-export function tripsByIds(ids: seq.IList<string>, direction: string): Q.Promise<seq.IList<any>> {
+export function tripsByIds(ids: seq.IList<string>, direction: opt.IOption<string> = new opt.None<string>()): Q.Promise<seq.IList<any>> {
     return Q(ids.map((id) => {
         return opt.Option<any>(trips()[id]).filter((trip) => {
-            return trip.direction === direction;
+            return direction.isEmpty() || direction.exists((d) => {
+                return trip.direction === d;
+            });
         });
     }).flatten());
 }
 
 export function getTripDirection(startId: string, stopId: string, tripId: string): Q.Promise<string> {
-    console.log(startId, stopId, tripId)
     var direction = (trip: any) => {
         var stationIds = seq.List.apply(null, trip.stopTimes).collect((stopTime) => {
             if(stopTime.stop.id == startId || stopTime.stop.id == stopId) {
