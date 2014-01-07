@@ -29,6 +29,7 @@ class Home extends View implements IView {
     setup(): Q.Promise<void> {
         return super.ensure(Templating.home.layout).then(() => {
             this.bindEvents();
+            this.adaptSuggestionsHeight();
         });
     }
 
@@ -58,7 +59,6 @@ class Home extends View implements IView {
         return Templating.home.header().then((tpl) => {
             this.header.update(tpl);
             super.showView();
-            this.adaptSuggestionsHeight();
             this.initIScroll();
         });
     }

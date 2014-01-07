@@ -25,11 +25,8 @@ class Timetable extends View implements IView {
     setup(): Q.Promise<void> {
         return super.ensure(Templating.timetable.layout).then(() => {
             this.bindEvents();
+            this.adaptSuggestionsHeight();
         });
-    }
-
-    initIScroll(): void {
-        this.myIScroll = new IScroll('#timetable #wrapper');
     }
 
     adaptSuggestionsHeight(): void {
@@ -37,8 +34,13 @@ class Timetable extends View implements IView {
         var htmlOffset = $('html').offset();
         var headerOffset = $('header').offset();
         var viewOffset = $scope.offset();
-        var height = htmlOffset.height - headerOffset.height - viewOffset.height;
-        $scope.find('.schedules').css('height', height);
+        var titleOffset = 44;
+        var height = htmlOffset.height - headerOffset.height - viewOffset.height - titleOffset;
+        $scope.find('#wrapper').css('height', height);
+    }
+
+    initIScroll(): void {
+        this.myIScroll = new IScroll('#timetable #wrapper');
     }
 
     bindEvents(): void {
@@ -49,7 +51,6 @@ class Timetable extends View implements IView {
         return Templating.timetable.header().then((tpl) => {
             this.header.update(tpl);
             super.showView();
-            this.adaptSuggestionsHeight();
             this.initIScroll();
         });
     }
@@ -79,7 +80,8 @@ class Timetable extends View implements IView {
                 };
             });
             var dom = tmpl(t, { schedules: data });
-            $scope.find('.schedules ul').html(dom);
+            $scope.find('.schedules').html(dom);
+            this.myIScroll.refresh();
         });
     }
 }
