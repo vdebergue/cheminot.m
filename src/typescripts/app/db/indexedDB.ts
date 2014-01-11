@@ -8,7 +8,12 @@ var DB_NAME = 'cheminot';
 
 function createCacheStore(db: any): void {
     var store = db.createObjectStore('cache', { keyPath: 'key' });
-    store.createIndex("by_key", "key", { unique: true });
+    store.createIndex('by_key', 'key', { unique: true });
+}
+
+function createTripsStore(db: any): void {
+    var store = db.createObjectStore('trips', { autoIncrement: true });
+    store.createIndex('ids', 'ids', { unique: false, multiEntry: true });
 }
 
 export function db(): Q.Promise<any> {
@@ -17,13 +22,14 @@ export function db(): Q.Promise<any> {
     request.onupgradeneeded = () => {
         var db = request.result;
         createCacheStore(db);
+        createTripsStore(db);
     }
     request.onsuccess = () => {
         var indexedDB = request.result;
         d.resolve(request.result);
     }
-    request.onerror = () => {
-        d.reject('Failed to get indexedDB');
+    request.onerror = (reason) => {
+        d.reject('Failed to get indexedDB ' + reason);
     }
     return d.promise;
 }
@@ -47,20 +53,48 @@ export function get(storeName: string, indexName: string, key: any): Q.Promise<o
     });
 }
 
+export function cursor(storeName: string, f: (r: any) => boolean): Q.Promise<void> {
+    var d = Q.defer<void>();
+    return db().then((DB) => {
+        var tx = DB.transaction(storeName, "readonly");
+        var store = tx.objectStore(storeName);
+        var c = store.openCursor();
+
+        c.onsuccess = (evt) => {
+            var cursor = evt.target.result;
+            if(cursor) {
+                if(f(cursor.value)) {
+                    cursor.continue();
+                } else {
+                    d.resolve(null);
+                }
+            } else {
+                d.resolve(null);
+            }
+        }
+        c.onerror = (error) => {
+            d.reject(error);
+        }
+    }).then(() => {
+        return d.promise;
+    }).then(() => {
+        return null;
+    });
+}
+
 export function range(storeName: string, indexName: string, lowerBound: any, upperBound): Q.Promise<seq.IList<any>> {
     return db().then((DB) => {
         var d = Q.defer<seq.IList<any>>();
         var tx = DB.transaction(storeName, "readonly");
         var store = tx.objectStore(storeName);
         var index = store.index(indexName);
-        var keyRange = IDBKeyRange.bound(lowerBound, upperBound);
+        var keyRange = IDBKeyRange.bound(lowerBound, upperBound, true, true);
         var request = index.get(keyRange);
 
         var results = seq.List<any>();
         index.openCursor(keyRange).onsuccess = function(event) {
             var cursor = event.target.result;
             if(cursor) {
-                console.log(event, cursor);
                 results = results.appendOne(cursor.value);
                 cursor.continue();
             } else {
@@ -107,6 +141,8 @@ function clearStore(name: string): Q.Promise<void> {
     });
 }
 
-export function clearCacheStore(): Q.Promise<void> {
-    return clearStore("cache");
+export function clearAll(): Q.Promise<void> {
+    return clearStore("cache").then(() => {
+        return clearStore("trips")
+    });
 }

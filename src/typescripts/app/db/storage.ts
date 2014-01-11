@@ -1,4 +1,5 @@
 /// <reference path='../../dts/Q.d.ts'/>
+/// <reference path='../../dts/underscore.d.ts'/>
 
 import seq = require('../lib/immutable/List');
 import opt = require('../lib/immutable/Option');
@@ -7,88 +8,10 @@ import Api = require('../ws/api');
 import IndexedDB = require('./indexedDB');
 
 var STOPS: opt.IOption<any> = new opt.None<any>();
-var TRIPS: opt.IOption<Array<any>> = new opt.None<Array<any>>();
-
-export function installDB(): Q.Promise<void> {
-    utils.log('Installing DB...');
-    var d = Q.defer<any>();
-    if(STOPS.isEmpty()) {
-        //clearDatabase().then(() => {
-            IndexedDB.get('cache', 'by_key', 'treeStops').then((maybeStops) => {
-                IndexedDB.get('cache', 'by_key', 'trips').then((maybeTrips) => {
-                    if(maybeStops.isDefined() && maybeTrips.isDefined()) {
-                        maybeStops.map((stops) => {
-                            maybeTrips.map((trips) => {
-                                STOPS = new opt.Some(stops.value);
-                                TRIPS = new opt.Some(trips.value.data);
-                                d.resolve(null);
-                            });
-                        });
-                    } else {
-                        utils.log('Getting it from API !');
-                        utils.measureF(() => Api.db(), 'fetchApi').then((db) => {
-                            STOPS = new opt.Some(db.treeStops);
-                            TRIPS = new opt.Some(db.trips.data);
-                            return clearDatabase().then(() => {
-                                return utils.measureF(() => persistStops(db.treeStops), 'persistStops');
-                            }).then(() => {
-                                return utils.measureF(() => persistTrips(db.trips), 'persistTrips')
-                            }).then(() => {
-                                d.resolve(null);
-                            });
-                        }).fail((reason) => {
-                            utils.error(JSON.stringify(reason));
-                            d.reject(reason);
-                        });
-                    }
-                }).fail((reason) => {
-                    utils.error(JSON.stringify(reason));
-                    d.reject(reason);
-                });
-            }).fail((reason) => {
-                $('body').html(JSON.stringify(reason))
-                utils.error(JSON.stringify(reason));
-                d.reject(reason);
-            });
-        //});
-    } else {
-        d.resolve(null);
-    }
-    return d.promise;
-}
-
-function persistTrips(tripsData: any): Q.Promise<void> {
-    return IndexedDB.put('cache', { key: 'trips', value: tripsData });
-}
-
-function persistStops(treeStops: any): Q.Promise<void> {
-    utils.log('Persisting treeStops');
-    return IndexedDB.put('cache', { key: 'treeStops', value: treeStops });
-}
-
-export function isInitialized(): boolean {
-    return maybeTrips().isDefined() && maybeStops().isDefined();
-}
-
-export function maybeStops(): opt.IOption<any> {
-    return STOPS;
-}
-
-export function maybeTrips(): opt.IOption<any> {
-    return TRIPS;
-}
-
-export function trips(): any {
-    return maybeTrips().map((trips) => {
-        return trips;
-    }).getOrElse(() => {
-        utils.error('TRIPS not initialized !');
-        return null;
-    });
-}
+var TRIPS: opt.IOption<any> = new opt.None<any>();
 
 export function stops(): any {
-    return maybeStops().map((stops) => {
+    return STOPS.map((stops) => {
         return stops;
     }).getOrElse(() => {
         utils.error('STOPS not initialized !');
@@ -96,18 +19,119 @@ export function stops(): any {
     });
 }
 
+export function isInitialized(): boolean {
+    return TRIPS.isDefined() && STOPS.isDefined();
+}
+
+function addTripsToCache(tripsToAdd: any): void {
+    TRIPS.map((trips) => {
+        TRIPS = new opt.Some($.extend(trips, tripsToAdd));
+    }).getOrElse(() => {
+        TRIPS = new opt.Some(tripsToAdd);
+    });
+}
+
+export function installDB(): Q.Promise<void> {
+    utils.log('Installing DB...');
+    var d = Q.defer<any>();
+    if(STOPS.isEmpty()) {
+        clearDatabase().then(() => {
+            IndexedDB.get('cache', 'by_key', 'treeStops').then((maybeStops) => {
+                if(maybeStops.isDefined()) {
+                    maybeStops.map((stops) => {
+                        STOPS = new opt.Some(stops.value);
+                        d.resolve(null);
+                        return Q<void>(null);
+                    });
+                } else {
+                    utils.log('Getting it from API !');
+                    return utils.measureF(() => Api.db(), 'fetchApi').then((db) => {
+                        STOPS = new opt.Some(db.treeStops);
+                        return clearDatabase().then(() => {
+                            return utils.measureF(() => persistStops(db.treeStops), 'persistStops');
+                        }).then(() => {
+                            return utils.measureF(() => persistTrips(db.trips), 'persistTrips');
+                        }).then(() => {
+                            d.resolve(null);
+                        });
+                    })
+                }
+            }).fail((reason) => {
+                $('body').html(JSON.stringify(reason))
+                utils.error(JSON.stringify(reason));
+                d.reject(reason);
+            });
+        });
+    } else {
+        d.resolve(null);
+    }
+    return d.promise;
+}
+
+function persistTrips(rangeTrips: any): Q.Promise<void> {
+    return utils.sequencePromises<void>(rangeTrips.data, (rangeTrip) => {
+        return IndexedDB.put('trips', rangeTrip);
+    }).then(() => {
+        return null;
+    });
+}
+
+function persistStops(treeStops: any): Q.Promise<void> {
+    return IndexedDB.put('cache', { key: 'treeStops', value: treeStops });
+}
+
 export function tripById(id: string): Q.Promise<opt.IOption<any>> {
-    return Q(opt.Option(trips()[id]));
+    return TRIPS.flatMap((trips) => {
+        return opt.Option(trips[id]);
+    }).map((trip) => {
+        utils.log("trip from cache");
+        return Q(new opt.Some(trip));
+    }).getOrElse(() => {
+        return IndexedDB.get('trips', 'ids', id).then((maybeGroup) => {
+            return maybeGroup.map((group) => {
+                addTripsToCache(group.trips);
+                return group.trips[id];
+            });
+        });
+    });
 }
 
 export function tripsByIds(ids: seq.IList<string>, direction: opt.IOption<string> = new opt.None<string>()): Q.Promise<seq.IList<any>> {
-    return Q(ids.map((id) => {
-        return opt.Option<any>(trips()[id]).filter((trip) => {
-            return direction.isEmpty() || direction.exists((d) => {
-                return trip.direction === d;
+    var fromCache = TRIPS.map((trips) => {
+        return ids.map((id) => {
+            return opt.Option<any>(trips[id]).filter((trip) => {
+                return direction.isEmpty() || direction.exists((d) => {
+                    return trip.direction === d;
+                });
             });
+        }).flatten();
+    }).getOrElse(() => {
+        return new seq.Nil<any>();
+    });
+
+    var fromCacheIds = fromCache.map((trip:any) => {
+        return trip.id;
+    });
+
+    var toQuery = _.difference(ids.asArray(), fromCacheIds.asArray());
+    var step = (ids: seq.IList<string>, acc: seq.IList<any>) => {
+        return ids.headOption().map((id) => {
+            return tripById(id).then((maybeTrip) => {
+                return maybeTrip.map((trip) => {
+                    return step(ids.tail(), acc.prependOne(trip));
+                }).getOrElse(() => {
+                    utils.oops('Error while getting trip ' + id);
+                    return null;
+                });
+            });
+        }).getOrElse(() => {
+            return Q(acc);
         });
-    }).flatten());
+    }
+    var fromDatabase = step(seq.List.apply(null, toQuery), new seq.Nil<any>());
+    return fromDatabase.then((fromDatabase) => {
+        return fromDatabase.append(fromCache);
+    });
 }
 
 export function getTripDirection(startId: string, stopId: string, tripId: string): Q.Promise<string> {
@@ -127,22 +151,24 @@ export function getTripDirection(startId: string, stopId: string, tripId: string
                 return "0";
             }
         }).getOrElse(() => {
-            throw new Error('Error while getting trip direction: startId or stopId unknown');
+            utils.oops('Error while getting trip direction: startId or stopId unknown');
             return null;
         });
     }
 
-    return Q(opt.Option<any>(trips()[tripId]).map((trip) => {
-        return direction(trip);
-    }).getOrElse(() => {
-        throw new Error('Error while getting trip direction: can\'t find the trip');
-        return null;
-    }));
+    return tripById(tripId).then((maybeTrip) => {
+        return maybeTrip.map((trip) => {
+            return direction(trip);
+        }).getOrElse(() => {
+            utils.oops('Error while getting trip direction: can\'t find the trip');
+            return null;
+        });
+    });
 }
 
 function clearDatabase(): Q.Promise<void> {
     utils.log('Clearing database');
-    return IndexedDB.clearCacheStore().then(() => {
+    return IndexedDB.clearAll().then(() => {
         return null;
     });
 }

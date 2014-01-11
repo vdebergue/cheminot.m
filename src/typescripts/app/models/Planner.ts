@@ -1,13 +1,12 @@
 /// <reference path='../../dts/Q.d.ts'/>
 /// <reference path='../../dts/moment.d.ts'/>
+/// <reference path='../../dts/underscore.d.ts'/>
 
 import opt = require('lib/immutable/Option');
 import seq = require('lib/immutable/List');
 import Storage = require('../db/storage');
 import TernaryTree = require('../utils/ternaryTree');
 import utils = require('../utils/utils');
-
-declare var array_intersect;
 
 export function schedulesFor(startName: string, endName: string): Q.Promise<opt.IOption<Schedules>> {
 
@@ -18,7 +17,7 @@ export function schedulesFor(startName: string, endName: string): Q.Promise<opt.
     return utils.flattenOptionPromise<Schedules>(
         maybeStart.flatMap<Q.Promise<Schedules>>((start) => {
             return maybeEnd.map((end) => {
-                var tripIds = array_intersect((id) => { return id; }, start.tripIds, end.tripIds);
+                var tripIds: Array<any> = _.intersection(start.tripIds, end.tripIds);
                 var oneTripId = tripIds[0];
                 return Storage.getTripDirection(start.id, end.id, oneTripId).then((direction) => {
                     return Storage.tripsByIds(seq.List.apply(null, tripIds), new opt.Some(direction)).then((trips) => {
