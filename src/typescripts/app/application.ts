@@ -67,7 +67,7 @@ export function init(views: seq.IList<IView>) {
                 }).getOrElse(() => {
                 });
             }).fail((reason) => {
-                console.log(reason);
+                utils.log(reason);
             });
         });
     });
@@ -75,7 +75,7 @@ export function init(views: seq.IList<IView>) {
     Path.map('#/trip/:id').to(function() {
         ensureInitApp('trip').then(() => {
             var tripId = this.params['id'];
-            Storage.tripById(tripId).then((maybeTrip) => {
+            Storage.impl().tripById(tripId).then((maybeTrip) => {
                 maybeTrip.foreach((trip) => {
                     var tripView = <Trip> view(views, 'trip');
                     tripView.buildWith(trip);

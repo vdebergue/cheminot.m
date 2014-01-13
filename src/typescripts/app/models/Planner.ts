@@ -19,8 +19,8 @@ export function schedulesFor(startName: string, endName: string): Q.Promise<opt.
             return maybeEnd.map((end) => {
                 var tripIds: Array<any> = _.intersection(start.tripIds, end.tripIds);
                 var oneTripId = tripIds[0];
-                return Storage.getTripDirection(start.id, end.id, oneTripId).then((direction) => {
-                    return Storage.tripsByIds(seq.List.apply(null, tripIds), new opt.Some(direction)).then((trips) => {
+                return Storage.getTripDirection(start.id, end.id, oneTripId).then<Schedules>((direction) => {
+                    return Storage.impl().tripsByIds(seq.List.apply(null, tripIds), new opt.Some(direction)).then((trips) => {
                         var stopTimes = trips.flatMap<any>((trip) => {
                             return seq.List.apply(null, trip.stopTimes).find((stopTime) => {
                                 return stopTime.stop.id === start.id;

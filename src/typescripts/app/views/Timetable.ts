@@ -71,7 +71,7 @@ class Timetable extends View implements IView {
             var tripIds = schedules.stopTimes.map((stopTime) => {
                 return stopTime.tripId;
             });
-            Storage.tripsByIds(tripIds).then((trips) => {
+            Storage.impl().tripsByIds(tripIds, new opt.None<string>()).then((trips) => {
                 var stopTimes = schedules.stopTimes.collect((stopTime) => {
                     return trips.find((trip) => {
                         return trip.id === stopTime.tripId;

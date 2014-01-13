@@ -49,7 +49,7 @@ class Home extends View implements IView {
     bindEvents(): void {
         super.bindEvent('keyup', 'input[name=start], input[name=end]', this.onStationKeyUp);
         super.bindEvent('focus', 'input[name=start], input[name=end]', this.onStationFocus);
-        super.bindEvent('tap', '.suggestions > li', this.onSuggestionSelected);
+        super.bindEvent('tap click', '.suggestions > li', this.onSuggestionSelected);
         super.bindEvent('tap', 'button', this.onDaySelected);
         super.bindEvent('touchstart', '.suggestions', this.onScrollingStops);
     }

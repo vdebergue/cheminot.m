@@ -3,8 +3,79 @@
 import seq = require('../lib/immutable/List');
 import opt = require('../lib/immutable/Option');
 import utils = require('../utils/utils');
+import Storage = require('./storage');
 
-var DB_NAME = 'cheminot';
+var DB_NAME = 'indexeddb_cheminot';
+
+export function tripsByIds(ids: seq.IList<string>, direction: opt.IOption<string> = new opt.None<string>()): Q.Promise<seq.IList<any>> {
+    var fromCache = Storage.TRIPS.map((trips) => {
+        return ids.map((id) => {
+            return opt.Option<any>(trips[id]).filter((trip) => {
+                return direction.isEmpty() || direction.exists((d) => {
+                    return trip.direction === d;
+                });
+            });
+        }).flatten();
+    }).getOrElse(() => {
+        return new seq.Nil<any>();
+    });
+
+    var fromCacheIds = fromCache.map((trip:any) => {
+        return trip.id;
+    });
+
+    var toQuery = _.difference(ids.asArray(), fromCacheIds.asArray());
+    var step = (ids: seq.IList<string>, acc: seq.IList<any>) => {
+        return ids.headOption().map((id) => {
+            return tripById(id).then((maybeTrip) => {
+                return maybeTrip.map((trip) => {
+                    return step(ids.tail(), acc.prependOne(trip));
+                }).getOrElse(() => {
+                    utils.oops('Error while getting trip ' + id);
+                    return null;
+                });
+            });
+        }).getOrElse(() => {
+            return Q(acc);
+        });
+    }
+    var fromDatabase = step(seq.List.apply(null, toQuery), new seq.Nil<any>());
+    return fromDatabase.then((fromDatabase) => {
+        return fromDatabase.append(fromCache);
+    });
+}
+
+export function tripById(id: string): Q.Promise<opt.IOption<any>> {
+    return Storage.TRIPS.flatMap((trips) => {
+        return opt.Option(trips[id]);
+    }).map((trip) => {
+        utils.log("trip from cache");
+        return Q(new opt.Some(trip));
+    }).getOrElse(() => {
+        return get('trips', 'ids', id).then((maybeGroup) => {
+            return maybeGroup.map((group) => {
+                Storage.addTripsToCache(group.trips);
+                return group.trips[id];
+            });
+        });
+    });
+}
+
+function getTreeStops(): Q.Promise<opt.IOption<any>> {
+    return get('cache', 'by_key', 'treeStops');
+}
+
+function persistTrips(rangeTrips: any): Q.Promise<void> {
+    return utils.sequencePromises<void>(rangeTrips.data, (rangeTrip) => {
+        return add('trips', rangeTrip);
+    }).then(() => {
+        return null;
+    });
+}
+
+function persistStops(treeStops: any): Q.Promise<void> {
+    return add('cache', { key: 'treeStops', value: treeStops });
+}
 
 function createCacheStore(db: any): void {
     var store = db.createObjectStore('cache', { keyPath: 'key' });
@@ -106,6 +177,24 @@ export function range(storeName: string, indexName: string, lowerBound: any, upp
 }
 
 export function put(storeName: string, value: any): Q.Promise<void> {
+    return db().then((DB) => {
+        var d = Q.defer<void>();
+        var tx = DB.transaction(storeName, "readwrite");
+        var store = tx.objectStore(storeName);
+        store.put(value);
+        tx.oncomplete = () => {
+            d.resolve(null);
+        }
+        tx.onerror = () => {
+            var errorMessage = 'An error occured while putting data ' + value + ' to store ' + storeName;
+            utils.error(errorMessage);
+            d.reject(errorMessage);
+        }
+        return d.promise;
+    });
+}
+
+export function add(storeName: string, value: any): Q.Promise<void> {
     return db().then((DB) => {
         var d = Q.defer<void>();
         var tx = DB.transaction(storeName, "readwrite");
