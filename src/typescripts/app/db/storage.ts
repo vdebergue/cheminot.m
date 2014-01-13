@@ -35,32 +35,29 @@ export function installDB(): Q.Promise<void> {
     utils.log('Installing DB...');
     var d = Q.defer<any>();
     if(STOPS.isEmpty()) {
-        clearDatabase().then(() => {
-            IndexedDB.get('cache', 'by_key', 'treeStops').then((maybeStops) => {
-                if(maybeStops.isDefined()) {
-                    maybeStops.map((stops) => {
-                        STOPS = new opt.Some(stops.value);
-                        d.resolve(null);
-                        return Q<void>(null);
-                    });
-                } else {
-                    utils.log('Getting it from API !');
-                    return utils.measureF(() => Api.db(), 'fetchApi').then((db) => {
+        IndexedDB.get('cache', 'by_key', 'treeStops').then((maybeStops) => {
+            if(maybeStops.isDefined()) {
+                maybeStops.map((stops) => {
+                    STOPS = new opt.Some(stops.value);
+                    d.resolve(null);
+                    return Q<void>(null);
+                });
+            } else {
+                utils.log('Getting it from API !');
+                return IndexedDB.reset().then(() => {
+                    utils.measureF(() => Api.db(), 'fetchApi').then((db) => {
                         STOPS = new opt.Some(db.treeStops);
-                        return clearDatabase().then(() => {
-                            return utils.measureF(() => persistStops(db.treeStops), 'persistStops');
-                        }).then(() => {
+                        return utils.measureF(() => persistStops(db.treeStops), 'persistStops').then(() => {
                             return utils.measureF(() => persistTrips(db.trips), 'persistTrips');
                         }).then(() => {
                             d.resolve(null);
                         });
-                    })
-                }
-            }).fail((reason) => {
-                $('body').html(JSON.stringify(reason))
-                utils.error(JSON.stringify(reason));
-                d.reject(reason);
-            });
+                    });
+                });
+            }
+        }).fail((reason) => {
+            utils.error(JSON.stringify(reason));
+            d.reject(reason);
         });
     } else {
         d.resolve(null);
@@ -163,12 +160,5 @@ export function getTripDirection(startId: string, stopId: string, tripId: string
             utils.oops('Error while getting trip direction: can\'t find the trip');
             return null;
         });
-    });
-}
-
-function clearDatabase(): Q.Promise<void> {
-    utils.log('Clearing database');
-    return IndexedDB.clearAll().then(() => {
-        return null;
     });
 }

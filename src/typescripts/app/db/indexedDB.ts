@@ -141,8 +141,14 @@ function clearStore(name: string): Q.Promise<void> {
     });
 }
 
-export function clearAll(): Q.Promise<void> {
-    return clearStore("cache").then(() => {
-        return clearStore("trips")
-    });
+export function reset(): Q.Promise<void> {
+    var d = Q.defer<void>();
+    var req = indexedDB.deleteDatabase(DB_NAME);
+    req.onsuccess = () => {
+        d.resolve(null);
+    }
+    req.onerror = (reason) => {
+        d.reject(reason);
+    }
+    return d.promise;
 }
