@@ -1,3 +1,5 @@
+/// <reference path='../dts/Q.d.ts'/>
+
 declare var Path: any;
 
 import seq = require('./lib/immutable/List');
@@ -5,6 +7,7 @@ import utils = require('./utils/utils');
 import IView = require('./views/IView');
 import Timetable = require('./views/Timetable');
 import Trip = require('./views/Trip');
+import Setup = require('./views/Setup');
 import Storage = require('./db/storage');
 import Planner = require('./models/Planner');
 
@@ -29,7 +32,13 @@ export function init(views: seq.IList<IView>) {
         var p: Q.Promise<void>;
         if(!Storage.isInitialized()) {
             p = utils.measureF<any>(() => {
-                return Storage.installDB();
+                return Storage.installDB(() => {
+                    return view(views, 'setup').setup().then((setupView) => {
+                        return setupView.show().then<ZeptoCollection>(() => {
+                            return (<Setup>setupView).$progress();
+                        });
+                    });
+                });
             }, 'all').fail((e) => {
                 utils.error(e);
             });
@@ -38,7 +47,9 @@ export function init(views: seq.IList<IView>) {
         }
         return p.then(() => {
             hideOtherViews(viewName);
-            return view(views, viewName).setup();
+            return view(views, viewName).setup().then(() => {
+                return null;
+            });
         });
     }
 

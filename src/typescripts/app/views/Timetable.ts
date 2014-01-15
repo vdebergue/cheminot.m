@@ -20,14 +20,15 @@ class Timetable extends View implements IView {
     name: string;
     myIScroll: any;
 
-    constructor(container: string, scope: string) {
-        this.name = 'timetable';
+    constructor(container: string, scope: string, name: string) {
+        this.name = name;
         super(container, scope);
     }
 
-    setup(): Q.Promise<void> {
+    setup(): Q.Promise<IView> {
         return super.ensure(Templating.timetable.layout).then(() => {
             this.bindEvents();
+            return this;
         });
     }
 

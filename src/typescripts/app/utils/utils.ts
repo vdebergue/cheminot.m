@@ -3,7 +3,7 @@
 import seq = require('lib/immutable/List');
 import opt = require('lib/immutable/Option');
 
-var DEBUG: boolean = true;
+var DEBUG: boolean = false;
 
 export function flattenOptionPromise<T>(maybePromise: opt.IOption<Q.Promise<T>>): Q.Promise<opt.IOption<T>> {
     return maybePromise.map((p) => {
@@ -67,13 +67,21 @@ export function measureF<T>(f: () => Q.Promise<T>, id: string = ''): Q.Promise<T
 export function isMobile() { 
     if(navigator.userAgent.match(/Android/i) ||
        navigator.userAgent.match(/webOS/i) ||
-       navigator.userAgent.match(/iPhone/i) ||
-       navigator.userAgent.match(/iPad/i) ||
-       navigator.userAgent.match(/iPod/i) ||
        navigator.userAgent.match(/BlackBerry/i) ||
-       navigator.userAgent.match(/Windows Phone/i)){
+       navigator.userAgent.match(/Windows Phone/i) ||
+       isAppleMobile()) {
         return true;
     } else {
         return false;
     }
+}
+
+export function isAppleMobile() {
+    return navigator.userAgent.match(/iPhone/i) ||
+        navigator.userAgent.match(/iPad/i) ||
+        navigator.userAgent.match(/iPod/i);
+}
+
+export function isIOS7() {
+    return isAppleMobile() && navigator.userAgent.match(/OS 7/);
 }

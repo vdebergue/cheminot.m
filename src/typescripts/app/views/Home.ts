@@ -8,7 +8,7 @@ import opt = require('lib/immutable/Option');
 import IView = require('./IView');
 import View = require('./View');
 import Templating = require('./templating')
-import utils = require('../utils/utils')
+import utils = require('../utils/utils');
 import TernaryTree = require('../utils/ternaryTree');
 
 declare var tmpl;
@@ -21,14 +21,15 @@ class Home extends View implements IView {
     name: string;
     myIScroll: any;
 
-    constructor(container: string, scope: string) {
-        this.name = 'home';
+    constructor(container: string, scope: string, name: string) {
+        this.name = name;
         super(container, scope);
     }
 
-    setup(): Q.Promise<void> {
+    setup(): Q.Promise<IView> {
         return super.ensure(Templating.home.layout).then(() => {
             this.bindEvents();
+            return this;
         });
     }
 

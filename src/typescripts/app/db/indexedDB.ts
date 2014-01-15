@@ -174,8 +174,9 @@ class IndexedDBStorage implements Storage.IStorage {
         });
     }
 
-    insertTrips(trips: any): Q.Promise<void> {
+    insertTrips(trips: any, $progress: ZeptoCollection): Q.Promise<void> {
         return utils.sequencePromises<void>(trips.data, (trips) => {
+            $progress.trigger('setup:trip');
             return add('trips', trips);
         }).then(() => {
             return null;

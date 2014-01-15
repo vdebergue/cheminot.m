@@ -21,6 +21,9 @@ var paths = {
         layout: 'layout.tpl.html',
         header: 'header.tpl.html',
         details: 'details.tpl.html'
+    },
+    setup: {
+        layout: 'layout.tpl.html'
     }
 };
 
@@ -83,5 +86,11 @@ export var trip = {
     },
     details(): Q.Promise<string> {
         return getTemplate('details', opt.Option<string>('trip'));
+    }
+}
+
+export var setup = {
+    layout(): Q.Promise<string> {
+        return getTemplate('layout', opt.Option<string>('setup'));
     }
 }

@@ -12,7 +12,7 @@ export interface IStorage {
     getStopsTree(): Q.Promise<any>;
     reset(): Q.Promise<void>;
     insertStopsTree(stopsTree): Q.Promise<void>;
-    insertTrips(trips: Array<any>): Q.Promise<void>;
+    insertTrips(trips: Array<any>, $progress: ZeptoCollection): Q.Promise<void>;
     tripById(id: string): Q.Promise<opt.IOption<any>>;
     tripsByIds(ids: seq.IList<string>, direction: opt.IOption<string>): Q.Promise<seq.IList<any>>;
 }
@@ -51,7 +51,7 @@ export function isInitialized(): boolean {
     return TRIPS.isDefined() && STOPS.isDefined();
 }
 
-export function installDB(): Q.Promise<void> {
+export function installDB(onSetup: () => Q.Promise<ZeptoCollection>): Q.Promise<void> {
     utils.log('Installing DB...');
     var STORAGE = impl();
     var d = Q.defer<any>();
@@ -64,15 +64,20 @@ export function installDB(): Q.Promise<void> {
                     return Q<void>(null);
                 });
             } else {
-                utils.log('Getting it from API !');
-                utils.measureF(() => Api.db(), 'fetchApi').then((db) => {
-                    STOPS = new opt.Some(db.treeStops);
-                    return STORAGE.reset().then(() => {
-                        return utils.measureF(() => STORAGE.insertTrips(db.trips), 'persistTrips');
-                    }).then(() => {
-                        return utils.measureF(() => STORAGE.insertStopsTree(db.treeStops), 'persistStops');
-                    }).then(() => {
-                        d.resolve(null);
+                onSetup().then(($progress) => {
+                    utils.log('Getting it from API !');
+                    utils.measureF(() => Api.db(), 'fetchApi').then((db) => {
+                        $progress.trigger('setup:fetch');
+                        STOPS = new opt.Some(db.treeStops);
+                        return STORAGE.reset().then(() => {
+                            return utils.measureF(() => STORAGE.insertStopsTree(db.treeStops), 'persistStops');
+                        }).then(() => {
+                            $progress.trigger('setup:stops');
+                            return utils.measureF(() => STORAGE.insertTrips(db.trips, $progress), 'persistTrips');
+                        }).then(() => {
+                            $progress.trigger('setup:done');
+                            d.resolve(null);
+                        });
                     });
                 });
             }
