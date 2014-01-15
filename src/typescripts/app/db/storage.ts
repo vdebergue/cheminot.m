@@ -18,7 +18,13 @@ export interface IStorage {
 }
 
 export function impl(): IStorage {
-    return WebSql.impl();
+    if(window.indexedDB) {
+        return IndexedDB.impl();
+    } else if(window['openDatabase']) {
+        return WebSql.impl();
+    } else {
+        utils.oops('You need a more recent device !');
+    }
 }
 
 export var STOPS: opt.IOption<any> = new opt.None<any>();

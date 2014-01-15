@@ -7,76 +7,6 @@ import Storage = require('./storage');
 
 var DB_NAME = 'indexeddb_cheminot';
 
-export function tripsByIds(ids: seq.IList<string>, direction: opt.IOption<string> = new opt.None<string>()): Q.Promise<seq.IList<any>> {
-    var fromCache = Storage.TRIPS.map((trips) => {
-        return ids.map((id) => {
-            return opt.Option<any>(trips[id]).filter((trip) => {
-                return direction.isEmpty() || direction.exists((d) => {
-                    return trip.direction === d;
-                });
-            });
-        }).flatten();
-    }).getOrElse(() => {
-        return new seq.Nil<any>();
-    });
-
-    var fromCacheIds = fromCache.map((trip:any) => {
-        return trip.id;
-    });
-
-    var toQuery = _.difference(ids.asArray(), fromCacheIds.asArray());
-    var step = (ids: seq.IList<string>, acc: seq.IList<any>) => {
-        return ids.headOption().map((id) => {
-            return tripById(id).then((maybeTrip) => {
-                return maybeTrip.map((trip) => {
-                    return step(ids.tail(), acc.prependOne(trip));
-                }).getOrElse(() => {
-                    utils.oops('Error while getting trip ' + id);
-                    return null;
-                });
-            });
-        }).getOrElse(() => {
-            return Q(acc);
-        });
-    }
-    var fromDatabase = step(seq.List.apply(null, toQuery), new seq.Nil<any>());
-    return fromDatabase.then((fromDatabase) => {
-        return fromDatabase.append(fromCache);
-    });
-}
-
-export function tripById(id: string): Q.Promise<opt.IOption<any>> {
-    return Storage.TRIPS.flatMap((trips) => {
-        return opt.Option(trips[id]);
-    }).map((trip) => {
-        utils.log("trip from cache");
-        return Q(new opt.Some(trip));
-    }).getOrElse(() => {
-        return get('trips', 'ids', id).then((maybeGroup) => {
-            return maybeGroup.map((group) => {
-                Storage.addTripsToCache(group.trips);
-                return group.trips[id];
-            });
-        });
-    });
-}
-
-function getTreeStops(): Q.Promise<opt.IOption<any>> {
-    return get('cache', 'by_key', 'treeStops');
-}
-
-function persistTrips(rangeTrips: any): Q.Promise<void> {
-    return utils.sequencePromises<void>(rangeTrips.data, (rangeTrip) => {
-        return add('trips', rangeTrip);
-    }).then(() => {
-        return null;
-    });
-}
-
-function persistStops(treeStops: any): Q.Promise<void> {
-    return add('cache', { key: 'treeStops', value: treeStops });
-}
-
 function createCacheStore(db: any): void {
     var store = db.createObjectStore('cache', { keyPath: 'key' });
     store.createIndex('by_key', 'key', { unique: true });
@@ -230,14 +160,100 @@ function clearStore(name: string): Q.Promise<void> {
     });
 }
 
-export function reset(): Q.Promise<void> {
-    var d = Q.defer<void>();
-    var req = indexedDB.deleteDatabase(DB_NAME);
-    req.onsuccess = () => {
-        d.resolve(null);
+class IndexedDBStorage implements Storage.IStorage {
+
+    insertStopsTree(stopsTree): Q.Promise<void> {
+        return add('cache', { key: 'treeStops', value: stopsTree });
     }
-    req.onerror = (reason) => {
-        d.reject(reason);
+
+    getStopsTree(): Q.Promise<opt.IOption<any>> {
+        return get('cache', 'by_key', 'treeStops').then((maybe) => {
+            return maybe.map((d) => {
+                return d.value;
+            });
+        });
     }
-    return d.promise;
+
+    insertTrips(trips: any): Q.Promise<void> {
+        return utils.sequencePromises<void>(trips.data, (trips) => {
+            return add('trips', trips);
+        }).then(() => {
+            return null;
+        });
+    }
+
+    tripById(id: string): Q.Promise<opt.IOption<any>> {
+        return Storage.TRIPS.flatMap((trips) => {
+            return opt.Option(trips[id]);
+        }).map((trip) => {
+            return Q(new opt.Some(trip));
+        }).getOrElse(() => {
+            return get('trips', 'ids', id).then((maybeGroup) => {
+                return maybeGroup.map((group) => {
+                    Storage.addTripsToCache(group.trips);
+                    return group.trips[id];
+                });
+            });
+        });
+    }
+
+    tripsByIds(ids: seq.IList<string>, direction: opt.IOption<string>): Q.Promise<seq.IList<any>> {
+        var fromCache = Storage.TRIPS.map((trips) => {
+            return ids.map((id) => {
+                return opt.Option<any>(trips[id]).filter((trip) => {
+                    return direction.isEmpty() || direction.exists((d) => {
+                        return trip.direction === d;
+                    });
+                });
+            }).flatten();
+        }).getOrElse(() => {
+            return new seq.Nil<any>();
+        });
+
+        var fromCacheIds = fromCache.map((trip:any) => {
+            return trip.id;
+        });
+
+        var toQuery = _.difference(ids.asArray(), fromCacheIds.asArray());
+        var step = (ids: seq.IList<string>, acc: seq.IList<any>) => {
+            return ids.headOption().map((id) => {
+                return this.tripById(id).then((maybeTrip) => {
+                    return maybeTrip.map((trip) => {
+                        return step(ids.tail(), acc.prependOne(trip));
+                    }).getOrElse(() => {
+                        utils.oops('Error while getting trip ' + id);
+                        return null;
+                    });
+                });
+            }).getOrElse(() => {
+                return Q(acc);
+            });
+        }
+        var fromDatabase = step(seq.List.apply(null, toQuery), new seq.Nil<any>());
+        return fromDatabase.then((fromDatabase) => {
+            return fromDatabase.append(fromCache);
+        });
+    }
+
+    reset(): Q.Promise<void> {
+        var d = Q.defer<void>();
+        var req = indexedDB.deleteDatabase(DB_NAME);
+        req.onsuccess = () => {
+            d.resolve(null);
+        }
+        req.onerror = (reason) => {
+            d.reject(reason);
+        }
+        return d.promise;
+    }
+}
+
+var indexedDBStorage: opt.IOption<Storage.IStorage> = new opt.None<Storage.IStorage>();
+
+export function impl(): Storage.IStorage {
+    return indexedDBStorage.getOrElse(() => {
+        var storage = new IndexedDBStorage();
+        indexedDBStorage = new opt.Some(storage);
+        return storage;
+    });
 }

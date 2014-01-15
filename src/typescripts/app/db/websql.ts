@@ -85,7 +85,10 @@ class WebSqlStorage implements Storage.IStorage {
         db().then((DB) => {
             DB.readTransaction((t) => {
                 t.executeSql("SELECT value FROM cache WHERE key='stopsTree'", [], (t, data) => {
-                    var maybeStopsTree = opt.Option(data.rows.item(0)).map((r:any) => {
+                    var maybeStopsTree = opt.Option(data.rows).filter((rows:any) => {
+                        return rows.length > 0;
+                    }).map((rows:any) => {
+                        var r = rows.item(0);
                         return JSON.parse(r.value);
                     });
                     d.resolve(maybeStopsTree);
@@ -104,8 +107,9 @@ class WebSqlStorage implements Storage.IStorage {
                 var d = Q.defer<void>();
                 DB.transaction((t) => {
                     var ids = group.ids.join(';')
-                    var data = LZString.compress(JSON.stringify(group.trips));
-                    t.executeSql('INSERT INTO trips (ids, trips) VALUES (?, ?)', [ids , data], () => {
+                    var data = LZString.compressToUTF16(JSON.stringify(group.trips));
+                    console.log('->');
+                    t.executeSql('INSERT INTO trips (ids, trips) VALUES (?,?)', [ids, data], () => {
                         d.resolve(null);
                     }, (t, error) => {
                         utils.error(error);
@@ -123,7 +127,6 @@ class WebSqlStorage implements Storage.IStorage {
         return Storage.TRIPS.flatMap((trips) => {
             return opt.Option(trips[id]);
         }).map((trip) => {
-            utils.log("trip from cache");
             return Q(new opt.Some(trip));
         }).getOrElse(() => {
             var d = Q.defer<any>();
@@ -131,8 +134,11 @@ class WebSqlStorage implements Storage.IStorage {
                 DB.readTransaction((t) => {
                     t.executeSql("SELECT * FROM trips WHERE ids LIKE '%" + id + "%'", [], (t, data) => {
                         d.resolve(
-                            opt.Option<any>(data.rows.item(0)).map((group) => {
-                                var trips = LZString.decompress(group.trips)
+                            opt.Option<any>(data.rows).filter((rows) => {
+                                return rows.length > 0;
+                            }).map((rows) => {
+                                var group = rows.item(0);
+                                var trips = JSON.parse(LZString.decompressFromUTF16(group.trips));
                                 Storage.addTripsToCache(trips);
                                 return trips[id];
                             })
@@ -150,41 +156,45 @@ class WebSqlStorage implements Storage.IStorage {
     tripsByIds(ids: seq.IList<string>, direction: opt.IOption<string>): Q.Promise<seq.IList<any>> {
         var d = Q.defer<seq.IList<any>>();
         var tripsFromCache = Storage.TRIPS.map((trips) => {
-            return seq.List.apply(null, ids).flatMap((id) => {
+            return ids.map((id) => {
                 return opt.Option(trips[id]);
-            });
+            }).flatten();
         }).getOrElse(() => {
             return new seq.Nil();
         });
         var tripIdsFromCache = tripsFromCache.map((t:any) => {
             return t.id;
         });
-        var toQuery = _.difference(ids.asArray(), tripsFromCache.asArray())
-        db().then((DB) => {
-            DB.readTransaction((t) => {
-                var like = toQuery.map((id) => {
-                    return "LIKE '%" + id + "%'";
-                }).join(' OR ');
-                console.log(like);
-                var sql = 'SELECT * FROM trips WHERE ids ' + like;
-                t.executeSql(sql, [], (t, data) => {
-                    var results = new seq.Nil<any>();
-                    var trips = new range.Range(0, data.rows.length).toList().map((index) => {
-                        var group = data.rows(index);
-                        Storage.addTripsToCache(group.trips);
-                        var found = seq.List.apply(null, toQuery).flatMap((id) => {
-                            return opt.Option(group.trips[id]);
+        var toQuery = _.difference(tripIdsFromCache.asArray(), ids.asArray())
+        if(toQuery.length > 0) {
+            db().then((DB) => {
+                DB.readTransaction((t) => {
+                    var like = toQuery.map((id) => {
+                        return "ids LIKE '%" + id + "%'";
+                    }).join(' OR ');
+                    var sql = 'SELECT * FROM trips WHERE ' + like;
+                    t.executeSql(sql, [], (t, data) => {
+                        var results = new seq.Nil<any>();
+                        var trips = new range.Range(0, data.rows.length - 1).toList().map((index) => {
+                            var group = data.rows.item(index);
+                            var trips = JSON.parse(LZString.decompressFromUTF16(group.trips));
+                            Storage.addTripsToCache(trips);
+                            var found = seq.List.apply(null, toQuery).flatMap((id) => {
+                                return opt.Option(trips[id]);
+                            });
+                            results = results.prepend(found);
                         });
-                        results = results.prepend(found);
+                        results = results.prepend(tripsFromCache);
+                        d.resolve(results);
+                    }, (t, error) => {
+                        utils.error(error);
+                        d.reject(error);
                     });
-                    results = results.prepend(tripsFromCache);
-                    d.resolve(results);
-                }, (t, error) => {
-                    utils.error(error);
-                    d.reject(error);
                 });
             });
-        });
+        } else {
+            d.resolve(tripsFromCache);
+        }
         return d.promise;
     }
 
