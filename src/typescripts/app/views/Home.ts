@@ -43,15 +43,16 @@ class Home extends View implements IView {
         var headerOffset = $('header').offset();
         var viewOffset = $scope.offset();
         var titleHeight = 44;
-        var height = htmlOffset.height - headerOffset.height - viewOffset.height - titleHeight;
+        var ios7Offet = utils.isIOS7() ? 20 : 0;
+        var height = htmlOffset.height - headerOffset.height - viewOffset.height - titleHeight - ios7Offet;
         $scope.find('.stations').css('height', height);
     }
 
     bindEvents(): void {
         super.bindEvent('keyup', 'input[name=start], input[name=end]', this.onStationKeyUp);
         super.bindEvent('focus', 'input[name=start], input[name=end]', this.onStationFocus);
-        super.bindEvent('tap click', '.suggestions > li', this.onSuggestionSelected);
-        super.bindEvent('tap', 'button', this.onDaySelected);
+        super.bindEvent('tap', '.suggestions > li', this.onSuggestionSelected);
+        super.bindEvent('tap', '.when .btn', this.onDaySelected);
         super.bindEvent('touchstart', '.suggestions', this.onScrollingStops);
     }
 
@@ -158,7 +159,7 @@ class Home extends View implements IView {
 
     onDaySelected(e: Event): boolean {
         var $btn = $(e.currentTarget);
-        $btn.siblings('button.active').removeClass('active');
+        $btn.siblings('.btn.active').removeClass('active');
         $btn.addClass('active');
         return true;
     }

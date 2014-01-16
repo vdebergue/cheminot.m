@@ -2,6 +2,7 @@
 
 import seq = require('./lib/immutable/List');
 import IView = require('./views/IView');
+import View = require('./views/View');
 import Home = require('./views/Home');
 import Timetable = require('./views/Timetable');
 import Trip = require('./views/Trip');
@@ -16,6 +17,7 @@ import utils = require('./utils/utils');
 })();
 
 $(document).ready(function() {
+    View.bindEvents();
     var homeView = new Home('#viewport', '#home', 'home');
     var timetableView = new Timetable('#viewport', '#timetable', 'timetable');
     var tripView = new Trip('#viewport', '#trip', 'trip');

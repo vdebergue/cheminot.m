@@ -47,7 +47,7 @@ class Timetable extends View implements IView {
     }
 
     bindEvents(): void {
-        super.bindEvent('tap click', '.schedules > li', this.onScheduleSelected);
+        super.bindEvent('tap', '.schedules > li', this.onScheduleSelected);
     }
 
     show(): Q.Promise<void> {

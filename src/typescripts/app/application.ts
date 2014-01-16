@@ -127,3 +127,7 @@ export function navigateToTrip(tripId: string): void {
 export function navigateToTimetable(start: string, end: string, when: number): void {
     navigate('/timetable/' + start + '/' + end + '/' + when);
 }
+
+export function navigateToBack(): void {
+    history.back();
+}

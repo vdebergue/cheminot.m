@@ -1,6 +1,7 @@
 @import 'reset';
 @import 'colors';
 @import 'font';
+@import 'icons';
 
 global-reset()
 
@@ -19,11 +20,11 @@ body {
 
     &.ios7 {
         header {
-            top: 20px !important
+            top: 20px
         }
 
         #viewport {
-            top: 64px !important
+            top: 64px
         }
     }
 }
@@ -74,11 +75,6 @@ header {
         margin: auto
         width: 95px
     }
-    
-    .back {
-        top: 8px
-        position: absolute
-    }
 }
 
 #viewport {
@@ -104,7 +100,7 @@ header {
     }
 }
 
-button {
+.btn {
     display: inline-block
     border: 1px solid green
     outline: none
@@ -117,4 +113,18 @@ button {
         background: green
         color: #FFF
     }
+}
+
+clear-button() {
+    margin: 0
+    padding: 0
+    height: 0
+    font-size: 0
+    border: none
+}
+
+.back-btn {
+    position: absolute
+    clear-button()
+    icon('left-arrow', 10px, 10px, #FFF, 0, 5px, 30px)
 }

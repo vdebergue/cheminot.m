@@ -3,6 +3,7 @@
 export = View
 
 import Layout = require('./Layout')
+import App = require('../application')
 
 class View {
 
@@ -67,5 +68,12 @@ class View {
         bindEvent(type: string, selector: string, fn: (e: Event) => boolean): void {
             this.$header().on(type, selector, fn);
         }
+    }
+
+    static bindEvents() {
+        $('body').on('tap', '.back-btn', (e: Event) => {
+            App.navigateToBack();
+            return true;
+        });
     }
 }
