@@ -1,0 +1,26 @@
+@font-face {
+    font-family: 'Fontello'
+    src: url('../../fonts/fontello.woff') format('woff')
+    font-weight: normal
+    font-style: normal
+}
+
+icon(name, width, height, color = black, left = 0, top = 0, font-size = 12px)
+    &:before
+        font-family: 'Fontello'
+        color: color
+        position: absolute
+        display: block
+        left: left
+        top: top
+        width: width
+        height: height
+        line-height: height
+        text-align: center
+        text-indent: 0
+        text-shadow: inherit
+        font-size: font-size
+
+    if name is 'left-arrow'
+        &:before
+            content: '\e800'
