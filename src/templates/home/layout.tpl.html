@@ -1,14 +1,15 @@
 <section class="view hidden" id="home">
+  <div class="when">
+    <button class="btn active" data-date="<%= Date.now() %>" class="active">Aujourd'hui</button>
+    <button class="btn">Demain</button>
+    <button class="btn">Plus tard</button>
+    <button class="btn go">Go</button>
+  </div>
   <div class="search container">
     <form>
       <input name="start" type="text" placeholder="Départ">
       <input name="end" type="text" placeholder="Arrivée">
     </form>
-    <!-- <div class="when"> -->
-    <!--   <button class="btn active" data-date="<%= Date.now() %>" class="active">Aujourd'hui</button> -->
-    <!--   <button class="btn">Demain</button> -->
-    <!--   <button class="btn">Plus tard</button> -->
-    <!-- </div> -->
   </div>
   <div class="stations">
     <h2>Stations</h2>

@@ -52,7 +52,8 @@ class Home extends View implements IView {
         super.bindEvent('keyup', 'input[name=start], input[name=end]', this.onStationKeyUp);
         super.bindEvent('focus', 'input[name=start], input[name=end]', this.onStationFocus);
         super.bindEvent('tap', '.suggestions > li', this.onSuggestionSelected);
-        super.bindEvent('tap', '.when .btn', this.onDaySelected);
+        super.bindEvent('tap', '.when .btn:not(.go)', this.onDaySelected);
+        super.bindEvent('tap', '.when .btn.go', this.onTripAndScheduleSelected);
         super.bindEvent('touchstart', '.suggestions', this.onScrollingStops);
     }
 
@@ -65,7 +66,7 @@ class Home extends View implements IView {
         });
     }
 
-    suggest(suggestions: seq.IList<any>): Q.Promise<void> {
+    suggest(term: string, suggestions: seq.IList<any>): Q.Promise<void> {
         var $scope = super.$scope();
         var $suggestions = $scope.find('.suggestions');
         $suggestions.empty();
@@ -78,7 +79,7 @@ class Home extends View implements IView {
                     name: s.name
                 };
             });
-            var dom = tmpl(t, { stations: data });
+            var dom = tmpl(t, { term: term, stations: data });
             $suggestions.html(dom);
             this.myIScroll.refresh();
         });
@@ -93,7 +94,7 @@ class Home extends View implements IView {
             this.clearSuggestions();
         } else {
             var founds = TernaryTree.search(term.toLowerCase(), stopsTree, 20);
-            this.suggest(founds);
+            this.suggest(term, founds);
         }
         return true;
     }
@@ -102,22 +103,6 @@ class Home extends View implements IView {
         var $scope = this.$scope();
         $scope.find('.stations').removeClass('searching');
         $scope.find('.suggestions').empty();
-    }
-
-    onceSelected(name: string): void {
-        var $suggestions = this.$scope().find('.suggestions');
-        if($suggestions.is('.start')) {
-            $suggestions.attr('data-start', name);
-            var $start = this.$scope().find('[name=start]');
-            $start.val(name);
-            $start.blur();
-            this.clearSuggestions();
-        } else if($suggestions.is('.end')) {
-            $suggestions.attr('data-end', name);
-            this.$scope().find('[name=end]').val(name);
-            this.clearSuggestions();
-        }
-        this.lookForTrip();
     }
 
     onStationFocus(e: Event): boolean {
@@ -131,6 +116,11 @@ class Home extends View implements IView {
         return true;
     }
 
+    onScrollingStops(e: Event): boolean {
+        this.$scope().find('input[name=start], input[name=end]').blur();
+        return true;
+    }
+
     onSuggestionSelected(e: Event): boolean {
         var $suggestion = $(e.currentTarget);
         var name = $suggestion.attr('data-name');
@@ -138,23 +128,67 @@ class Home extends View implements IView {
         return true;
     }
 
+    onceSelected(name: string): void {
+        var $suggestions = this.$scope().find('.suggestions');
+        if($suggestions.is('.start')) {
+            this.fillSelectedStart(name);
+            this.$scope().find('input[name=start]').blur();
+            this.clearSuggestions();
+        } else if($suggestions.is('.end')) {
+            this.fillSelectedEnd(name);
+            this.clearSuggestions();
+        }
+
+        this.maybeSelectedStart().foreach((start) => {
+            this.maybeSelectedEnd().foreach((end) => {
+                App.navigateToHomeWhen(start, end);
+            });
+        });
+    }
+
     when(): number {
         var timestamp = this.$scope().find('.when .active').attr('data-date');
         return parseInt(timestamp, 10);
     }
 
-    lookForTrip(): void {
-        var $suggestions = this.$scope().find('.suggestions');
-        opt.Option<any>($suggestions.attr('data-start')).foreach((start) => {
-            opt.Option<any>($suggestions.attr('data-end')).foreach((end) => {
-                App.navigateToTimetable(start, end, this.when());
-            });
-        });
+    fillSelectedStart(start: string): void {
+        this.$scope().find('.suggestions').attr('data-start', start);
+        this.$scope().find('input[name=start]').val(start);
     }
 
-    onScrollingStops(e: Event): boolean {
-        this.$scope().find('input[name=start], input[name=end]').blur();
+    fillSelectedEnd(end: string): void {
+        this.$scope().find('.suggestions').attr('data-end', end);
+        this.$scope().find('input[name=end]').val(end);
+    }
+
+    maybeSelectedStart(): opt.IOption<string> {
+        var $suggestions = this.$scope().find('.suggestions');
+        return opt.Option<any>($suggestions.attr('data-start'));
+    }
+
+    maybeSelectedEnd(): opt.IOption<string> {
+        var $suggestions = this.$scope().find('.suggestions');
+        return opt.Option<any>($suggestions.attr('data-end'));
+    }
+
+    onTripAndScheduleSelected(e: Event): boolean {
+        this.maybeSelectedStart().flatMap((start) => {
+            return this.maybeSelectedEnd().map((end) => {
+                App.navigateToTimetable(start, end, this.when());
+            });
+        }).getOrElse(() => {
+            utils.oops('Unable to find start & end in order to go to timetable.');
+        });
         return true;
+    }
+
+    displayWhen(start: string, end: string) {
+        this.fillSelectedStart(start);
+        this.fillSelectedEnd(end);
+        var $when = this.$scope().find('.when');
+        setTimeout(() => {
+            $when.addClass('open');
+        }, 120);
     }
 
     onDaySelected(e: Event): boolean {

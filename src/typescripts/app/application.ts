@@ -6,6 +6,7 @@ import seq = require('./lib/immutable/List');
 import utils = require('./utils/utils');
 import IView = require('./views/IView');
 import Timetable = require('./views/Timetable');
+import Home = require('./views/Home');
 import Trip = require('./views/Trip');
 import Setup = require('./views/Setup');
 import Storage = require('./db/storage');
@@ -65,6 +66,16 @@ export function init(views: seq.IList<IView>) {
         });
     });
 
+    Path.map('#/schedule/:start/:end').to(function() {
+        ensureInitApp('home').then(() => {
+            var homeView = <Home> view(views, 'home');
+            var start = this.params['start'];
+            var end = this.params['end'];
+            homeView.show();
+            homeView.displayWhen(start, end);
+        });
+    });
+
     Path.map('#/timetable/:start/:end/:when').to(function() {
         ensureInitApp('timetable').then(() => {
             var start = this.params['start'];
@@ -118,6 +129,10 @@ function navigate(path: string): boolean {
 
 export function navigateToHome(): void {
     navigate('/');
+}
+
+export function navigateToHomeWhen(start: string, end: string): void {
+    navigate('/schedule/' + start + '/' + end)
 }
 
 export function navigateToTrip(tripId: string): void {

@@ -2,8 +2,8 @@
 
 function fetchEntry(): Q.Promise<string> {
     var d = Q.defer<any>();
-    var url = 'http://195.154.9.131/api';
-    //var url = 'http://127.0.0.1:9000/api';
+    //var url = 'http://195.154.9.131/api';
+    var url = 'http://127.0.0.1:9000/api';
 
     $.ajax({
         url: url,
@@ -19,8 +19,8 @@ function fetchEntry(): Q.Promise<string> {
 
 function fetchDB(version: string) {
     var d = Q.defer<any>();
-    var url = 'http://195.154.9.131/api/db/' + version;
-    //var url = 'http://127.0.0.1:9000/api/db';
+    //var url = 'http://195.154.9.131/api/db/' + version;
+    var url = 'http://127.0.0.1:9000/api/db/' + version;
 
     $.ajax({
         url: url,

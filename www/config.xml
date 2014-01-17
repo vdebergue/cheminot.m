@@ -6,4 +6,5 @@
     <content src="index.html" />
     <access origin="*" />
     <preference name="Fullscreen" value="false" />
+    <preference name="DisallowOverscroll" value="true" />
 </widget>
