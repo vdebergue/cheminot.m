@@ -45,7 +45,7 @@ class Home extends View implements IView {
         var titleHeight = 44;
         var ios7Offet = utils.isIOS7() ? 20 : 0;
         var height = htmlOffset.height - headerOffset.height - viewOffset.height - titleHeight - ios7Offet;
-        $scope.find('.stations').css('height', height);
+        $scope.find('#wrapper').css('height', height);
     }
 
     bindEvents(): void {
