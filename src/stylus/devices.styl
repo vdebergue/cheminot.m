@@ -1,0 +1,180 @@
+scale(value, ratio)
+  value * ratio
+
+header_height_portrait = 44px
+header_size_portrait = 17px
+input_height_portrait = 34px
+input_size_portrait = 14px
+h2_size_portrait = 17px
+btn_size_portrait = 18px
+
+header_height_landscape = 32px
+header_size_landscape = 12px
+input_height_landscape = 25px
+input_size_landscape = 10px
+h2_size_landscape = 12px
+btn_size_landscape = 13px
+
+// IPHONE (default)
+@media only screen {
+    header, .list li {
+        height: header_height_portrait
+        font-size: header_size_portrait
+    }
+
+    input {
+        height: input_height_portrait
+        font-size: input_size_portrait
+    }
+
+    h2 {
+        font-size: h2_size_portrait
+    }
+
+    .btn {
+        font-size: btn_size_portrait
+    }
+}
+
+@media only screen {
+    header, .list li {
+        height: header_height_landscape
+        font-size: header_size_landscape
+    }
+
+    input {
+        height: input_height_landscape
+        font-size: input_size_landscape
+    }
+
+    h2 {
+        font-size: h2_size_landscape
+    }
+
+    .btn {
+        font-size: btn_size_landscape
+    }
+}
+
+// IPAD
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) {
+    header, .list li {
+        height: scale(header_height_portrait, 2)
+        font-size: scale(header_size_portrait, 2)
+    }
+
+    input {
+        height: scale(input_height_portrait, 2)
+        font-size: scale(input_size_portrait, 2)
+    }
+
+    h2 {
+        font-size: scale(h2_size_portrait, 2)
+    }
+
+    .btn {
+        font-size: scale(btn_size_portrait, 2)
+    }
+}
+
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : landscape) {
+    header, .list li {
+        height: scale(header_height_portrait, 2)
+        font-size: scale(header_size_portrait, 2)
+    }
+
+    input {
+        height: scale(input_height_portrait, 2)
+        font-size: scale(input_size_portrait, 2)
+    }
+
+    h2 {
+        font-size: scale(h2_size_portrait, 2)
+    }
+
+    .btn {
+        font-size: scale(btn_size_portrait, 2)
+    }
+}
+
+// NEXUS 10
+@media only screen and (min-device-width : 800px) and (max-device-width : 1280px) {
+    header, .list li {
+        height: scale(header_height_portrait, 2)
+        font-size: scale(header_size_portrait, 2)
+    }
+
+    input {
+        height: scale(input_height_portrait, 2)
+        font-size: scale(input_size_portrait, 2)
+    }
+
+    h2 {
+        font-size: scale(h2_size_portrait, 2)
+    }
+
+    .btn {
+        font-size: scale(btn_size_portrait, 2)
+    }
+}
+
+@media only screen and (min-device-width : 800px) and (max-device-width : 1280px) {
+    header, .list li {
+        height: scale(header_height_portrait, 2)
+        font-size: scale(header_size_portrait, 2)
+    }
+
+    input {
+        height: scale(input_height_portrait, 2)
+        font-size: scale(input_size_portrait, 2)
+    }
+
+    h2 {
+        font-size: scale(h2_size_portrait, 2)
+    }
+
+    .btn {
+        font-size: scale(btn_size_portrait, 2)
+    }
+}
+
+// NEXUS 4
+@media only screen and (min-device-width : 384px) and (max-device-width : 640px) {
+    header, .list li {
+        height: scale(header_height_portrait, 1.2)
+        font-size: scale(header_size_portrait, 1.2)
+    }
+
+    input {
+        height: scale(input_height_portrait, 1.2)
+        font-size: scale(input_size_portrait, 1.2)
+    }
+
+    h1 {
+        font-size: scale(h2_size_portrait, 1.2)
+    }
+
+    .btn {
+        font-size: scale(btn_size_portrait, 1.2)
+    }
+}
+
+@media only screen and (min-device-width : 384px) and (max-device-width : 640px) and (orientation : landscape) {
+    header, .list li {
+        height: scale(header_height_portrait, 1.2)
+        font-size: scale(header_size_portrait, 1.2)
+    }
+
+    input {
+        height: scale(input_height_portrait, 1.2)
+        font-size: scale(input_size_portrait, 1.2)
+    }
+
+    h1 {
+        font-size: scale(h2_size_portrait, 1.2)
+    }
+
+    .btn {
+        font-size: scale(btn_size_portrait, 1.2)
+    }
+}

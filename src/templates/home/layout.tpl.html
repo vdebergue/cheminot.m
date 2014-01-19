@@ -1,8 +1,9 @@
 <section class="view hidden" id="home">
   <div class="when">
     <button class="btn active" data-date="<%= Date.now() %>" class="active">Aujourd'hui</button>
-    <button class="btn">Demain</button>
-    <button class="btn">Plus tard</button>
+    <button class="btn" data-date="<%= moment().add('days', 1).hours(12).toDate().getTime() %>">Demain</button>
+    <button class="btn">Autres</button>
+    <input type="date" name="others"/>
     <button class="btn go">Go</button>
   </div>
   <div class="search container">

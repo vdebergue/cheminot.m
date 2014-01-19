@@ -43,8 +43,8 @@ class Home extends View implements IView {
         var headerOffset = $('header').offset();
         var viewOffset = $scope.offset();
         var titleHeight = 44;
-        var ios7Offet = utils.isIOS7() ? 20 : 0;
-        var height = htmlOffset.height - headerOffset.height - viewOffset.height - titleHeight - ios7Offet;
+        var ios7Offset = utils.isIOS7() ? 20 : 0;
+        var height = htmlOffset.height - headerOffset.height - viewOffset.height - titleHeight - ios7Offset;
         $scope.find('#wrapper').css('height', height);
     }
 

@@ -16,11 +16,9 @@ html {
 }
 
 body {
-    height: 100%
-
     &.ios7 {
         header {
-            top: 20px
+            margin-top: 20px
         }
 
         #viewport {
@@ -30,7 +28,6 @@ body {
 }
 
 h1 {
-    font-size-title()
     font-family-medium()
 }
 
@@ -38,9 +35,7 @@ input {
     -webkit-appearance: none
     padding-left: 8px
     box-sizing: border-box
-    height: 34px
     width: 100%
-    font-size-normal()
     color: grey-dark
     outline: none
     border: 1px solid grey
@@ -59,17 +54,13 @@ input {
 }
 
 header {
+    display: flex
+    text-align: center
     z-index: 2
-    position: fixed
-    top: 0
-    left: 0
     width: 100%
-    height: 44px
     background: blue
     color: #FFF
     box-sizing: border-box
-    padding: 8px
-    padding-top: 13px;
 
     h1 {
         margin: auto
@@ -78,9 +69,7 @@ header {
 }
 
 #viewport {
-    position: absolute
     width: 100%
-    top: 44px
 }
 
 .view {
@@ -92,8 +81,8 @@ header {
 .list {
     li {
         padding: 14px 8px 14px 8px
-        height: 44px
-        font-size-title()
+        display: flex
+        align-items: center
         border-bottom: 1px solid grey-light
         box-sizing: border-box
         color: grey-dark
@@ -107,7 +96,6 @@ header {
     color: green
     border-radius: 4px
     background: #FFF
-    font-size-button()
 
     &.active {
         background: green
