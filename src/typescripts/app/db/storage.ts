@@ -66,8 +66,7 @@ export function installDB(onSetup: () => Q.Promise<ZeptoCollection>): Q.Promise<
             } else {
                 onSetup().then(($progress) => {
                     utils.log('Getting it from API !');
-                    utils.measureF(() => Api.db(), 'fetchApi').then((db) => {
-                        $progress.trigger('setup:fetch');
+                    utils.measureF(() => Api.db($progress), 'fetchApi').then((db) => {
                         STOPS = new opt.Some(db.treeStops);
                         return STORAGE.reset().then(() => {
                             return utils.measureF(() => STORAGE.insertStopsTree(db.treeStops), 'persistStops');

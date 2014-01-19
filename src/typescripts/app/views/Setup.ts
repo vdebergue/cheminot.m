@@ -33,8 +33,9 @@ class Setup extends View implements IView {
     $progress(): ZeptoCollection {
         var $progress =  this.$scope().find('progress');
 
-        $progress.bind('setup:fetch', () => {
-            $progress.val('30');
+        $progress.bind('setup:fetch', (e:any) => {
+            var percent = e.data[0];
+            $progress.val((percent * 30) / 100);
         });
 
         $progress.bind('setup:stops', () => {
