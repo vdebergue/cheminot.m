@@ -34,8 +34,7 @@ class Trip extends View implements IView {
         var htmlOffset = $('html').offset();
         var headerOffset = $('header').offset();
         var viewOffset = $scope.offset();
-        var titleOffset = 44;
-        var height = htmlOffset.height - headerOffset.height - viewOffset.height - titleOffset;
+        var height = htmlOffset.height - headerOffset.height - viewOffset.height;
         $scope.find('#wrapper').css('height', height);
     }
 

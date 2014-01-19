@@ -1,7 +1,6 @@
 @import 'reset';
 @import 'colors';
 @import 'font';
-@import 'icons';
 
 global-reset()
 
@@ -54,8 +53,10 @@ input {
 }
 
 header {
+    position: relative
     display: flex
-    text-align: center
+    justify-content: center
+    padding-left: 10px
     z-index: 2
     width: 100%
     background: blue
@@ -64,7 +65,6 @@ header {
 
     h1 {
         margin: auto
-        width: 95px
     }
 }
 
@@ -83,6 +83,7 @@ header {
         padding: 14px 8px 14px 8px
         display: flex
         align-items: center
+        justify-content: center
         border-bottom: 1px solid grey-light
         box-sizing: border-box
         color: grey-dark
@@ -101,18 +102,4 @@ header {
         background: green
         color: #FFF
     }
-}
-
-clear-button() {
-    margin: 0
-    padding: 0
-    height: 0
-    font-size: 0
-    border: none
-}
-
-.back-btn {
-    position: absolute
-    clear-button()
-    icon('left-arrow', 10px, 10px, #FFF, 0, 5px, 30px)
 }

@@ -1,5 +1,8 @@
-scale(value, ratio)
-  value * ratio
+@import 'buttons';
+@import 'icons';
+
+scale(value, factor)
+  value * factor
 
 header_height_portrait = 44px
 header_size_portrait = 17px
@@ -7,6 +10,7 @@ input_height_portrait = 34px
 input_size_portrait = 14px
 h2_size_portrait = 17px
 btn_size_portrait = 18px
+back_btn_size_portrait = 30px
 
 header_height_landscape = 32px
 header_size_landscape = 12px
@@ -14,6 +18,52 @@ input_height_landscape = 25px
 input_size_landscape = 10px
 h2_size_landscape = 12px
 btn_size_landscape = 13px
+back_btn_size_landscape = 18px
+
+device(min_width, max_width, factor)
+    portrait = "only screen and (min-device-width : " + min_width + ") and (max-device-width : " + max_width + ")"
+    @media portrait
+        header, .list li {
+            height: scale(header_height_portrait, factor)
+            font-size: scale(header_size_portrait, factor)
+        }
+
+        input {
+            height: scale(input_height_portrait, factor)
+            font-size: scale(input_size_portrait, factor)
+        }
+
+        h2 {
+            font-size: scale(h2_size_portrait, factor)
+        }
+
+        .btn {
+            font-size: scale(btn_size_portrait, factor)
+        }
+
+        back_button(scale(back_btn_size_portrait, factor))
+
+    landscape = "only screen and (min-device-width : " + min_width + ") and (max-device-width : " + max_width + ") and (orientation : landscape)"
+    @media landscape
+        header, .list li {
+            height: scale(header_height_portrait, factor)
+            font-size: scale(header_size_portrait, factor)
+        }
+
+        input {
+            height: scale(input_height_portrait, factor)
+            font-size: scale(input_size_portrait, factor)
+        }
+
+        h2 {
+            font-size: scale(h2_size_portrait, factor)
+        }
+
+        .btn {
+            font-size: scale(btn_size_portrait, factor)
+        }
+
+        back_button(scale(back_btn_size_landscape, factor))
 
 // IPHONE (default)
 @media only screen {
@@ -34,11 +84,13 @@ btn_size_landscape = 13px
     .btn {
         font-size: btn_size_portrait
     }
+
+    back_button(scale(back_btn_size_portrait, 1))
 }
 
-@media only screen {
+@media only screen and (orientation : landscape) {
     header, .list li {
-        height: header_height_landscape
+        height: header_height_portrait
         font-size: header_size_landscape
     }
 
@@ -54,127 +106,18 @@ btn_size_landscape = 13px
     .btn {
         font-size: btn_size_landscape
     }
+
+    back_button(scale(back_btn_size_landscape, 1))
 }
 
 // IPAD
-@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) {
-    header, .list li {
-        height: scale(header_height_portrait, 2)
-        font-size: scale(header_size_portrait, 2)
-    }
-
-    input {
-        height: scale(input_height_portrait, 2)
-        font-size: scale(input_size_portrait, 2)
-    }
-
-    h2 {
-        font-size: scale(h2_size_portrait, 2)
-    }
-
-    .btn {
-        font-size: scale(btn_size_portrait, 2)
-    }
-}
-
-@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : landscape) {
-    header, .list li {
-        height: scale(header_height_portrait, 2)
-        font-size: scale(header_size_portrait, 2)
-    }
-
-    input {
-        height: scale(input_height_portrait, 2)
-        font-size: scale(input_size_portrait, 2)
-    }
-
-    h2 {
-        font-size: scale(h2_size_portrait, 2)
-    }
-
-    .btn {
-        font-size: scale(btn_size_portrait, 2)
-    }
-}
+device(768px, 1024px, 2)
 
 // NEXUS 10
-@media only screen and (min-device-width : 800px) and (max-device-width : 1280px) {
-    header, .list li {
-        height: scale(header_height_portrait, 2)
-        font-size: scale(header_size_portrait, 2)
-    }
-
-    input {
-        height: scale(input_height_portrait, 2)
-        font-size: scale(input_size_portrait, 2)
-    }
-
-    h2 {
-        font-size: scale(h2_size_portrait, 2)
-    }
-
-    .btn {
-        font-size: scale(btn_size_portrait, 2)
-    }
-}
-
-@media only screen and (min-device-width : 800px) and (max-device-width : 1280px) {
-    header, .list li {
-        height: scale(header_height_portrait, 2)
-        font-size: scale(header_size_portrait, 2)
-    }
-
-    input {
-        height: scale(input_height_portrait, 2)
-        font-size: scale(input_size_portrait, 2)
-    }
-
-    h2 {
-        font-size: scale(h2_size_portrait, 2)
-    }
-
-    .btn {
-        font-size: scale(btn_size_portrait, 2)
-    }
-}
+device(800px, 1280px, 2)
 
 // NEXUS 4
-@media only screen and (min-device-width : 384px) and (max-device-width : 640px) {
-    header, .list li {
-        height: scale(header_height_portrait, 1.2)
-        font-size: scale(header_size_portrait, 1.2)
-    }
+device(384px, 640px, 1.2)
 
-    input {
-        height: scale(input_height_portrait, 1.2)
-        font-size: scale(input_size_portrait, 1.2)
-    }
-
-    h1 {
-        font-size: scale(h2_size_portrait, 1.2)
-    }
-
-    .btn {
-        font-size: scale(btn_size_portrait, 1.2)
-    }
-}
-
-@media only screen and (min-device-width : 384px) and (max-device-width : 640px) and (orientation : landscape) {
-    header, .list li {
-        height: scale(header_height_portrait, 1.2)
-        font-size: scale(header_size_portrait, 1.2)
-    }
-
-    input {
-        height: scale(input_height_portrait, 1.2)
-        font-size: scale(input_size_portrait, 1.2)
-    }
-
-    h1 {
-        font-size: scale(h2_size_portrait, 1.2)
-    }
-
-    .btn {
-        font-size: scale(btn_size_portrait, 1.2)
-    }
-}
+// NEXUS 5
+device(360px, 640px, 1.2)

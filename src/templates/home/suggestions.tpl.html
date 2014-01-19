@@ -1,5 +1,6 @@
 <% stations.foreach(function(station) { %>
 <li data-name="<%= station.name %>">
-  <span class="match"><%= _(station.name).take(term.length).join('') %></span><%= _(station.name).drop(term.length).join('') %>
+  <span class="match"><%= _(station.name).take(term.length).join('') %></span>
+  <span><%= _(station.name).drop(term.length).join('') %></span>
 </li>
 <% }); %>

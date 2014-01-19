@@ -5,22 +5,16 @@
     font-style: normal
 }
 
-icon(name, width, height, color = black, left = 0, top = 0, font-size = 12px)
+icon(name, width, height, color = black, font-size = 12px)
     &:before
         font-family: 'Fontello'
         color: color
-        position: absolute
         display: block
-        left: left
-        top: top
         width: width
         height: height
         line-height: height
-        text-align: center
-        text-indent: 0
-        text-shadow: inherit
-        font-size: font-size
 
     if name is 'left-arrow'
         &:before
             content: '\e800'
+            font-size: font-size
