@@ -13,6 +13,7 @@ import TernaryTree = require('../utils/ternaryTree');
 
 declare var tmpl;
 declare var IScroll;
+declare var Zanimo;
 
 export = Home;
 
@@ -187,7 +188,14 @@ class Home extends View implements IView {
         this.fillSelectedEnd(end);
         var $when = this.$scope().find('.when');
         setTimeout(() => {
-            $when.addClass('open');
+            var viewOffset = this.$scope().offset();
+            var ios7Offset = utils.isIOS7() ? 20 : 0;
+            var translate = viewOffset.top + viewOffset.height - ios7Offset;
+            Zanimo.transform($when.get(0), 'translate3d(0,'+ translate + 'px,0)').then(() => {
+                window.setTimeout(() => {
+                    $when.addClass('done');
+                }, 120);
+            });
         }, 120);
     }
 

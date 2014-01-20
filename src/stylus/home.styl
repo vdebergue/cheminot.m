@@ -5,20 +5,20 @@
 
     .when {
         text-align: center
-        position: fixed
+        position: absolute
         background: #F0F0F0
         width: 100%
-        transition: 0.2s
-        height: 0
-        bottom: 0
-        z-index: 2
+        top: 0
+        z-index: -1
+        transition: 0.250s
 
-        &.open {
-            height: 200px
+        &.done {
+            z-index: 1
         }
     }
 
     .search {
+        background: #FFF
         padding-top: 15px
 
         form {
