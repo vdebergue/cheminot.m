@@ -162,7 +162,7 @@ function clearStore(name: string): Q.Promise<void> {
 
 class IndexedDBStorage implements Storage.IStorage {
 
-    insertStopsTree(stopsTree): Q.Promise<void> {
+    insertStopsTree(stopsTree: any): Q.Promise<void> {
         return add('cache', { key: 'treeStops', value: stopsTree });
     }
 
@@ -180,6 +180,18 @@ class IndexedDBStorage implements Storage.IStorage {
             return add('trips', trips);
         }).then(() => {
             return null;
+        });
+    }
+
+    putVersion(version: string): Q.Promise<void> {
+        return put('cache', { key: 'version', value: version });
+    }
+
+    version(): Q.Promise<opt.IOption<string>> {
+        return get('cache', 'by_key', 'version').then((maybe) => {
+            return maybe.map((d) => {
+                return d.value;
+            });
         });
     }
 

@@ -1,50 +1,79 @@
 /// <reference path='../../dts/Q.d.ts'/>
 /// <reference path='../../dts/zepto.d.ts'/>
 
-function fetchEntry($progress: ZeptoCollection): Q.Promise<string> {
-    var d = Q.defer<any>();
-    var url = 'http://195.154.9.131/api';
-    //var url = 'http://127.0.0.1:9000/api';
+import utils = require('../utils/utils');
 
-    var req = $.ajax({
+function fetchEntry(): Q.Promise<any> {
+    var d = Q.defer<any>();
+    //var url = 'http://195.154.9.131/api';
+    var url = 'http://127.0.0.1:9000/api';
+
+    $.ajax({
         url: url,
-        success: (data) => {
-            d.resolve(data.version);
+        success: (api) => {
+            d.resolve(api);
         },
         error: () => {
             d.reject("Failed to load DB version !");
         }
     });
 
-    req.addEventListener("progress", (e) => {
-        if(e.lengthComputable) {
-            var percent = (e.loaded / e.total) * 100;
-            $progress.trigger('setup:fetch', [percent]);
+    return d.promise;
+}
+
+function fetchSize(url: string): Q.Promise<number> {
+    var d = Q.defer<any>();
+
+    $.ajax({
+        type: 'HEAD',
+        url: url,
+        success: (x, y, req) => {
+            var size = parseInt(req.getResponseHeader("X-Content-Length"), 10);
+            d.resolve(size);
+        },
+        error: () => {
+            var errorMessage = "Failed to load DB size from " + url;
+            utils.error(errorMessage);
+            d.reject(errorMessage);
         }
+    });
+
+    return d.promise;
+}
+
+function fetchDB(api: any, size: number, $progress: ZeptoCollection) {
+    var d = Q.defer<any>();
+
+    var req = $.ajax({
+        url: api.url,
+        success: (data) => {
+            d.resolve(data);
+        },
+        error: () => {
+            var errorMessage = 'Failed to load DB from ' + api.url;
+            utils.error(errorMessage);
+            d.reject(errorMessage);
+        }
+    });
+
+    req.addEventListener("progress", (e) => {
+        var percent = (e.loaded / size) * 100;
+        $progress.trigger('setup:fetch', [percent]);
     }, false);
 
     return d.promise;
 }
 
-function fetchDB(version: string) {
-    var d = Q.defer<any>();
-    var url = 'http://195.154.9.131/api/db/' + version;
-    //var url = 'http://127.0.0.1:9000/api/db/' + version;
-
-    $.ajax({
-        url: url,
-        success: (data) => {
-            d.resolve(data);
-        },
-        error: () => {
-            d.reject("Failed to load DB " + version);
-        }
+export function db($progress: ZeptoCollection): Q.Promise<any> {
+    return fetchEntry().then((api) => {
+        return fetchSize(api.url).then((size) => {
+            return fetchDB(api, size, $progress);
+        });
     });
-    return d.promise;
 }
 
-export function db($progress: ZeptoCollection): Q.Promise<any> {
-    return fetchEntry($progress).then((version) => {
-        return fetchDB(version);
+export function version(): Q.Promise<string> {
+    return fetchEntry().then((api) => {
+        return api.version;
     });
 }

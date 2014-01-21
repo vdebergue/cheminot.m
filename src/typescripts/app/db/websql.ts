@@ -123,6 +123,42 @@ class WebSqlStorage implements Storage.IStorage {
         });
     }
 
+    putVersion(version: string): Q.Promise<void> {
+        var d = Q.defer<void>();
+        db().then((DB) => {
+            DB.transaction((t) => {
+                t.executeSql('REPLACE INTO cache (key, value) VALUES (?, ?)', ['version', version], () => {
+                    d.resolve(null);
+                }, (t, error) => {
+                    utils.error(error);
+                    d.reject(error);
+                });
+            });
+        });
+        return d.promise;
+    }
+
+    version(): Q.Promise<opt.IOption<string>> {
+        var d = Q.defer<any>();
+        db().then((DB) => {
+            DB.readTransaction((t) => {
+                t.executeSql("SELECT value FROM cache WHERE key='version'", [], (t, data) => {
+                    var maybeVersion = opt.Option(data.rows).filter((rows:any) => {
+                        return rows.length > 0;
+                    }).map((rows:any) => {
+                        var r = rows.item(0);
+                        return r.value;
+                    });
+                    d.resolve(maybeVersion);
+                }, (t, error) => {
+                    utils.error(error);
+                    d.reject(error);
+                });
+            });
+        });
+        return d.promise;
+    }
+
     tripById(id: string): Q.Promise<opt.IOption<any>> {
         return Storage.TRIPS.flatMap((trips) => {
             return opt.Option(trips[id]);

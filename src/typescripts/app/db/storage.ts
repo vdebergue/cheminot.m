@@ -13,6 +13,8 @@ export interface IStorage {
     reset(): Q.Promise<void>;
     insertStopsTree(stopsTree): Q.Promise<void>;
     insertTrips(trips: Array<any>, $progress: ZeptoCollection): Q.Promise<void>;
+    putVersion(version: string): Q.Promise<void>;
+    version(): Q.Promise<opt.IOption<string>>;
     tripById(id: string): Q.Promise<opt.IOption<any>>;
     tripsByIds(ids: seq.IList<string>, direction: opt.IOption<string>): Q.Promise<seq.IList<any>>;
 }
@@ -51,35 +53,56 @@ export function isInitialized(): boolean {
     return TRIPS.isDefined() && STOPS.isDefined();
 }
 
+function forceInstallDB(STORAGE: IStorage, onSetup: () => Q.Promise<ZeptoCollection>): Q.Promise<void> {
+    return onSetup().then(($progress) => {
+        utils.log('Installing from scratch DB');
+        return utils.measureF(() => Api.db($progress), 'fetchApi').then((db) => {
+            STOPS = new opt.Some(db.treeStops);
+            return STORAGE.reset().then(() => {
+                return utils.measureF(() => STORAGE.insertStopsTree(db.treeStops), 'persistStops');
+            }).then(() => {
+                return STORAGE.putVersion(db.version);
+            }).then(() => {
+                $progress.trigger('setup:stops');
+                return utils.measureF(() => STORAGE.insertTrips(db.trips, $progress), 'persistTrips');
+            }).then(() => {
+                $progress.trigger('setup:done');
+            });
+        });
+    });
+}
+
 export function installDB(onSetup: () => Q.Promise<ZeptoCollection>): Q.Promise<void> {
-    utils.log('Installing DB...');
     var STORAGE = impl();
     var d = Q.defer<any>();
     if(STOPS.isEmpty()) {
-        STORAGE.getStopsTree().then((maybeStops) => {
-            if(maybeStops.isDefined()) {
-                maybeStops.foreach((stops) => {
-                    STOPS = new opt.Some(stops);
-                    d.resolve(null);
-                    return Q<void>(null);
-                });
-            } else {
-                onSetup().then(($progress) => {
-                    utils.log('Getting it from API !');
-                    utils.measureF(() => Api.db($progress), 'fetchApi').then((db) => {
-                        STOPS = new opt.Some(db.treeStops);
-                        return STORAGE.reset().then(() => {
-                            return utils.measureF(() => STORAGE.insertStopsTree(db.treeStops), 'persistStops');
-                        }).then(() => {
-                            $progress.trigger('setup:stops');
-                            return utils.measureF(() => STORAGE.insertTrips(db.trips, $progress), 'persistTrips');
-                        }).then(() => {
-                            $progress.trigger('setup:done');
+        STORAGE.version().then((maybeVersion) => {
+            STORAGE.getStopsTree().then((maybeStops) => {
+                if(maybeVersion.isDefined() && maybeStops.isDefined()) {
+                    maybeVersion.map((versionDB) => {
+                        maybeStops.foreach((stops) => {
+                            STOPS = new opt.Some(stops);
+                        });
+                        Q.timeout(Api.version(), 2000).then((versionApi) => {
+                            if(versionDB != versionApi) {
+                                alert('A new version will be installed');
+                                forceInstallDB(STORAGE, onSetup).then(() => {
+                                    d.resolve(null);
+                                });
+                            } else {
+                                d.resolve(null);
+                            }
+                        }).fail((reason) => {
+                            utils.error('Unable to fetch /api: ' + reason)
                             d.resolve(null);
                         });
                     });
-                });
-            }
+                } else {
+                    forceInstallDB(STORAGE, onSetup).then(() => {
+                        d.resolve(null);
+                    });
+                }
+            });
         }).fail((reason) => {
             utils.error(JSON.stringify(reason));
             d.reject(reason);
