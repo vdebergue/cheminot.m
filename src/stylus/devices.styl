@@ -41,6 +41,10 @@ device(min_width, max_width, factor)
             font-size: scale(btn_size_portrait, factor)
         }
 
+        .icon {
+            font-size: scale(btn_size_portrait, factor)
+        }
+
         back_button(scale(back_btn_size_portrait, factor))
 
     landscape = "only screen and (min-device-width : " + min_width + ") and (max-device-width : " + max_width + ") and (orientation : landscape)"
@@ -60,6 +64,10 @@ device(min_width, max_width, factor)
         }
 
         .btn {
+            font-size: scale(btn_size_portrait, factor)
+        }
+
+        .icon {
             font-size: scale(btn_size_portrait, factor)
         }
 
@@ -85,6 +93,10 @@ device(min_width, max_width, factor)
         font-size: btn_size_portrait
     }
 
+    .icon {
+        font-size: btn_size_portrait
+    }
+
     back_button(scale(back_btn_size_portrait, 1))
 }
 
@@ -104,6 +116,10 @@ device(min_width, max_width, factor)
     }
 
     .btn {
+        font-size: btn_size_landscape
+    }
+
+    .icon {
         font-size: btn_size_landscape
     }
 

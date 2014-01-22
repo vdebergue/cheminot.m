@@ -52,6 +52,7 @@ class Home extends View implements IView {
     bindEvents(): void {
         super.bindEvent('keyup', 'input[name=start], input[name=end]', this.onStationKeyUp);
         super.bindEvent('focus', 'input[name=start], input[name=end]', this.onStationFocus);
+        super.bindEvent('tap', '.search .reset', this.onInputReset);
         super.bindEvent('tap', '.suggestions > li', this.onSuggestionSelected);
         super.bindEvent('tap', '.when .btn:not(.go)', this.onDaySelected);
         super.bindEvent('tap', '.when .btn.go', this.onTripAndScheduleSelected);
@@ -86,6 +87,27 @@ class Home extends View implements IView {
         });
     }
 
+    onInputReset(e: Event): boolean {
+        e.preventDefault();
+        var $scope = this.$scope();
+        var $button = $(e.currentTarget);
+        var $input = $button.siblings('input');
+        var start = opt.Option<string>($scope.find('.suggestions').attr('data-start'));
+        var end = opt.Option<string>($scope.find('.suggestions').attr('data-end'));
+
+        if($input.is('[name=start]')) {
+            this.reset();
+            App.navigateToHome(new opt.None<string>(), end);
+        } else if($input.is('[name=end]')) {
+            this.reset();
+            App.navigateToHome(start, new opt.None<string>());
+        } else {
+            this.reset();
+            App.navigateToHome();
+        }
+        return true;
+    }
+
     onStationKeyUp(e: Event): boolean {
         var stopsTree = Storage.stops();
         var $scope = super.$scope();
@@ -95,6 +117,7 @@ class Home extends View implements IView {
             this.clearSuggestions();
         } else {
             var founds = TernaryTree.search(term.toLowerCase(), stopsTree, 20);
+            this.$resetFromInput($input).addClass('filled');
             this.suggest(term, founds);
         }
         return true;
@@ -131,20 +154,26 @@ class Home extends View implements IView {
 
     onceSelected(name: string): void {
         var $suggestions = this.$scope().find('.suggestions');
+        var maybeStart = this.maybeSelectedStart();
+        var maybeEnd = this.maybeSelectedEnd();
+
         if($suggestions.is('.start')) {
-            this.fillSelectedStart(name);
-            this.$scope().find('input[name=start]').blur();
-            this.clearSuggestions();
+            maybeStart = new opt.Some(name);
         } else if($suggestions.is('.end')) {
-            this.fillSelectedEnd(name);
-            this.clearSuggestions();
+            maybeEnd = new opt.Some(name);
         }
 
-        this.maybeSelectedStart().foreach((start) => {
-            this.maybeSelectedEnd().foreach((end) => {
-                App.navigateToHomeWhen(start, end);
+        if(maybeStart.isDefined() && maybeEnd.isEmpty()) {
+            App.navigateToHome(opt.Option<string>(name), new opt.None<string>());
+        } else if(maybeEnd.isDefined() && maybeStart.isEmpty()) {
+            App.navigateToHome(new opt.None<string>(), opt.Option<string>(name));
+        } else {
+            maybeStart.foreach((start) => {
+                maybeEnd.foreach((end) => {
+                    App.navigateToHomeWhen(start, end);
+                });
             });
-        });
+        }
     }
 
     when(): number {
@@ -152,14 +181,42 @@ class Home extends View implements IView {
         return parseInt(timestamp, 10);
     }
 
+    $resetFromInput($input: ZeptoCollection): ZeptoCollection {
+        return $input.siblings('.reset');
+    }
+
     fillSelectedStart(start: string): void {
         this.$scope().find('.suggestions').attr('data-start', start);
-        this.$scope().find('input[name=start]').val(start);
+        var $input = this.$scope().find('input[name=start]');
+        $input.val(start);
+        this.$resetFromInput($input).addClass('filled');
     }
 
     fillSelectedEnd(end: string): void {
         this.$scope().find('.suggestions').attr('data-end', end);
-        this.$scope().find('input[name=end]').val(end);
+        var $input = this.$scope().find('input[name=end]');
+        $input.val(end);
+        this.$resetFromInput($input).addClass('filled');
+    }
+
+    resetSelectedStart(): void {
+        this.$scope().find('.suggestions').removeAttr('data-start');
+        var $input = this.$scope().find('input[name=start]');
+        $input.val('');
+        this.$resetFromInput($input).removeClass('filled');
+    }
+
+    resetSelectedEnd(): void {
+        this.$scope().find('.suggestions').removeAttr('data-end');
+        var $input = this.$scope().find('input[name=end]');
+        $input.val('');
+        this.$resetFromInput($input).removeClass('filled');
+    }
+
+    reset(): void {
+        this.clearSuggestions();
+        this.resetSelectedStart();
+        this.resetSelectedEnd();
     }
 
     maybeSelectedStart(): opt.IOption<string> {
@@ -193,7 +250,7 @@ class Home extends View implements IView {
             var translate = viewOffset.top + viewOffset.height - ios7Offset;
             Zanimo.transform($when.get(0), 'translate3d(0,'+ translate + 'px,0)').then(() => {
                 window.setTimeout(() => {
-                    $when.addClass('done');
+                    $when.addClass('displayed');
                 }, 120);
             });
         }, 120);

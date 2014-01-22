@@ -2,6 +2,7 @@
 
 declare var Path: any;
 
+import opt = require('lib/immutable/Option');
 import seq = require('./lib/immutable/List');
 import utils = require('./utils/utils');
 import IView = require('./views/IView');
@@ -60,9 +61,28 @@ export function init(views: seq.IList<IView>) {
         });
     }
 
-    Path.map('#/').to(() => {
+    Path.map('#/').to(function() {
         ensureInitApp('home').then(() => {
-            view(views, 'home').show();
+            var homeView = <Home>view(views, 'home');
+            homeView.show();
+        });
+    });
+
+    Path.map('#/start/:start').to(function() {
+        ensureInitApp('home').then(() => {
+            var start = this.params['start'];
+            var homeView = <Home>view(views, 'home');
+            homeView.fillSelectedStart(start);
+            homeView.show();
+        });
+    });
+
+    Path.map('#/end/:end').to(function() {
+        ensureInitApp('home').then(() => {
+            var end = this.params['end'];
+            var homeView = <Home>view(views, 'home');
+            homeView.fillSelectedEnd(end);
+            homeView.show();
         });
     });
 
@@ -127,8 +147,21 @@ function navigate(path: string): boolean {
     }
 }
 
-export function navigateToHome(): void {
-    navigate('/');
+export function navigateToHome(maybeStart: opt.IOption<string> = new opt.None<string>(), maybeEnd: opt.IOption<string> = new opt.None<string>()): void {
+    if(!(maybeStart.isDefined() && maybeEnd.isDefined())) {
+        var route = maybeStart.map((start) => {
+            return '/start/' + start;
+        }).getOrElse(() => {
+            return maybeEnd.map((end) => {
+                return '/end/' + end;
+            }).getOrElse(() => {
+                return '/';
+            });
+        });
+        navigate(route);
+    } else {
+        utils.oops('Unable to navigate to home: both start & end are already filled !');
+    }
 }
 
 export function navigateToHomeWhen(start: string, end: string): void {
