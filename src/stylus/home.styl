@@ -4,28 +4,44 @@
 #home {
 
     .when {
-        text-align: center
         position: absolute
         background: #F0F0F0
         width: 100%
         top: 0
         z-index: -1
         transition: 0.250s
+        padding-top: 15px
+        padding-bottom: 10px
+        text-align: center
 
-        .btn.other {
-            position: relative
-            display: inline-block
-            padding: 5px
-            vertical-align: -1px
+        .date {
+            display: flex
+            justify-content: center
 
-            input[type=date] {
-                opacity: 0
-                position: absolute
-                top: 0
-                left: 0
-                right: 0
-                bottom: 0
+            .btn {
+                margin-left: 5px
+                margin-right: 5px
+
+                &.other {
+                    padding: 5px
+                    position: relative
+
+                    input[type=date] {
+                        margin: 0
+                        padding: 0
+                        opacity: 0
+                        position: absolute
+                        top: 0
+                        left: 0
+                        right: 0
+                        bottom: 0
+                    }
+                }
             }
+        }
+
+        .btn.go {
+            margin-top: 15px
         }
 
         &.displayed {
@@ -106,11 +122,6 @@
             width: 100%
 
             li {
-
-                span {
-                    line-height: 0
-                }
-
                 .match {
                     font-weight: bold
                 }
