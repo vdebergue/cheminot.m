@@ -54,7 +54,8 @@ class Home extends View implements IView {
         super.bindEvent('focus', 'input[name=start], input[name=end]', this.onStationFocus);
         super.bindEvent('tap', '.search .reset', this.onInputReset);
         super.bindEvent('tap', '.suggestions > li', this.onSuggestionSelected);
-        super.bindEvent('tap', '.when .btn:not(.go)', this.onDaySelected);
+        super.bindEvent('tap', '.when .btn:not(.go)', this.onWhenTapped);
+        super.bindEvent('change', '.when input[type=date]', this.onDaySelected);
         super.bindEvent('tap', '.when .btn.go', this.onTripAndScheduleSelected);
         super.bindEvent('touchstart', '.suggestions', this.onScrollingStops);
     }
@@ -177,8 +178,14 @@ class Home extends View implements IView {
     }
 
     when(): number {
-        var timestamp = this.$scope().find('.when .active').attr('data-date');
-        return parseInt(timestamp, 10);
+        var $btn = this.$scope().find('.when .active')
+        var timestamp = Date.now();
+        if($btn.is('.tomorrow')) {
+            timestamp = moment().add('days', 1).hours(12).toDate().getTime();
+        } else if($btn.is('.other')) {
+            timestamp = parseInt($btn.attr('data-date'), 10);
+        }
+        return timestamp;
     }
 
     $resetFromInput($input: ZeptoCollection): ZeptoCollection {
@@ -256,10 +263,22 @@ class Home extends View implements IView {
         }, 120);
     }
 
-    onDaySelected(e: Event): boolean {
+    onWhenTapped(e: Event): boolean {
         var $btn = $(e.currentTarget);
         $btn.siblings('.btn.active').removeClass('active');
         $btn.addClass('active');
+        return true;
+    }
+
+    onDaySelected(e: Event): boolean {
+        var $input = $(e.currentTarget);
+        var $btn = $input.parent();
+        var date = $input.val();
+        if(date != '') {
+            $btn.find('.label').text(date);
+            $input.val('');
+            $btn.attr('data-date', moment(date).toDate().getTime());
+        }
         return true;
     }
 }
