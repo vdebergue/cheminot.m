@@ -43,6 +43,10 @@ device(min_width, max_width, factor)
 
         .icon {
             font-size: scale(btn_size_portrait, factor)
+
+            &.reset {
+                height: scale(input_size_portrait, factor)
+            }
         }
 
         back_button(scale(back_btn_size_portrait, factor))
@@ -50,25 +54,29 @@ device(min_width, max_width, factor)
     landscape = "only screen and (min-device-width : " + min_width + ") and (max-device-width : " + max_width + ") and (orientation : landscape)"
     @media landscape
         header, .list li {
-            height: scale(header_height_portrait, factor)
-            font-size: scale(header_size_portrait, factor)
+            height: scale(header_height_landscape, factor)
+            font-size: scale(header_size_landscape, factor)
         }
 
         input {
-            height: scale(input_height_portrait, factor)
-            font-size: scale(input_size_portrait, factor)
+            height: scale(input_height_landscape, factor)
+            font-size: scale(input_size_landscape, factor)
         }
 
         h2 {
-            font-size: scale(h2_size_portrait, factor)
+            font-size: scale(h2_size_landscape, factor)
         }
 
         .btn {
-            font-size: scale(btn_size_portrait, factor)
+            font-size: scale(btn_size_landscape, factor)
         }
 
         .icon {
-            font-size: scale(btn_size_portrait, factor)
+            font-size: scale(btn_size_landscape, factor)
+
+            &.reset {
+                height: scale(input_size_landscape, factor)
+            }
         }
 
         back_button(scale(back_btn_size_landscape, factor))
@@ -95,6 +103,10 @@ device(min_width, max_width, factor)
 
     .icon {
         font-size: btn_size_portrait
+
+        &.reset {
+            height: input_size_portrait
+        }
     }
 
     back_button(scale(back_btn_size_portrait, 1))
@@ -121,6 +133,10 @@ device(min_width, max_width, factor)
 
     .icon {
         font-size: btn_size_landscape
+
+        &.reset {
+            height: input_size_landscape
+        }
     }
 
     back_button(scale(back_btn_size_landscape, 1))
