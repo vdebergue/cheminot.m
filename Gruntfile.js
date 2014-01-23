@@ -8,7 +8,7 @@ module.exports = function(grunt) {
             },
             scripts: {
                 files: ['src/stylus/**/*.styl', 'src/typescripts/**/*.ts', 'src/templates/**/*.html'],
-                tasks: ['stylus:dev', 'ts:dev', 'copy:dev'],
+                tasks: ['stylus:app', 'ts:dev', 'copy:dev'],
                 options: {
                 }
             }
@@ -22,10 +22,29 @@ module.exports = function(grunt) {
                     module: 'amd',
                     sourceMap: false
                 }
+            },
+            prod: {
+                src: ["src/typescripts/app/**/*.ts"],
+                outDir: 'tmp',
+                options: {
+                    target: 'es3',
+                    module: 'amd',
+                    sourceMap: false
+                }
+            }
+        },
+        requirejs: {
+            compile: {
+                options: {
+                    baseUrl: "tmp",
+                    name: "main",
+                    out: "www/assets/javascripts/app/main.js",
+                    declaration: true
+                }
             }
         },
         stylus: {
-            dev: {
+            app: {
                 options: {
                     paths: ['src/stylus'],
                     use: [
@@ -35,30 +54,6 @@ module.exports = function(grunt) {
                 },
                 files: {
                     'www/assets/stylesheets/app/main.css': ['src/stylus/main.styl']
-                }
-            },
-            prod: {
-                options: {
-                    paths: ['src/stylus'],
-                    compress: true,
-                    urlfunc: 'embedurl',
-                    use: [
-                        require('fluidity')
-                    ],
-                    import: []
-                },
-                files: {
-                    'www/assets/dist/main.css': ['src/stylus/**/*.styl']
-                }
-            }
-        },
-        requirejs: {
-            compile: {
-                options: {
-                    baseUrl: "www/assets/javascripts/app",
-                    name: "main",
-                    out: "www/assets/dist/main.js",
-                    declaration: true
                 }
             }
         },
@@ -88,26 +83,51 @@ module.exports = function(grunt) {
                         dest: 'www/index.html'
                     },
                     {
-                        cwd: 'www/assets/javascripts/vendors/',
+                        cwd: 'src/vendors',
                         src: ['**'],
-                        dest: 'www/assets/dist/vendors/',
-                        flatten: true,
+                        dest: 'www/assets/javascripts/vendors',
                         expand: true
                     }
                 ]
             },
             prod: {
-                cwd: 'www/assets/javascripts/vendors/',
-                src: ['**'],
-                dest: 'www/assets/dist/vendors/',
-                flatten: true,
-                expand: true
+                files: [
+                    {
+                        src: ['src/index_dist.html'],
+                        dest: 'www/index.html'
+                    },
+                    {
+                        src: ['src/cheminot.appcache'],
+                        dest: 'www/cheminot.appcache'
+                    },
+                    {
+                        cwd: 'src/fonts',
+                        src: ['**'],
+                        dest: 'www/assets/fonts',
+                        expand: true
+                    },
+                    {
+                        cwd: 'src/vendors',
+                        src: ['**'],
+                        dest: 'www/assets/javascripts/vendors',
+                        expand: true
+                    },
+                    {
+                        cwd: 'src/templates',
+                        src: ['**'],
+                        dest: 'www/templates',
+                        expand: true
+                    },
+                ]
             }
         },
         clean: {
-            app: ["www/assets/javascripts/app", "www/assets/stylesheets/app"],
-            compress: ["www/assets/dist/**/*.js"],
-            dist: ["www/assets/dist"]
+            app: [
+                "www/assets",
+                "www/index.html",
+                "www/cheminot.appcache",
+                "www/templates"
+            ]
         }
     });
 
@@ -119,8 +139,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
 
     // Here we  go !
-    grunt.registerTask('default', ['clean:app', 'stylus:dev', 'ts:dev', 'copy:dev']);
-    grunt.registerTask('dev', ['clean:app', 'stylus:dev', 'ts:dev', 'watch', 'copy:dev']);
-    grunt.registerTask('prod', ['clean:dist', 'ts:dev', 'stylus:prod', 'requirejs', 'copy:prod']);
-    grunt.registerTask('cleanAll', ['clean:app', 'clean:dist']);
+    grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev']);
+    grunt.registerTask('dev', ['clean:app', 'stylus:app', 'ts:dev', 'watch', 'copy:dev']);
+    grunt.registerTask('prod', ['stylus:app', 'ts:prod', 'requirejs', 'copy:prod']);
+    grunt.registerTask('cleanAll', ['clean:app']);
 };
