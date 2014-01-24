@@ -9,7 +9,7 @@
         width: 100%
         top: 0
         z-index: -1
-        transition: 0.250s
+        transition: 0.600s
         padding-top: 15px
         padding-bottom: 10px
         text-align: center
@@ -62,10 +62,16 @@
                 }
 
                 button.reset {
+                    display: inline-block
+                    position: absolute
+                    top: 0
+                    right: 0
                     border: none
                     outline: none
                     background: transparent
                     display: none
+                    height: 100%
+                    padding-right: 2%
 
                     &.filled {
                         display: block
@@ -73,10 +79,8 @@
 
                     &:before {
                         color: #525252
-                        position: absolute
-                        top: 9px
-                        right: 10px
                         content: 'X'
+                        vertical-align: -2px
                     }
                 }
 
@@ -122,6 +126,11 @@
             width: 100%
 
             li {
+
+                > span {
+                    line-height: 1px
+                }
+
                 .match {
                     font-weight: bold
                 }

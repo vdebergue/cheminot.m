@@ -137,14 +137,9 @@ export function init(views: seq.IList<IView>) {
     }
 }
 
-function navigate(path: string): boolean {
+function navigate(path: string): void {
     var hash = "#" + path;
-    if(window.location.hash !== hash) {
-        window.location.hash = hash;
-        return true;
-    } else {
-        return false;
-    }
+    window.location.hash = hash;
 }
 
 export function navigateToHome(maybeStart: opt.IOption<string> = new opt.None<string>(), maybeEnd: opt.IOption<string> = new opt.None<string>()): void {

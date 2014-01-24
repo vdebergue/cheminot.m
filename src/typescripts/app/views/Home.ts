@@ -114,13 +114,23 @@ class Home extends View implements IView {
         var $scope = super.$scope();
         var $input = $(e.currentTarget);
         var term = $input.val();
-        if(term.trim() === '') {
-            this.clearSuggestions();
-        } else {
-            var founds = TernaryTree.search(term.toLowerCase(), stopsTree, 20);
-            this.$resetFromInput($input).addClass('filled');
-            this.suggest(term, founds);
-        }
+        var $when = this.$scope().find('.when');
+        var whenIsDeplayed = $when.is('.displayed')
+
+        var eventuallyTransition =  whenIsDeplayed ? this.hideWhen() : Q<void>(null);
+        eventuallyTransition.then(() => {
+            var timeout = whenIsDeplayed ? 600 : 0;
+            setTimeout(() => {
+                if(term.trim() === '') {
+                    $input.siblings('.reset').removeClass('filled');
+                    this.clearSuggestions();
+                } else {
+                    var founds = TernaryTree.search(term.toLowerCase(), stopsTree, 20);
+                    this.$resetFromInput($input).addClass('filled');
+                    this.suggest(term, founds);
+                }
+            }, timeout);
+        });
         return true;
     }
 
@@ -157,13 +167,18 @@ class Home extends View implements IView {
         var $suggestions = this.$scope().find('.suggestions');
         var maybeStart = this.maybeSelectedStart();
         var maybeEnd = this.maybeSelectedEnd();
+        var sameDeparture = maybeStart.exists((s) => {
+            return s === name;
+        });
+        var sameArrival = maybeEnd.exists((e) => {
+            return e === name;
+        });
 
         if($suggestions.is('.start')) {
             maybeStart = new opt.Some(name);
         } else if($suggestions.is('.end')) {
             maybeEnd = new opt.Some(name);
         }
-
         if(maybeStart.isDefined() && maybeEnd.isEmpty()) {
             App.navigateToHome(opt.Option<string>(name), new opt.None<string>());
         } else if(maybeEnd.isDefined() && maybeStart.isEmpty()) {
@@ -171,7 +186,12 @@ class Home extends View implements IView {
         } else {
             maybeStart.foreach((start) => {
                 maybeEnd.foreach((end) => {
+                    if(sameDeparture || sameArrival) {
+                        this.clearSuggestions()
+                        this.displayWhen(start, end);
+                    } else {
                     App.navigateToHomeWhen(start, end);
+                    }
                 });
             });
         }
@@ -256,11 +276,21 @@ class Home extends View implements IView {
             var ios7Offset = utils.isIOS7() ? 20 : 0;
             var translate = viewOffset.top + viewOffset.height - ios7Offset;
             Zanimo.transform($when.get(0), 'translate3d(0,'+ translate + 'px,0)').then(() => {
-                window.setTimeout(() => {
+                setTimeout(() => {
                     $when.addClass('displayed');
-                }, 120);
+                }, 600);
             });
         }, 120);
+    }
+
+    hideWhen(): Q.Promise<void> {
+        var $when = this.$scope().find('.when');
+        $when.removeClass('displayed');
+        return Q.delay(Q(null), 400).then(() => {
+            return Zanimo.transform($when.get(0), 'translate3d(0,0,0)', true).then(() => {
+                return null;
+            });
+        });
     }
 
     onWhenTapped(e: Event): boolean {
