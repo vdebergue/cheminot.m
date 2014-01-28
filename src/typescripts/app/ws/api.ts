@@ -5,8 +5,7 @@ import utils = require('../utils/utils');
 
 function fetchEntry(): Q.Promise<any> {
     var d = Q.defer<any>();
-    //var url = 'http://195.154.9.131/api';
-    var url = 'http://127.0.0.1:9000/api';
+    var url = window['CONFIG'].api;
 
     $.ajax({
         url: url,

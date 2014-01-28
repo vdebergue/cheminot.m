@@ -9,6 +9,7 @@
         "grunt-contrib-compress": "latest",
         "grunt-contrib-copy": "latest",
         "grunt-contrib-clean": "latest",
+        "grunt-inject": "latest",
         "fluidity": "latest",
         "stylus": "latest",
         "grunt-ts" : "latest"

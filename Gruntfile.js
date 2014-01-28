@@ -128,6 +128,20 @@ module.exports = function(grunt) {
                 "www/cheminot.appcache",
                 "www/templates"
             ]
+        },
+        inject: {
+            dev: {
+                scriptSrc: 'src/config-local.js',
+                files: {
+                    'www/index.html': 'www/index.html'
+                }
+            },
+            prod: {
+                scriptSrc: 'src/config.js',
+                files: {
+                    'www/index.html': 'www/index.html'
+                }
+            }
         }
     });
 
@@ -137,10 +151,11 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-requirejs');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-clean');
+    grunt.loadNpmTasks('grunt-inject');
 
     // Here we  go !
-    grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev']);
-    grunt.registerTask('dev', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev', 'watch']);
-    grunt.registerTask('prod', ['stylus:app', 'ts:prod', 'requirejs', 'copy:prod']);
+    grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev', 'inject:dev']);
+    grunt.registerTask('dev', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev', 'watch', 'inject:dev']);
+    grunt.registerTask('prod', ['stylus:app', 'ts:prod', 'requirejs', 'copy:prod', 'inject:prod']);
     grunt.registerTask('cleanAll', ['clean:app']);
 };
