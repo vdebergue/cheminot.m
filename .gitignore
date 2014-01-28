@@ -4,6 +4,7 @@ node_modules
 tscommand.tmp.txt
 www/
 www/!config.xml
+src/typescripts/app/lib/immutable/*.js
 platforms/ios/cordova/console.log
 tmp
 
