@@ -84,7 +84,7 @@ export function installDB(onSetup: () => Q.Promise<ZeptoCollection>): Q.Promise<
                             STOPS = new opt.Some(stops);
                         });
                         Q.timeout(Api.version(), 2000).then((versionApi) => {
-                            if(versionDB != versionApi) {
+                            if(versionDB && versionApi && (versionDB != versionApi)) {
                                 alert('A new version will be installed');
                                 forceInstallDB(STORAGE, onSetup).then(() => {
                                     d.resolve(null);

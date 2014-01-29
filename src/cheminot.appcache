@@ -2,7 +2,6 @@ CACHE MANIFEST
 
 CACHE:
 index.html
-templates/home.tpl.html
 templates/layout.tpl.html
 templates/home/header.tpl.html
 templates/home/layout.tpl.html

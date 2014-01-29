@@ -47,32 +47,6 @@ device(min_width, max_width, factor)
 
         back_button(scale(back_btn_size_portrait, factor))
 
-    landscape = "only screen and (min-device-width : " + min_width + ") and (max-device-width : " + max_width + ") and (orientation : landscape)"
-    @media landscape
-        header, .list li {
-            height: scale(header_height_landscape, factor)
-            font-size: scale(header_size_landscape, factor)
-        }
-
-        input {
-            height: scale(input_height_landscape, factor)
-            font-size: scale(input_size_landscape, factor)
-        }
-
-        h2 {
-            font-size: scale(h2_size_landscape, factor)
-        }
-
-        .btn {
-            font-size: scale(btn_size_landscape, factor)
-        }
-
-        .icon {
-            font-size: scale(btn_size_landscape, factor)
-        }
-
-        back_button(scale(back_btn_size_landscape, factor))
-
 // IPHONE (default)
 @media only screen {
     header, .list li {
@@ -98,32 +72,6 @@ device(min_width, max_width, factor)
     }
 
     back_button(scale(back_btn_size_portrait, 1))
-}
-
-@media only screen and (orientation : landscape) {
-    header, .list li {
-        height: header_height_portrait
-        font-size: header_size_landscape
-    }
-
-    input {
-        height: input_height_landscape
-        font-size: input_size_landscape
-    }
-
-    h2 {
-        font-size: h2_size_landscape
-    }
-
-    .btn {
-        font-size: btn_size_landscape
-    }
-
-    .icon {
-        font-size: btn_size_landscape
-    }
-
-    back_button(scale(back_btn_size_landscape, 1))
 }
 
 // IPAD
