@@ -12,6 +12,7 @@
         "grunt-inject": "latest",
         "fluidity": "latest",
         "stylus": "latest",
-        "grunt-ts" : "latest"
+        "grunt-ts" : "latest",
+        "grunt-text-replace" : "latest"
     }
 }

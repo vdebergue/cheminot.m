@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="io.cheminot.m" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="io.cheminot.m" version="abcde" versionCode="3" versionName="abcde" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>cheminot.m</name>
     <description></description>
     <author email="sre@cheminot.io" href="http://cordova.io">sre</author>
@@ -7,4 +7,7 @@
     <access origin="*" />
     <preference name="Fullscreen" value="false" />
     <preference name="DisallowOverscroll" value="true" />
+    <gap:platform name="ios" />
+    <gap:platform name="android" />
+    <gap:platform name="winphone" />
 </widget>

@@ -1,4 +1,5 @@
 module.exports = function(grunt) {
+    var sha = grunt.option('sha') || '0.0.1';
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         watch: {
@@ -142,6 +143,26 @@ module.exports = function(grunt) {
                     'www/index.html': 'www/index.html'
                 }
             }
+        },
+        replace: {
+            version: {
+                src: ['www/config.xml'],
+                overwrite: true,
+                replacements: [{
+                    from: /version=".*?"/,
+                    to: 'version="' + sha + '"'
+                }, {
+                    from: /versionName=".*?"/,
+                    to: 'versionName="' + sha + '"'
+                }, {
+                    from: /versionCode=".*?"/,
+                    to: function(versionCode) {
+                        var v = versionCode.match(/versionCode="(.*?)"/)[1] || 0;
+                        v = parseInt(v, 10);
+                        return 'versionCode="' + (v + 1) + '"';
+                    }
+                }]
+            }
         }
     });
 
@@ -152,10 +173,11 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-inject');
+    grunt.loadNpmTasks('grunt-text-replace');
 
     // Here we  go !
-    grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev', 'inject:dev']);
-    grunt.registerTask('dev', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev', 'watch', 'inject:dev']);
-    grunt.registerTask('prod', ['stylus:app', 'ts:prod', 'requirejs', 'copy:prod', 'inject:prod']);
+    grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev', 'inject:dev', 'replace:version']);
+    grunt.registerTask('dev', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev', 'watch', 'inject:dev', 'replace:version']);
+    grunt.registerTask('prod', ['stylus:app', 'ts:prod', 'requirejs', 'copy:prod', 'inject:prod', 'replace:version']);
     grunt.registerTask('cleanAll', ['clean:app']);
 };
