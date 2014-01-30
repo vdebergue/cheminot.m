@@ -12,6 +12,7 @@ import Trip = require('./views/Trip');
 import Setup = require('./views/Setup');
 import Storage = require('./db/storage');
 import Planner = require('./models/Planner');
+import Upgrade = require('./tasks/upgrade');
 
 function view(views: seq.IList<IView>, name: string): IView {
     return views.find((view) => {
@@ -31,6 +32,7 @@ function viewsBut(views: seq.IList<IView>, exclude: string): seq.IList<IView> {
 export function init(views: seq.IList<IView>) {
 
     function ensureInitApp(viewName: string): Q.Promise<void> {
+        //Upgrade.checkPeriodically();
         var p: Q.Promise<void>;
         if(!Storage.isInitialized()) {
             p = utils.measureF<any>(() => {

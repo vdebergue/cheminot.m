@@ -9,7 +9,7 @@ module.exports = function(grunt) {
             },
             scripts: {
                 files: ['src/stylus/**/*.styl', 'src/typescripts/**/*.ts', 'src/templates/**/*.html'],
-                tasks: ['stylus:app', 'ts:dev', 'copy:dev'],
+                tasks: ['stylus:app', 'ts:dev', 'copy:dev', 'inject:dev'],
                 options: {
                 }
             }
@@ -177,7 +177,7 @@ module.exports = function(grunt) {
 
     // Here we  go !
     grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev', 'inject:dev', 'replace:version']);
-    grunt.registerTask('dev', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev', 'watch', 'inject:dev', 'replace:version']);
+    grunt.registerTask('dev', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev', 'inject:dev', 'replace:version', 'watch']);
     grunt.registerTask('prod', ['stylus:app', 'ts:prod', 'requirejs', 'copy:prod', 'inject:prod', 'replace:version']);
     grunt.registerTask('cleanAll', ['clean:app']);
 };

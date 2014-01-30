@@ -53,7 +53,7 @@ export function isInitialized(): boolean {
     return TRIPS.isDefined() && STOPS.isDefined();
 }
 
-function forceInstallDB(STORAGE: IStorage, onSetup: () => Q.Promise<ZeptoCollection>): Q.Promise<void> {
+export function forceInstallDB(STORAGE: IStorage, onSetup: () => Q.Promise<ZeptoCollection>): Q.Promise<void> {
     return onSetup().then(($progress) => {
         utils.log('Installing from scratch DB');
         return utils.measureF(() => Api.db($progress), 'fetchApi').then((db) => {
@@ -61,10 +61,10 @@ function forceInstallDB(STORAGE: IStorage, onSetup: () => Q.Promise<ZeptoCollect
             return STORAGE.reset().then(() => {
                 return utils.measureF(() => STORAGE.insertStopsTree(db.treeStops), 'persistStops');
             }).then(() => {
-                return STORAGE.putVersion(db.version);
-            }).then(() => {
                 $progress.trigger('setup:stops');
                 return utils.measureF(() => STORAGE.insertTrips(db.trips, $progress), 'persistTrips');
+            }).then(() => {
+                return STORAGE.putVersion(db.version);
             }).then(() => {
                 $progress.trigger('setup:done');
             });
@@ -83,20 +83,8 @@ export function installDB(onSetup: () => Q.Promise<ZeptoCollection>): Q.Promise<
                         maybeStops.foreach((stops) => {
                             STOPS = new opt.Some(stops);
                         });
-                        Q.timeout(Api.version(), 2000).then((versionApi) => {
-                            if(versionDB && versionApi && (versionDB != versionApi)) {
-                                alert('A new version will be installed');
-                                forceInstallDB(STORAGE, onSetup).then(() => {
-                                    d.resolve(null);
-                                });
-                            } else {
-                                d.resolve(null);
-                            }
-                        }).fail((reason) => {
-                            utils.error('Unable to fetch /api: ' + reason)
-                            d.resolve(null);
-                        });
                     });
+                    d.resolve(null);
                 } else {
                     forceInstallDB(STORAGE, onSetup).then(() => {
                         d.resolve(null);
