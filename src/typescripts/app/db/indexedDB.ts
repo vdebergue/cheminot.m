@@ -19,7 +19,7 @@ function createTripsStore(db: any): void {
 
 export function db(): Q.Promise<any> {
     var d = Q.defer<any>();
-    var request = window.indexedDB.open(DB_NAME);
+    var request = indexedDB.open(DB_NAME);
     request.onupgradeneeded = () => {
         var db = request.result;
         createCacheStore(db);
@@ -174,9 +174,9 @@ class IndexedDBStorage implements Storage.IStorage {
         });
     }
 
-    insertTrips(trips: any, $progress: ZeptoCollection): Q.Promise<void> {
+    insertTrips(trips: any, progress: (string, any?) => void): Q.Promise<void> {
         return utils.sequencePromises<void>(trips.data, (trips) => {
-            $progress.trigger('setup:trip');
+            progress('setup:trip');
             return add('trips', trips);
         }).then(() => {
             return null;

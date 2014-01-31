@@ -1,21 +1,26 @@
 /// <reference path='../../dts/Q.d.ts'/>
-/// <reference path='../../dts/zepto.d.ts'/>
 
 import utils = require('../utils/utils');
 
-function fetchEntry(): Q.Promise<any> {
+function fetchEntry(config: any): Q.Promise<any> {
     var d = Q.defer<any>();
-    var url = window['CONFIG'].api;
+    var url = config.api;
 
-    $.ajax({
-        url: url,
-        success: (api) => {
-            d.resolve(api);
-        },
-        error: () => {
-            d.reject("Failed to load DB version !");
+    var req = new XMLHttpRequest();
+    req.onreadystatechange = () => {
+        if (req.readyState === 4) {
+            if(req.status === 200) {
+                d.resolve(JSON.parse(req.responseText));
+            } else {
+                var errorMessage = 'Failed to get DB version from ' + url;
+                utils.error(errorMessage);
+                d.reject(errorMessage);
+            }
         }
-    });
+    };
+
+    req.open('GET', url, true);
+    req.send(null);
 
     return d.promise;
 }
@@ -23,56 +28,63 @@ function fetchEntry(): Q.Promise<any> {
 function fetchSize(url: string): Q.Promise<number> {
     var d = Q.defer<any>();
 
-    $.ajax({
-        type: 'HEAD',
-        url: url,
-        success: (x, y, req) => {
-            var size = parseInt(req.getResponseHeader("X-Content-Length"), 10);
-            d.resolve(size);
-        },
-        error: () => {
-            var errorMessage = "Failed to load DB size from " + url;
-            utils.error(errorMessage);
-            d.reject(errorMessage);
+    var req = new XMLHttpRequest();
+    req.onreadystatechange = () => {
+        if (req.readyState === 4) {
+            if(req.status === 200) {
+                var size = parseInt(req.getResponseHeader("X-Content-Length"), 10);
+                d.resolve(size);
+            } else {
+                var errorMessage = 'Failed to get DB size from ' + url;
+                utils.error(errorMessage);
+                d.reject(errorMessage);
+            }
         }
-    });
+    };
+
+    req.open('HEAD', url, true);
+    req.send(null);
 
     return d.promise;
 }
 
-function fetchDB(api: any, size: number, $progress: ZeptoCollection) {
+function fetchDB(api: any, size: number, progress: (string, number) => void) {
     var d = Q.defer<any>();
 
-    var req = $.ajax({
-        url: api.url,
-        success: (data) => {
-            d.resolve(data);
-        },
-        error: () => {
-            var errorMessage = 'Failed to load DB from ' + api.url;
-            utils.error(errorMessage);
-            d.reject(errorMessage);
+    var req = new XMLHttpRequest();
+    req.onreadystatechange = () => {
+        if (req.readyState === 4) {
+            if(req.status === 200) {
+                d.resolve(JSON.parse(req.responseText));
+            } else {
+                var errorMessage = 'Failed to load DB from ' + api.url;
+                utils.error(errorMessage);
+                d.reject(errorMessage);
+            }
         }
-    });
+    };
+
+    req.open('GET', api.url, true);
+    req.send(null);
 
     req.addEventListener("progress", (e) => {
         var percent = (e.loaded / size) * 100;
-        $progress.trigger('setup:fetch', [percent]);
+        progress('setup:fetch', percent);
     }, false);
 
     return d.promise;
 }
 
-export function db($progress: ZeptoCollection): Q.Promise<any> {
-    return fetchEntry().then((api) => {
+export function db(config: any, progress: (string, number) => void): Q.Promise<any> {
+    return fetchEntry(config).then((api) => {
         return fetchSize(api.url).then((size) => {
-            return fetchDB(api, size, $progress);
+            return fetchDB(api, size, progress);
         });
     });
 }
 
-export function version(): Q.Promise<string> {
-    return fetchEntry().then((api) => {
+export function version(config: any): Q.Promise<string> {
+    return fetchEntry(config).then((api) => {
         return api.version;
     });
 }

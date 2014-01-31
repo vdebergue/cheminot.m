@@ -1,6 +1,8 @@
 /// <reference path='../../dts/Q.d.ts'/>
 /// <reference path='../../dts/underscore.d.ts'/>
 
+declare var openDatabase;
+
 import seq = require('../lib/immutable/List');
 import opt = require('../lib/immutable/Option');
 import utils = require('../utils/utils');
@@ -12,7 +14,7 @@ export interface IStorage {
     getStopsTree(): Q.Promise<any>;
     reset(): Q.Promise<void>;
     insertStopsTree(stopsTree): Q.Promise<void>;
-    insertTrips(trips: Array<any>, $progress: ZeptoCollection): Q.Promise<void>;
+    insertTrips(trips: Array<any>, progress: (string, any) => void): Q.Promise<void>;
     putVersion(version: string): Q.Promise<void>;
     version(): Q.Promise<opt.IOption<string>>;
     tripById(id: string): Q.Promise<opt.IOption<any>>;
@@ -20,9 +22,9 @@ export interface IStorage {
 }
 
 export function impl(): IStorage {
-    if(window.indexedDB) {
+    if(indexedDB) {
         return IndexedDB.impl();
-    } else if(window['openDatabase']) {
+    } else if(openDatabase) {
         return WebSql.impl();
     } else {
         utils.oops('You need a more recent device !');
@@ -53,27 +55,27 @@ export function isInitialized(): boolean {
     return TRIPS.isDefined() && STOPS.isDefined();
 }
 
-export function forceInstallDB(STORAGE: IStorage, onSetup: () => Q.Promise<ZeptoCollection>): Q.Promise<void> {
-    return onSetup().then(($progress) => {
-        utils.log('Installing from scratch DB');
-        return utils.measureF(() => Api.db($progress), 'fetchApi').then((db) => {
-            STOPS = new opt.Some(db.treeStops);
-            return STORAGE.reset().then(() => {
-                return utils.measureF(() => STORAGE.insertStopsTree(db.treeStops), 'persistStops');
-            }).then(() => {
-                $progress.trigger('setup:stops');
-                return utils.measureF(() => STORAGE.insertTrips(db.trips, $progress), 'persistTrips');
-            }).then(() => {
-                return STORAGE.putVersion(db.version);
-            }).then(() => {
-                $progress.trigger('setup:done');
-            });
+export function forceInstallDB(config: any, STORAGE: IStorage, progress: (string, any?) => void): Q.Promise<void> {
+    utils.log('Installing from scratch DB');
+    return utils.measureF(() => Api.db(config, progress), 'fetchApi').then((db) => {
+        console.log('here');
+        STOPS = new opt.Some(db.treeStops);
+        return STORAGE.reset().then(() => {
+            return utils.measureF(() => STORAGE.insertStopsTree(db.treeStops), 'persistStops');
+        }).then(() => {
+            progress('setup:stops');
+            return utils.measureF(() => STORAGE.insertTrips(db.trips, progress), 'persistTrips');
+        }).then(() => {
+            return STORAGE.putVersion(db.version);
+        }).then(() => {
+            progress('setup:done');
         });
     });
 }
 
-export function installDB(onSetup: () => Q.Promise<ZeptoCollection>): Q.Promise<void> {
+export function installDB(progress: (string, any?) => void): Q.Promise<void> {
     var STORAGE = impl();
+    var config = window['CONFIG'];
     var d = Q.defer<any>();
     if(STOPS.isEmpty()) {
         STORAGE.version().then((maybeVersion) => {
@@ -86,7 +88,7 @@ export function installDB(onSetup: () => Q.Promise<ZeptoCollection>): Q.Promise<
                     });
                     d.resolve(null);
                 } else {
-                    forceInstallDB(STORAGE, onSetup).then(() => {
+                    forceInstallDB(config, STORAGE, progress).then(() => {
                         d.resolve(null);
                     });
                 }

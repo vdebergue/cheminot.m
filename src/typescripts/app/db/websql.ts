@@ -101,14 +101,14 @@ class WebSqlStorage implements Storage.IStorage {
         return d.promise;
     }
 
-    insertTrips(trips: any, $progress: ZeptoCollection): Q.Promise<void> {
+    insertTrips(trips: any, progress: (string, any?) => void): Q.Promise<void> {
         return db().then((DB) => {
             return utils.sequencePromises(trips.data, (group:any) => {
                 var d = Q.defer<void>();
                 DB.transaction((t) => {
                     var ids = group.ids.join(';')
                     var data = LZString.compressToUTF16(JSON.stringify(group.trips));
-                    $progress.trigger('setup:trip');
+                    progress('setup:trip');
                     t.executeSql('INSERT INTO trips (ids, trips) VALUES (?,?)', [ids, data], () => {
                         d.resolve(null);
                     }, (t, error) => {

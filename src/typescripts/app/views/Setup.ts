@@ -34,7 +34,7 @@ class Setup extends View implements IView {
         var $progress =  this.$scope().find('progress');
 
         $progress.bind('setup:fetch', (e:any) => {
-            var percent = e.data[0];
+            var percent = e.data;
             $progress.val((percent * 30) / 100);
         });
 

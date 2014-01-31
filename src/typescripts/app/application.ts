@@ -14,6 +14,18 @@ import Storage = require('./db/storage');
 import Planner = require('./models/Planner');
 import Upgrade = require('./tasks/upgrade');
 
+var worker = new Worker('assets/javascripts/app/tasks/worker.js');
+worker.postMessage(JSON.stringify({
+    event: 'config',
+    data: window['CONFIG']
+}));
+
+window.setTimeout(() => {
+    worker.postMessage(JSON.stringify({
+        event: 'install'
+    }));
+}, 3000);
+
 function view(views: seq.IList<IView>, name: string): IView {
     return views.find((view) => {
         return view.name == name;
@@ -32,19 +44,21 @@ function viewsBut(views: seq.IList<IView>, exclude: string): seq.IList<IView> {
 export function init(views: seq.IList<IView>) {
 
     function ensureInitApp(viewName: string): Q.Promise<void> {
-        //Upgrade.checkPeriodically();
+        Upgrade.checkPeriodically();
         var p: Q.Promise<void>;
         if(!Storage.isInitialized()) {
-            p = utils.measureF<any>(() => {
-                return Storage.installDB(() => {
-                    return view(views, 'setup').setup().then((setupView) => {
-                        return setupView.show().then<ZeptoCollection>(() => {
-                            return (<Setup>setupView).$progress();
-                        });
+            p = view(views, 'setup').setup().then((setupView) => {
+                return setupView.show().then(() => {
+                    var $progress = (<Setup>setupView).$progress();
+                    return utils.measureF<any>(() => {
+                        /*return Storage.installDB((event, value) => {
+                            $progress.trigger(event, value);
+                        });*/
+                        return Q(null);
+                    }, 'all').fail((e) => {
+                        utils.error(e);
                     });
-                });
-            }, 'all').fail((e) => {
-                utils.error(e);
+                })
             });
         } else {
             p = Q<void>(null);
