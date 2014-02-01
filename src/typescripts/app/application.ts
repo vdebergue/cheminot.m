@@ -9,22 +9,9 @@ import IView = require('./views/IView');
 import Timetable = require('./views/Timetable');
 import Home = require('./views/Home');
 import Trip = require('./views/Trip');
-import Setup = require('./views/Setup');
 import Storage = require('./db/storage');
 import Planner = require('./models/Planner');
 import Upgrade = require('./tasks/upgrade');
-
-var worker = new Worker('assets/javascripts/app/tasks/worker.js');
-worker.postMessage(JSON.stringify({
-    event: 'config',
-    data: window['CONFIG']
-}));
-
-window.setTimeout(() => {
-    worker.postMessage(JSON.stringify({
-        event: 'install'
-    }));
-}, 3000);
 
 function view(views: seq.IList<IView>, name: string): IView {
     return views.find((view) => {
@@ -45,25 +32,23 @@ export function init(views: seq.IList<IView>) {
 
     function ensureInitApp(viewName: string): Q.Promise<void> {
         Upgrade.checkPeriodically();
-        var p: Q.Promise<void>;
+        var d = Q.defer<void>();
         if(!Storage.isInitialized()) {
-            p = view(views, 'setup').setup().then((setupView) => {
-                return setupView.show().then(() => {
-                    var $progress = (<Setup>setupView).$progress();
-                    return utils.measureF<any>(() => {
-                        /*return Storage.installDB((event, value) => {
-                            $progress.trigger(event, value);
-                        });*/
-                        return Q(null);
-                    }, 'all').fail((e) => {
-                        utils.error(e);
+            view(views, 'splashscreen').setup().then((splashscreenView) => {
+                return splashscreenView.show().then(() => {
+                    Storage.installDB((event, data) => {
+                        console.log('<-- downloading db -->')
+                        console.log(event, data);
+                        if(event === 'setup:fetch' && data === 100) {
+                            d.resolve(null);
+                        }
                     });
-                })
+                });
             });
         } else {
-            p = Q<void>(null);
+            d.resolve(null);
         }
-        return p.then(() => {
+        return d.promise.then(() => {
             hideOtherViews(viewName);
             return view(views, viewName).setup().then(() => {
                 return null;

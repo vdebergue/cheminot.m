@@ -9,6 +9,7 @@ import utils = require('../utils/utils');
 import Api = require('../ws/api');
 import IndexedDB = require('./indexedDB');
 import WebSql = require('./websql');
+import Setup = require('../tasks/setup');
 
 export interface IStorage {
     getStopsTree(): Q.Promise<any>;
@@ -58,8 +59,6 @@ export function isInitialized(): boolean {
 export function forceInstallDB(config: any, STORAGE: IStorage, progress: (string, any?) => void): Q.Promise<void> {
     utils.log('Installing from scratch DB');
     return utils.measureF(() => Api.db(config, progress), 'fetchApi').then((db) => {
-        console.log('here');
-        STOPS = new opt.Some(db.treeStops);
         return STORAGE.reset().then(() => {
             return utils.measureF(() => STORAGE.insertStopsTree(db.treeStops), 'persistStops');
         }).then(() => {
@@ -73,6 +72,17 @@ export function forceInstallDB(config: any, STORAGE: IStorage, progress: (string
     });
 }
 
+export function cacheDB(progress: (string, any?) => void): Q.Promise<void> {
+    var config = window['CONFIG'];
+    return Api.db(config, progress).then((db) => {
+        STOPS = new opt.Some(db.treeStops);
+        db.trips.data.forEach((d) => {
+            addTripsToCache(d.trips);
+        });
+        console.log(db.trips);
+    });
+}
+
 export function installDB(progress: (string, any?) => void): Q.Promise<void> {
     var STORAGE = impl();
     var config = window['CONFIG'];
@@ -81,16 +91,13 @@ export function installDB(progress: (string, any?) => void): Q.Promise<void> {
         STORAGE.version().then((maybeVersion) => {
             STORAGE.getStopsTree().then((maybeStops) => {
                 if(maybeVersion.isDefined() && maybeStops.isDefined()) {
-                    maybeVersion.map((versionDB) => {
-                        maybeStops.foreach((stops) => {
-                            STOPS = new opt.Some(stops);
-                        });
+                    maybeStops.foreach((stops) => {
+                        STOPS = new opt.Some(stops);
                     });
                     d.resolve(null);
                 } else {
-                    forceInstallDB(config, STORAGE, progress).then(() => {
-                        d.resolve(null);
-                    });
+                    Setup.start(progress);
+                    cacheDB(progress);
                 }
             });
         }).fail((reason) => {

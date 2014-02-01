@@ -22,7 +22,7 @@ var paths = {
         header: 'header.tpl.html',
         details: 'details.tpl.html'
     },
-    setup: {
+    splashscreen: {
         layout: 'layout.tpl.html'
     }
 };
@@ -89,8 +89,8 @@ export var trip = {
     }
 }
 
-export var setup = {
+export var splashscreen = {
     layout(): Q.Promise<string> {
-        return getTemplate('layout', opt.Option<string>('setup'));
+        return getTemplate('layout', opt.Option<string>('splashscreen'));
     }
 }

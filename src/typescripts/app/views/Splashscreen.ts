@@ -5,9 +5,9 @@ import IView = require('./IView');
 import View = require('./View');
 import Templating = require('./templating');
 
-export = Setup;
+export = Splashscreen;
 
-class Setup extends View implements IView {
+class Splashscreen extends View implements IView {
 
     name: string;
 
@@ -17,7 +17,7 @@ class Setup extends View implements IView {
     }
 
     setup(): Q.Promise<IView> {
-        return super.ensure(Templating.setup.layout).then(() => {
+        return super.ensure(Templating.splashscreen.layout).then(() => {
             this.bindEvents();
             return this;
         });

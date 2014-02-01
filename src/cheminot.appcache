@@ -6,7 +6,7 @@ templates/layout.tpl.html
 templates/home/header.tpl.html
 templates/home/layout.tpl.html
 templates/home/suggestions.tpl.html
-templates/setup/layout.tpl.html
+templates/splashscreen/layout.tpl.html
 templates/timetable/layout.tpl.html
 templates/timetable/header.tpl.html
 templates/timetable/schedules.tpl.html

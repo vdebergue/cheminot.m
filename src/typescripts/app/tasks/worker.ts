@@ -46,7 +46,10 @@ function receive(msg: any, Storage) {
     }
     case messages.install: {
         Storage.forceInstallDB(CONFIG, Storage.impl(), (event, data) => {
-            console.log(event, data);
+            (<any>self).postMessage(JSON.stringify({
+                event: event,
+                data: data
+            }));
         }).fail((reason) => {
             console.log(reason);
         });
