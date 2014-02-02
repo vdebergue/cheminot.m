@@ -178,6 +178,6 @@ module.exports = function(grunt) {
     // Here we  go !
     grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev', 'inject:dev', 'replace:version']);
     grunt.registerTask('dev', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev', 'inject:dev', 'replace:version', 'watch']);
-    grunt.registerTask('prod', ['stylus:app', 'ts:prod', 'requirejs', 'copy:prod', 'inject:prod', 'replace:version']);
+    grunt.registerTask('prod', ['clean:app', 'stylus:app', 'ts:prod', 'requirejs', 'copy:prod', 'inject:prod', 'replace:version']);
     grunt.registerTask('cleanAll', ['clean:app']);
 };

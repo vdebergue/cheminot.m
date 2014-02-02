@@ -1,8 +1,6 @@
 /// <reference path='../../dts/Q.d.ts'/>
 /// <reference path='../../dts/underscore.d.ts'/>
 
-declare var openDatabase;
-
 import seq = require('../lib/immutable/List');
 import opt = require('../lib/immutable/Option');
 import utils = require('../utils/utils');
@@ -23,9 +21,10 @@ export interface IStorage {
 }
 
 export function impl(): IStorage {
-    if(indexedDB) {
+    var s:any = self;
+    if(s.indexedDB) {
         return IndexedDB.impl();
-    } else if(openDatabase) {
+    } else if(s.openDatabase) {
         return WebSql.impl();
     } else {
         utils.oops('You need a more recent device !');

@@ -14,7 +14,7 @@ var DB_MAX_SIZE = 40*1024*1024;
 
 function createCacheStore(t: any): Q.Promise<void> {
     var d = Q.defer<void>();
-    t.executeSql('CREATE TABLE cache (key, value)', () => {
+    t.executeSql('CREATE TABLE IF NOT EXISTS cache (key, value)', () => {
         d.resolve(null);
     }, (t, error) => {
         d.resolve(null);
@@ -32,21 +32,18 @@ function createTripsStore(t: any): Q.Promise<void> {
     return d.promise;
 }
 
-function db(): Q.Promise<any> {
+var db = _.once(() => {
     try {
-        var db = openDatabase(DB_NAME, '', 'cheminot', DB_MAX_SIZE, (db) => {
-            if(db.version === '') {
-                db.transaction((t) => {
-                    createCacheStore(t);
-                    createTripsStore(t);
-                });
-            }
+        var db = openDatabase(DB_NAME, '1.0', 'cheminot', DB_MAX_SIZE);
+        db.transaction((t) => {
+            createCacheStore(t);
+            createTripsStore(t);
         });
+        return Q(db);
     } catch(e) {
         return db();
     }
-    return Q(db);
-}
+});
 
 function dropTable(name: string): Q.Promise<void> {
     var d = Q.defer<void>();
