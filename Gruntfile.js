@@ -69,8 +69,7 @@ module.exports = function(grunt) {
                     skipModuleInsertion: true,
                     baseUrl: "tmp",
                     name: "tasks/worker",
-                    out: "www/assets/javascripts/app/tasks/worker.js",
-                    optimize: 'none'
+                    out: "www/assets/javascripts/app/tasks/worker.js"
                 }
             }
         },
