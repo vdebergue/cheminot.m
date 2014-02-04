@@ -1,13 +1,7 @@
-importScripts('../../vendors/underscore-min.js');
-importScripts('../../vendors/q.min.js');
-importScripts('../../vendors/require.js');
+/// <reference path='../dts/Q.d.ts'/>
 
 declare var openDatabase;
 declare var require;
-
-require.config({
-    baseUrl: "/assets/javascripts/app"
-});
 
 var ready = Q.defer<boolean>();
 var readyPromise = ready.promise;

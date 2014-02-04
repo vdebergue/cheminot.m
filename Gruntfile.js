@@ -24,6 +24,15 @@ module.exports = function(grunt) {
                     sourceMap: false
                 }
             },
+            'worker-dev': {
+                src: ["src/typescripts/worker/worker.ts"],
+                outDir: 'www/assets/javascripts/app/tasks',
+                options: {
+                    target: 'es3',
+                    module: 'amd',
+                    sourceMap: false
+                }
+            },
             prod: {
                 src: ["src/typescripts/app/**/*.ts"],
                 outDir: 'tmp',
@@ -32,15 +41,36 @@ module.exports = function(grunt) {
                     module: 'amd',
                     sourceMap: false
                 }
+            },
+            'worker-prod': {
+                src: ["src/typescripts/worker/worker.ts"],
+                outDir: 'tmp/tasks',
+                options: {
+                    target: 'es3',
+                    module: 'amd',
+                    sourceMap: false
+                }
             }
         },
         requirejs: {
-            compile: {
+            app: {
                 options: {
                     baseUrl: "tmp",
                     name: "main",
-                    out: "www/assets/javascripts/app/main.js",
-                    declaration: true
+                    out: "www/assets/javascripts/app/main.js"
+                }
+            },
+            worker: {
+                options: {
+                    wrap: {
+                        start: "importScripts('../../vendors/underscore-min.js');importScripts('../../vendors/q.min.js');importScripts('../../vendors/require.js');require.config({baseUrl: '/assets/javascripts/app'});",
+                        end: ''
+                    },
+                    skipModuleInsertion: true,
+                    baseUrl: "tmp",
+                    name: "tasks/worker",
+                    out: "www/assets/javascripts/app/tasks/worker.js",
+                    optimize: 'none'
                 }
             }
         },
@@ -118,7 +148,7 @@ module.exports = function(grunt) {
                         src: ['**'],
                         dest: 'www/templates',
                         expand: true
-                    },
+                    }
                 ]
             }
         },
@@ -176,8 +206,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-text-replace');
 
     // Here we  go !
-    grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev', 'inject:dev', 'replace:version']);
-    grunt.registerTask('dev', ['clean:app', 'stylus:app', 'ts:dev', 'copy:dev', 'inject:dev', 'replace:version', 'watch']);
-    grunt.registerTask('prod', ['clean:app', 'stylus:app', 'ts:prod', 'requirejs', 'copy:prod', 'inject:prod', 'replace:version']);
+    grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'ts:worker-dev', 'copy:dev', 'inject:dev', 'replace:version']);
+    grunt.registerTask('dev', ['clean:app', 'stylus:app', 'ts:dev', 'ts:worker-dev', 'copy:dev', 'inject:dev', 'replace:version', 'watch']);
+    grunt.registerTask('prod', ['clean:app', 'stylus:app', 'ts:prod', 'ts:worker-prod', 'requirejs:app', 'requirejs:worker', 'copy:prod', 'inject:prod', 'replace:version']);
     grunt.registerTask('cleanAll', ['clean:app']);
 };
