@@ -100,12 +100,18 @@ class WebSqlStorage implements Storage.IStorage {
 
     insertTrips(trips: any, progress: (string, any?) => void): Q.Promise<void> {
         return db().then((DB) => {
+            var groupsSize = trips.data.length;
+            var cursor = 0;
             return utils.sequencePromises(trips.data, (group:any) => {
                 var d = Q.defer<void>();
+                cursor += 1;
                 DB.transaction((t) => {
                     var ids = group.ids.join(';')
                     var data = LZString.compressToUTF16(JSON.stringify(group.trips));
-                    progress('setup:trip');
+                    progress('setup:trip', {
+                        total: groupsSize,
+                        value: cursor
+                    });
                     t.executeSql('INSERT INTO trips (ids, trips) VALUES (?,?)', [ids, data], () => {
                         d.resolve(null);
                     }, (t, error) => {

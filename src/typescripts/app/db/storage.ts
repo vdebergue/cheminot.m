@@ -78,7 +78,6 @@ export function cacheDB(progress: (string, any?) => void): Q.Promise<void> {
         db.trips.data.forEach((d) => {
             addTripsToCache(d.trips);
         });
-        console.log(db.trips);
     });
 }
 
@@ -89,14 +88,16 @@ export function installDB(progress: (string, any?) => void): Q.Promise<void> {
     if(STOPS.isEmpty()) {
         STORAGE.version().then((maybeVersion) => {
             STORAGE.getStopsTree().then((maybeStops) => {
-                if(maybeVersion.isDefined() && maybeStops.isDefined()) {
+                if(maybeVersion.isDefined() && maybeStops.isDefined() && false) {
                     maybeStops.foreach((stops) => {
                         STOPS = new opt.Some(stops);
                     });
                     d.resolve(null);
                 } else {
+                    cacheDB(progress).then(() => {
+                        d.resolve(null);
+                    });
                     Setup.start(progress);
-                    cacheDB(progress);
                 }
             });
         }).fail((reason) => {

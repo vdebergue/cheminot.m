@@ -48,7 +48,7 @@ function fetchSize(url: string): Q.Promise<number> {
     return d.promise;
 }
 
-function fetchDB(api: any, size: number, progress: (string, number) => void) {
+function fetchDB(api: any, size: number, progress: (string, any?) => void) {
     var d = Q.defer<any>();
 
     var req = new XMLHttpRequest();

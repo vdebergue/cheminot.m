@@ -45,7 +45,6 @@ function receive(msg: any, Storage) {
                 data: data
             }));
         }).fail((reason) => {
-            console.log(reason);
         });
         break;
     }

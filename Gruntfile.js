@@ -57,19 +57,34 @@ module.exports = function(grunt) {
                 options: {
                     baseUrl: "tmp",
                     name: "main",
-                    out: "www/assets/javascripts/app/main.js"
+                    out: "www/assets/javascripts/app/main.js",
+                    optimize: 'none'
                 }
             },
-            worker: {
+            'worker-prod': {
                 options: {
                     wrap: {
-                        start: "importScripts('../../vendors/underscore-min.js');importScripts('../../vendors/q.min.js');importScripts('../../vendors/require.js');require.config({baseUrl: '/assets/javascripts/app'});",
+                        start: "importScripts('../../vendors/underscore-min.js');importScripts('../../vendors/q.min.js');importScripts('../../vendors/lz-string-1.3.3.js');importScripts('../../vendors/require.js');require.config({baseUrl: '/assets/javascripts/app'});",
                         end: ''
                     },
                     skipModuleInsertion: true,
                     baseUrl: "tmp",
                     name: "tasks/worker",
-                    out: "www/assets/javascripts/app/tasks/worker.js"
+                    out: "www/assets/javascripts/app/tasks/worker.js",
+                    optimize: 'none'
+                }
+            },
+            'worker-dev': {
+                options: {
+                    wrap: {
+                        start: "importScripts('../../vendors/underscore-min.js');importScripts('../../vendors/q.min.js');importScripts('../../vendors/lz-string-1.3.3.js');importScripts('../../vendors/require.js');require.config({baseUrl: '/assets/javascripts/app'});",
+                        end: ''
+                    },
+                    skipModuleInsertion: true,
+                    baseUrl: "www/assets/javascripts/app",
+                    name: "tasks/worker",
+                    out: "www/assets/javascripts/app/tasks/worker.js",
+                    optimize: 'none'
                 }
             }
         },
@@ -205,8 +220,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-text-replace');
 
     // Here we  go !
-    grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'ts:worker-dev', 'copy:dev', 'inject:dev', 'replace:version']);
-    grunt.registerTask('dev', ['clean:app', 'stylus:app', 'ts:dev', 'ts:worker-dev', 'copy:dev', 'inject:dev', 'replace:version', 'watch']);
-    grunt.registerTask('prod', ['clean:app', 'stylus:app', 'ts:prod', 'ts:worker-prod', 'requirejs:app', 'requirejs:worker', 'copy:prod', 'inject:prod', 'replace:version']);
+    grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'ts:worker-dev', 'copy:dev', 'requirejs:worker-dev', 'inject:dev', 'replace:version']);
+    grunt.registerTask('dev', ['clean:app', 'stylus:app', 'ts:dev', 'ts:worker-dev', 'copy:dev', 'requirejs:worker-dev', 'inject:dev', 'replace:version', 'watch']);
+    grunt.registerTask('prod', ['clean:app', 'stylus:app', 'ts:prod', 'ts:worker-prod', 'requirejs:app', 'requirejs:worker-prod', 'copy:prod', 'inject:prod', 'replace:version']);
     grunt.registerTask('cleanAll', ['clean:app']);
 };

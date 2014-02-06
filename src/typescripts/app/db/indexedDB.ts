@@ -175,9 +175,15 @@ class IndexedDBStorage implements Storage.IStorage {
     }
 
     insertTrips(trips: any, progress: (string, any?) => void): Q.Promise<void> {
-        return utils.sequencePromises<void>(trips.data, (trips) => {
-            progress('setup:trip');
-            return add('trips', trips);
+        var groupsSize = trips.data.length;
+        var cursor = 0;
+        return utils.sequencePromises<any>(trips.data, (group) => {
+            cursor += 1;
+            progress('setup:trip', {
+                total: groupsSize,
+                value: cursor
+            });
+            return add('trips', group);
         }).then(() => {
             return null;
         });

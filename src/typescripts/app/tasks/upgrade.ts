@@ -16,5 +16,5 @@ export var checkPeriodically = _.once(() => {
                 });
             });
         });
-    }, 10000)
+    }, 24 * 60 * 60)
 });

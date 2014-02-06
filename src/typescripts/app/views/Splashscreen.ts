@@ -30,27 +30,9 @@ class Splashscreen extends View implements IView {
     bindEvents(): void {
     }
 
-    $progress(): ZeptoCollection {
+    progress(percent): ZeptoCollection {
         var $progress =  this.$scope().find('progress');
-
-        $progress.bind('setup:fetch', (e:any) => {
-            var percent = e.data;
-            $progress.val((percent * 30) / 100);
-        });
-
-        $progress.bind('setup:stops', () => {
-            $progress.val('50');
-        });
-
-        $progress.bind('setup:trip', () => {
-            var updated = $progress.val() + 5;
-            $progress.val(updated);
-        });
-
-        $progress.bind('setup:done', () => {
-            $progress.val('100');
-        });
-
+        $progress.val(percent);
         return $progress;
     }
 }

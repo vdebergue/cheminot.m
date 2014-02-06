@@ -7,6 +7,7 @@ import seq = require('./lib/immutable/List');
 import utils = require('./utils/utils');
 import IView = require('./views/IView');
 import Timetable = require('./views/Timetable');
+import Splashscreen = require('./views/Splashscreen');
 import Home = require('./views/Home');
 import Trip = require('./views/Trip');
 import Storage = require('./db/storage');
@@ -28,27 +29,44 @@ function viewsBut(views: seq.IList<IView>, exclude: string): seq.IList<IView> {
     });
 }
 
+function onSetupProgress(event: string, data: any) {
+    var $progress = $('#progress-install .value');
+    var current = parseInt($progress.text(), 10);
+
+    if(event === 'worker.setup:fetch') {
+        var percent = (parseInt(data, 10) * 30) / 100;
+        $progress.text(percent.toString());
+    } else if(event === 'worker.setup:stops') {
+        $progress.text('50');
+    } else if(event === 'worker.setup:trip') {
+        var percent = (((data.value / data.total) * 100) * 50) / 100
+        $progress.text((50 + percent).toString());
+    } else if(event === 'worker.setup:done') {
+        $progress.text('100');
+    }
+}
+
 export function init(views: seq.IList<IView>) {
 
     function ensureInitApp(viewName: string): Q.Promise<void> {
         Upgrade.checkPeriodically();
-        var d = Q.defer<void>();
+        var p: Q.Promise<void>;
         if(!Storage.isInitialized()) {
-            view(views, 'splashscreen').setup().then((splashscreenView) => {
+            p = view(views, 'splashscreen').setup().then((splashscreenView) => {
                 return splashscreenView.show().then(() => {
-                    Storage.installDB((event, data) => {
-                        console.log('<-- downloading db -->')
-                        console.log(event, data);
-                        if(event === 'setup:fetch' && data === 100) {
-                            d.resolve(null);
+                    return Storage.installDB((event, data) => {
+                        if(event === 'setup:fetch') {
+                            (<Splashscreen>splashscreenView).progress(data);
+                        } else if(event.indexOf('worker') >= 0) {
+                            onSetupProgress(event, data);
                         }
                     });
                 });
             });
         } else {
-            d.resolve(null);
+            p = Q<void>(null);
         }
-        return d.promise.then(() => {
+        return p.then(() => {
             hideOtherViews(viewName);
             return view(views, viewName).setup().then(() => {
                 return null;
