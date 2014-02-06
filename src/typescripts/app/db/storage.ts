@@ -88,7 +88,7 @@ export function installDB(progress: (string, any?) => void): Q.Promise<void> {
     if(STOPS.isEmpty()) {
         STORAGE.version().then((maybeVersion) => {
             STORAGE.getStopsTree().then((maybeStops) => {
-                if(maybeVersion.isDefined() && maybeStops.isDefined() && false) {
+                if(maybeVersion.isDefined() && maybeStops.isDefined()) {
                     maybeStops.foreach((stops) => {
                         STOPS = new opt.Some(stops);
                     });
