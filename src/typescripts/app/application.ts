@@ -62,11 +62,13 @@ export function init(views: seq.IList<IView>) {
                         }
                     });
                 });
+            }).fail((reason) => {
+                utils.error(reason);
             });
         } else {
             p = Q<void>(null);
         }
-        return p.then(() => {
+        return Q.delay(p, 2000).then(() => {
             hideOtherViews(viewName);
             return view(views, viewName).setup().then(() => {
                 return null;
