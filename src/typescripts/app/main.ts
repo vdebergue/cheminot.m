@@ -10,17 +10,25 @@ import Splashscreen = require('./views/Splashscreen');
 import App = require('./application');
 import utils = require('./utils/utils');
 
-(() => {
+if(window['cordova'] != null) {
+    document.addEventListener("deviceready", () => {
+        ready();
+    }, false);
+} else {
+    $(document).ready(function() {
+        ready();
+    });
+}
+
+function ready() {
     if(utils.isIOS7()) {
         $('body').addClass('ios7');
     }
-})();
 
-$(document).ready(function() {
     View.bindEvents();
     var homeView = new Home('#viewport', '#home', 'home');
     var timetableView = new Timetable('#viewport', '#timetable', 'timetable');
     var tripView = new Trip('#viewport', '#trip', 'trip');
     var splashscreenView = new Splashscreen('#viewport', '#splashscreen', 'splashscreen');
     App.init(seq.List<IView>(homeView, timetableView, tripView, splashscreenView));
-});
+}

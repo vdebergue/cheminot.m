@@ -2,6 +2,7 @@ CACHE MANIFEST
 
 CACHE:
 index.html
+cordova.js
 templates/layout.tpl.html
 templates/home/header.tpl.html
 templates/home/layout.tpl.html
