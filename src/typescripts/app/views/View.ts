@@ -63,7 +63,7 @@ class View {
             return $('header');
         },
         update(tpl: string): void {
-            this.$header().html(tpl);
+            this.$header().removeClass('hidden').html(tpl);
         },
         bindEvent(type: string, selector: string, fn: (e: Event) => boolean): void {
             this.$header().on(type, selector, fn);

@@ -31,9 +31,10 @@ class Splashscreen extends View implements IView {
     }
 
     progress(percent): ZeptoCollection {
-        var $progress =  this.$scope().find('.progress .value');
-        var round = Math.round(percent * 100) / 100;
-        $progress.text(round.toString());
-        return $progress;
+        var $progress = this.$scope().find('.progress');
+        var $value =  $progress.find('.value');
+        $progress.removeClass('hidden');
+        $value.text(Math.round(percent).toString());
+        return $value;
     }
 }

@@ -30,19 +30,22 @@ function viewsBut(views: seq.IList<IView>, exclude: string): seq.IList<IView> {
 }
 
 function onSetupProgress(event: string, data: any) {
-    var $progress = $('#progress-install .value');
-    var current = parseInt($progress.text(), 10);
+    var $progress = $('#progress-install');
+    var $value = $progress.find('.value');
+    var current = parseInt($value.text(), 10);
+    $progress.removeClass('hidden');
 
     if(event === 'worker.setup:fetch') {
-        var percent = (parseInt(data, 10) * 30) / 100;
-        $progress.text(percent.toString());
+        var percent = Math.round((parseInt(data, 10) * 30) / 100);
+        $value.text(percent.toString());
     } else if(event === 'worker.setup:stops') {
-        $progress.text('50');
+        $value.text('50');
     } else if(event === 'worker.setup:trip') {
-        var percent = (((data.value / data.total) * 100) * 50) / 100
-        $progress.text((50 + percent).toString());
+        var percent = Math.round((((data.value / data.total) * 100) * 50) / 100)
+        $value.text((50 + percent).toString());
     } else if(event === 'worker.setup:done') {
-        $progress.text('100');
+        $value.text('100');
+        $progress.addClass('hidden');
     }
 }
 
@@ -60,6 +63,8 @@ export function init(views: seq.IList<IView>) {
                         } else if(event.indexOf('worker') >= 0) {
                             onSetupProgress(event, data);
                         }
+                    }).then(() => {
+                        return Q.delay(Q(null), 1000);
                     });
                 });
             }).fail((reason) => {
@@ -68,7 +73,7 @@ export function init(views: seq.IList<IView>) {
         } else {
             p = Q<void>(null);
         }
-        return Q.delay(p, 2000).then(() => {
+        return p.then(() => {
             hideOtherViews(viewName);
             return view(views, viewName).setup().then(() => {
                 return null;
