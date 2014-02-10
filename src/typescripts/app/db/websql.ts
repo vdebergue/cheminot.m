@@ -119,11 +119,50 @@ class WebSqlStorage implements Storage.IStorage {
                         d.reject(error);
                     });
                 });
-                return d.promise;
+                return d.promise.then(() => {
+                    var percent = (cursor / groupsSize) * 100;
+                    return this.putProgress(cursor, percent);
+                });
+            }).then(() => {
+                return this.clearProgress();
             }).then(() => {
                 return null;
             });
         });
+    }
+
+    putProgress(groupIndex: number, percent: number): Q.Promise<void> {
+        var d = Q.defer<void>();
+        db().then((DB) => {
+            DB.transaction((t) => {
+                var progress = {
+                    groupIndex: groupIndex,
+                    percent: percent
+                };
+                t.executeSql('REPLACE INTO cache (key, value) VALUES (?, ?)', ['progress', JSON.stringify(progress)], () => {
+                    d.resolve(null);
+                }, (t, error) => {
+                    utils.error(error);
+                    d.reject(error);
+                });
+            });
+        });
+        return d.promise;
+    }
+
+    clearProgress(): Q.Promise<void> {
+        var d = Q.defer<void>();
+        db().then((DB) => {
+            DB.transaction((t) => {
+                t.executeSql("DELETE * FROM cache WHERE key='progress'", [], () => {
+                    d.resolve(null);
+                }, (t, error) => {
+                    utils.error(error);
+                    d.reject(error);
+                });
+            });
+        });
+        return d.promise;
     }
 
     putVersion(version: string): Q.Promise<void> {
@@ -132,6 +171,27 @@ class WebSqlStorage implements Storage.IStorage {
             DB.transaction((t) => {
                 t.executeSql('REPLACE INTO cache (key, value) VALUES (?, ?)', ['version', version], () => {
                     d.resolve(null);
+                }, (t, error) => {
+                    utils.error(error);
+                    d.reject(error);
+                });
+            });
+        });
+        return d.promise;
+    }
+
+    progress(): Q.Promise<opt.IOption<any>> {
+        var d = Q.defer<any>();
+        db().then((DB) => {
+            DB.readTransaction((t) => {
+                t.executeSql("SELECT value FROM cache WHERE key='progress'", [], (t, data) => {
+                    var maybeVersion = opt.Option(data.rows).filter((rows:any) => {
+                        return rows.length > 0;
+                    }).map((rows:any) => {
+                        var r = rows.item(0);
+                        return JSON.parse(r.value);
+                    });
+                    d.resolve(maybeVersion);
                 }, (t, error) => {
                     utils.error(error);
                     d.reject(error);

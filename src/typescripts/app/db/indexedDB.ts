@@ -124,6 +124,24 @@ export function put(storeName: string, value: any): Q.Promise<void> {
     });
 }
 
+export function remove(storeName: string, key: string): Q.Promise<void> {
+    return db().then((DB) => {
+        var d = Q.defer<void>();
+        var tx = DB.transaction(storeName, "readwrite");
+        var store = tx.objectStore(storeName);
+        store.delete(key);
+        tx.oncomplete = () => {
+            d.resolve(null);
+        }
+        tx.onerror = () => {
+            var errorMessage = 'An error occured while deleting data ' + key + ' to store ' + storeName;
+            utils.error(errorMessage);
+            d.reject(errorMessage);
+        }
+        return d.promise;
+    });
+}
+
 export function add(storeName: string, value: any): Q.Promise<void> {
     return db().then((DB) => {
         var d = Q.defer<void>();
@@ -183,9 +201,34 @@ class IndexedDBStorage implements Storage.IStorage {
                 total: groupsSize,
                 value: cursor
             });
-            return add('trips', group);
+            return add('trips', group).then(() => {
+                var percent = (cursor / groupsSize) * 100;
+                return this.putProgress(cursor, percent);
+            });
+        }).then(() => {
+            return this.clearProgress();
         }).then(() => {
             return null;
+        });
+    }
+
+    putProgress(groupIndex: number, percent: number): Q.Promise<void> {
+        var progress = {
+            groupIndex: groupIndex,
+            percent: percent
+        };
+        return put('cache', { key: 'version', value: JSON.stringify(progress) });
+    }
+
+    clearProgress(): Q.Promise<void> {
+        return remove('cache', 'progress');
+    }
+
+    progress(): Q.Promise<opt.IOption<any>> {
+        return get('cache', 'by_key', 'progress').then((maybe) => {
+            return maybe.map((d) => {
+                return JSON.parse(d.value);
+            });
         });
     }
 

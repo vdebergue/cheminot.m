@@ -48,7 +48,7 @@ function fetchSize(url: string): Q.Promise<number> {
     return d.promise;
 }
 
-function fetchDB(api: any, size: number, progress: (string, any?) => void) {
+function fetchDB(url: string, size: number, progress: (string, any?) => void) {
     var d = Q.defer<any>();
 
     var req = new XMLHttpRequest();
@@ -57,14 +57,14 @@ function fetchDB(api: any, size: number, progress: (string, any?) => void) {
             if(req.status === 200) {
                 d.resolve(JSON.parse(req.responseText));
             } else {
-                var errorMessage = 'Failed to load DB from ' + api.url;
+                var errorMessage = 'Failed to load DB from ' + url;
                 utils.error(errorMessage);
                 d.reject(errorMessage);
             }
         }
     };
 
-    req.open('GET', api.url, true);
+    req.open('GET', url, true);
     req.send(null);
 
     req.addEventListener("progress", (e) => {
@@ -78,7 +78,7 @@ function fetchDB(api: any, size: number, progress: (string, any?) => void) {
 export function db(config: any, progress: (string, number) => void): Q.Promise<any> {
     return fetchEntry(config).then((api) => {
         return fetchSize(api.url).then((size) => {
-            return fetchDB(api, size, progress);
+            return fetchDB(api.url, size, progress);
         });
     });
 }
@@ -86,5 +86,14 @@ export function db(config: any, progress: (string, number) => void): Q.Promise<a
 export function version(config: any): Q.Promise<string> {
     return fetchEntry(config).then((api) => {
         return api.version;
+    });
+}
+
+export function sliceDB(config: any, groupIndex: number, progress: (string, number) => void): Q.Promise<any> {
+    return fetchEntry(config).then((api) => {
+        return fetchSize('todo').then((size) => {
+            var url = api.url + '/slice/' + groupIndex;
+            return fetchDB(url, size, progress);
+        });
     });
 }

@@ -18,6 +18,9 @@ export interface IStorage {
     version(): Q.Promise<opt.IOption<string>>;
     tripById(id: string): Q.Promise<opt.IOption<any>>;
     tripsByIds(ids: seq.IList<string>, direction: opt.IOption<string>): Q.Promise<seq.IList<any>>;
+    putProgress(groupIndex: number, percent: number): Q.Promise<void>;
+    clearProgress(): Q.Promise<void>;
+    progress(): Q.Promise<opt.IOption<any>>;
 }
 
 export function impl(): IStorage {
@@ -52,7 +55,14 @@ export function stops(): any {
 }
 
 export function isInitialized(): boolean {
-    return TRIPS.isDefined() && STOPS.isDefined();
+    return STOPS.isDefined();
+}
+
+function resumeSetup(config: any, STORAGE: IStorage, groupIndex: number, progress: (string, any ?) => void): Q.Promise<void> {
+    utils.log('Resuming setup');
+    return Api.sliceDB(config, groupIndex, progress).then<void>((db) => {
+        return STORAGE.insertTrips(db.trips, progress);
+    });
 }
 
 export function forceInstallDB(config: any, STORAGE: IStorage, progress: (string, any?) => void): Q.Promise<void> {
