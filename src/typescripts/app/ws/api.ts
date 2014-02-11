@@ -1,5 +1,6 @@
 /// <reference path='../../dts/Q.d.ts'/>
 
+import opt = require('lib/immutable/Option');
 import utils = require('../utils/utils');
 
 function fetchEntry(config: any): Q.Promise<any> {
@@ -75,10 +76,15 @@ function fetchDB(url: string, size: number, progress: (string, any?) => void) {
     return d.promise;
 }
 
-export function db(config: any, progress: (string, number) => void): Q.Promise<any> {
+export function db(config: any, progress: (string, number) => void, maybeGroupIndex: opt.IOption<number> = new opt.None<number>()): Q.Promise<any> {
     return fetchEntry(config).then((api) => {
-        return fetchSize(api.url).then((size) => {
-            return fetchDB(api.url, size, progress);
+        var url = maybeGroupIndex.map((groupIndex) => {
+            return api.url + '?groupIndex=' + groupIndex;
+        }).getOrElse(() => {
+            return api.url;
+        });
+        return fetchSize(url).then((size) => {
+            return fetchDB(url, size, progress);
         });
     });
 }
@@ -86,14 +92,5 @@ export function db(config: any, progress: (string, number) => void): Q.Promise<a
 export function version(config: any): Q.Promise<string> {
     return fetchEntry(config).then((api) => {
         return api.version;
-    });
-}
-
-export function sliceDB(config: any, groupIndex: number, progress: (string, number) => void): Q.Promise<any> {
-    return fetchEntry(config).then((api) => {
-        return fetchSize('todo').then((size) => {
-            var url = api.url + '/slice/' + groupIndex;
-            return fetchDB(url, size, progress);
-        });
     });
 }

@@ -18,7 +18,7 @@ export interface IStorage {
     version(): Q.Promise<opt.IOption<string>>;
     tripById(id: string): Q.Promise<opt.IOption<any>>;
     tripsByIds(ids: seq.IList<string>, direction: opt.IOption<string>): Q.Promise<seq.IList<any>>;
-    putProgress(groupIndex: number, percent: number): Q.Promise<void>;
+    putProgress(groupIndex: number): Q.Promise<void>;
     clearProgress(): Q.Promise<void>;
     progress(): Q.Promise<opt.IOption<any>>;
 }
@@ -58,25 +58,29 @@ export function isInitialized(): boolean {
     return STOPS.isDefined();
 }
 
-function resumeSetup(config: any, STORAGE: IStorage, groupIndex: number, progress: (string, any ?) => void): Q.Promise<void> {
-    utils.log('Resuming setup');
-    return Api.sliceDB(config, groupIndex, progress).then<void>((db) => {
-        return STORAGE.insertTrips(db.trips, progress);
-    });
-}
-
 export function forceInstallDB(config: any, STORAGE: IStorage, progress: (string, any?) => void): Q.Promise<void> {
-    utils.log('Installing from scratch DB');
-    return utils.measureF(() => Api.db(config, progress), 'fetchApi').then((db) => {
-        return STORAGE.reset().then(() => {
-            return utils.measureF(() => STORAGE.insertStopsTree(db.treeStops), 'persistStops');
-        }).then(() => {
-            progress('setup:stops');
-            return utils.measureF(() => STORAGE.insertTrips(db.trips, progress), 'persistTrips');
-        }).then(() => {
-            return STORAGE.putVersion(db.version);
-        }).then(() => {
-            progress('setup:done');
+    return STORAGE.progress().then((maybeProgress) => {
+        maybeProgress.map((last) => {
+            utils.log('Resuming setup from: ' + last);
+            return Api.db(config, progress, new opt.Some(last)).then((db) => {
+                return STORAGE.insertTrips(db.trips, progress).then(() => {
+                    return STORAGE.putVersion(db.version);
+                });
+            });
+        }).getOrElse(() => {
+            utils.log('Installing from scratch DB');
+            return utils.measureF(() => Api.db(config, progress), 'fetchApi').then((db) => {
+                return STORAGE.reset().then(() => {
+                    return utils.measureF(() => STORAGE.insertStopsTree(db.treeStops), 'persistStops');
+                }).then(() => {
+                    progress('setup:stops');
+                    return utils.measureF(() => STORAGE.insertTrips(db.trips, progress), 'persistTrips');
+                }).then(() => {
+                    return STORAGE.putVersion(db.version);
+                }).then(() => {
+                    progress('setup:done');
+                });
+            });
         });
     });
 }

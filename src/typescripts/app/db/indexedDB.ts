@@ -197,13 +197,20 @@ class IndexedDBStorage implements Storage.IStorage {
         var cursor = 0;
         return utils.sequencePromises<any>(trips.data, (group) => {
             cursor += 1;
-            progress('setup:trip', {
-                total: groupsSize,
-                value: cursor
-            });
             return add('trips', group).then(() => {
-                var percent = (cursor / groupsSize) * 100;
-                return this.putProgress(cursor, percent);
+                this.progress().then((maybe) => {
+                    var groupIndex = maybe.map((g) => {
+                        return g + 1;
+                    }).getOrElse(() => {
+                        return 1;
+                    });
+                    return this.putProgress(groupIndex).then(() => {
+                        progress('setup:trip', {
+                            total: groupsSize,
+                            value: cursor
+                        });
+                    });
+                });
             });
         }).then(() => {
             return this.clearProgress();
@@ -212,22 +219,18 @@ class IndexedDBStorage implements Storage.IStorage {
         });
     }
 
-    putProgress(groupIndex: number, percent: number): Q.Promise<void> {
-        var progress = {
-            groupIndex: groupIndex,
-            percent: percent
-        };
-        return put('cache', { key: 'version', value: JSON.stringify(progress) });
+    putProgress(groupIndex: number): Q.Promise<void> {
+        return put('cache', { key: 'progress', value: groupIndex });
     }
 
     clearProgress(): Q.Promise<void> {
         return remove('cache', 'progress');
     }
 
-    progress(): Q.Promise<opt.IOption<any>> {
+    progress(): Q.Promise<opt.IOption<number>> {
         return get('cache', 'by_key', 'progress').then((maybe) => {
             return maybe.map((d) => {
-                return JSON.parse(d.value);
+                return d.value;
             });
         });
     }

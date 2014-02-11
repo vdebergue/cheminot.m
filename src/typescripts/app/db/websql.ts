@@ -14,7 +14,7 @@ var DB_MAX_SIZE = 40*1024*1024;
 
 function createCacheStore(t: any): Q.Promise<void> {
     var d = Q.defer<void>();
-    t.executeSql('CREATE TABLE IF NOT EXISTS cache (key, value)', () => {
+    t.executeSql('CREATE TABLE IF NOT EXISTS cache (key unique, value)', () => {
         d.resolve(null);
     }, (t, error) => {
         d.resolve(null);
@@ -108,10 +108,6 @@ class WebSqlStorage implements Storage.IStorage {
                 DB.transaction((t) => {
                     var ids = group.ids.join(';')
                     var data = LZString.compressToUTF16(JSON.stringify(group.trips));
-                    progress('setup:trip', {
-                        total: groupsSize,
-                        value: cursor
-                    });
                     t.executeSql('INSERT INTO trips (ids, trips) VALUES (?,?)', [ids, data], () => {
                         d.resolve(null);
                     }, (t, error) => {
@@ -120,8 +116,19 @@ class WebSqlStorage implements Storage.IStorage {
                     });
                 });
                 return d.promise.then(() => {
-                    var percent = (cursor / groupsSize) * 100;
-                    return this.putProgress(cursor, percent);
+                    return this.progress().then((maybe) => {
+                        var groupIndex = maybe.map((g) => {
+                            return g + 1;
+                        }).getOrElse(() => {
+                            return 1;
+                        });
+                        return this.putProgress(groupIndex).then(() => {
+                            progress('setup:trip', {
+                                total: groupsSize,
+                                value: cursor
+                            });
+                        });
+                    });
                 });
             }).then(() => {
                 return this.clearProgress();
@@ -131,15 +138,11 @@ class WebSqlStorage implements Storage.IStorage {
         });
     }
 
-    putProgress(groupIndex: number, percent: number): Q.Promise<void> {
+    putProgress(groupIndex: number): Q.Promise<void> {
         var d = Q.defer<void>();
         db().then((DB) => {
             DB.transaction((t) => {
-                var progress = {
-                    groupIndex: groupIndex,
-                    percent: percent
-                };
-                t.executeSql('REPLACE INTO cache (key, value) VALUES (?, ?)', ['progress', JSON.stringify(progress)], () => {
+                t.executeSql('REPLACE INTO cache (key, value) VALUES (?, ?)', ['progress', groupIndex], () => {
                     d.resolve(null);
                 }, (t, error) => {
                     utils.error(error);
@@ -154,7 +157,7 @@ class WebSqlStorage implements Storage.IStorage {
         var d = Q.defer<void>();
         db().then((DB) => {
             DB.transaction((t) => {
-                t.executeSql("DELETE * FROM cache WHERE key='progress'", [], () => {
+                t.executeSql("DELETE FROM cache WHERE key='progress'", [], () => {
                     d.resolve(null);
                 }, (t, error) => {
                     utils.error(error);
@@ -189,7 +192,7 @@ class WebSqlStorage implements Storage.IStorage {
                         return rows.length > 0;
                     }).map((rows:any) => {
                         var r = rows.item(0);
-                        return JSON.parse(r.value);
+                        return r.value;
                     });
                     d.resolve(maybeVersion);
                 }, (t, error) => {
