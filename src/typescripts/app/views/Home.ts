@@ -38,17 +38,6 @@ class Home extends View implements IView {
         this.myIScroll = new IScroll('#home #wrapper');
     }
 
-    adaptSuggestionsHeight(): void {
-        var $scope = this.$scope();
-        var htmlOffset = $('html').offset();
-        var headerOffset = $('header').offset();
-        var viewOffset = $scope.offset();
-        var titleHeight = 44;
-        var ios7Offset = utils.isIOS7() ? 20 : 0;
-        var height = htmlOffset.height - headerOffset.height - viewOffset.height - titleHeight - ios7Offset;
-        $scope.find('#wrapper').css('height', height);
-    }
-
     bindEvents(): void {
         super.bindEvent('keyup', 'input[name=start], input[name=end]', this.onStationKeyUp);
         super.bindEvent('focus', 'input[name=start], input[name=end]', this.onStationFocus);
@@ -60,11 +49,17 @@ class Home extends View implements IView {
         super.bindEvent('touchstart', '.suggestions', this.onScrollingStops);
     }
 
+    adaptWrapperTop(): void {
+        var $wrapper = this.$scope().find('#wrapper');
+        var offset = $('.stations > h2').offset();
+        var top = offset.top + offset.height;
+        $wrapper.css('top', top);
+    }
+
     show(): Q.Promise<void> {
         return Templating.home.header().then((tpl) => {
             this.header.update(tpl);
             super.showView();
-            this.adaptSuggestionsHeight();
             this.initIScroll();
         });
     }
@@ -84,6 +79,7 @@ class Home extends View implements IView {
             });
             var dom = tmpl(t, { term: term, stations: data });
             $suggestions.html(dom);
+            this.adaptWrapperTop();
             this.myIScroll.refresh();
         });
     }

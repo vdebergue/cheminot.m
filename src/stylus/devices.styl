@@ -11,14 +11,9 @@ input_size_portrait = 14px
 h2_size_portrait = 17px
 btn_size_portrait = 18px
 back_btn_size_portrait = 30px
-
-header_height_landscape = 32px
-header_size_landscape = 12px
-input_height_landscape = 25px
-input_size_landscape = 10px
-h2_size_landscape = 12px
-btn_size_landscape = 13px
-back_btn_size_landscape = 18px
+home_wrapper_top = 230px
+timetable_wrapper_top = 88px
+trip_wrapper_top = 88px
 
 device(min_width, max_width, factor)
     portrait = "only screen and (min-device-width : " + min_width + ") and (max-device-width : " + max_width + ")"
@@ -47,7 +42,7 @@ device(min_width, max_width, factor)
 
         back_button(scale(back_btn_size_portrait, factor))
 
-// IPHONE (default)
+// IPHONE 5 (default)
 @media only screen {
     header, .list li {
         height: header_height_portrait
@@ -71,7 +66,7 @@ device(min_width, max_width, factor)
         font-size: btn_size_portrait
     }
 
-    back_button(scale(back_btn_size_portrait, 1))
+    back_button(back_btn_size_portrait)
 }
 
 // IPAD
@@ -84,4 +79,4 @@ device(800px, 1280px, 2)
 device(384px, 640px, 1.2)
 
 // NEXUS 5
-device(360px, 640px, 1.2)
+device(360px, 640px, 1.125)

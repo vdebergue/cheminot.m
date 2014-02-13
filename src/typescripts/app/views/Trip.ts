@@ -29,16 +29,11 @@ class Trip extends View implements IView {
         });
     }
 
-    adaptTripHeight(): void {
-        var $scope = this.$scope();
-        var htmlOffset = $('html').offset();
-        var headerOffset = $('header').offset();
-        var viewOffset = $scope.offset();
-        var height = htmlOffset.height - headerOffset.height - viewOffset.height;
-        $scope.find('#wrapper').css('height', height);
-    }
-
     initIScroll(): void {
+        var $wrapper = this.$scope().find('#wrapper');
+        var offset = this.$scope().find('h2').offset();
+        var top = offset.top + offset.height;
+        $wrapper.css('top', top);
         this.myIScroll = new IScroll('#trip #wrapper');
     }
 
@@ -49,7 +44,6 @@ class Trip extends View implements IView {
         return Templating.trip.header().then((tpl) => {
             this.header.update(tpl);
             super.showView();
-            this.adaptTripHeight();
             this.initIScroll();
         });
     }
