@@ -20,8 +20,10 @@ export function schedulesFor(startName: string, endName: string): Q.Promise<opt.
                 var tripIds: Array<any> = _.intersection(start.tripIds, end.tripIds);
                 var oneTripId = tripIds[0];
                 return Storage.getTripDirection(start.id, end.id, oneTripId).then<Schedules>((direction) => {
-                    return Storage.impl().tripsByIds(seq.List.apply(null, tripIds), new opt.Some(direction)).then((trips) => {
-                        var stopTimes = trips.flatMap<any>((trip) => {
+                    return Storage.impl().tripsByIds(seq.List.apply(null, tripIds)).then((trips) => {
+                        var stopTimes = trips.filter((trip) => {
+                            return trip.direction === direction;
+                        }).flatMap<any>((trip) => {
                             return seq.List.apply(null, trip.stopTimes).find((stopTime) => {
                                 return stopTime.stop.id === start.id;
                             });
@@ -48,7 +50,7 @@ export class Trip {
     private static isInPeriod(startDate: Date, endDate: Date, when: Date): boolean {
         var start = moment(startDate);
         var end = moment(endDate);
-        return !start.isBefore(when) && !end.isAfter(when);
+        return start.isBefore(when) && end.isAfter(when);
     }
 
     private static workToday(calendar: any, when: Date): boolean {
@@ -82,7 +84,7 @@ export class Trip {
         if(Trip.isInPeriod(startDate, endDate, when)) {
             return !Trip.workToday(calendar, when) && !Trip.isException(calendarDates, when);
         } else {
-            return true;
+            return false;
         }
     }
 }

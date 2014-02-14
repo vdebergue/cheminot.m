@@ -255,7 +255,7 @@ class WebSqlStorage implements Storage.IStorage {
         });
     }
 
-    tripsByIds(ids: seq.IList<string>, direction: opt.IOption<string>): Q.Promise<seq.IList<any>> {
+    tripsByIds(ids: seq.IList<string>): Q.Promise<seq.IList<any>> {
         var d = Q.defer<seq.IList<any>>();
         var tripsFromCache = Storage.TRIPS.map((trips) => {
             return ids.map((id) => {

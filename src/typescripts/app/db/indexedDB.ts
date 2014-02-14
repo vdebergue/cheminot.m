@@ -262,14 +262,10 @@ class IndexedDBStorage implements Storage.IStorage {
         });
     }
 
-    tripsByIds(ids: seq.IList<string>, direction: opt.IOption<string>): Q.Promise<seq.IList<any>> {
+    tripsByIds(ids: seq.IList<string>): Q.Promise<seq.IList<any>> {
         var fromCache = Storage.TRIPS.map((trips) => {
             return ids.map((id) => {
-                return opt.Option<any>(trips[id]).filter((trip) => {
-                    return direction.isEmpty() || direction.exists((d) => {
-                        return trip.direction === d;
-                    });
-                });
+                return opt.Option<any>(trips[id]);
             }).flatten();
         }).getOrElse(() => {
             return new seq.Nil<any>();

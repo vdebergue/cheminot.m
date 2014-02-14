@@ -17,7 +17,7 @@ export interface IStorage {
     putVersion(version: string): Q.Promise<void>;
     version(): Q.Promise<opt.IOption<string>>;
     tripById(id: string): Q.Promise<opt.IOption<any>>;
-    tripsByIds(ids: seq.IList<string>, direction: opt.IOption<string>): Q.Promise<seq.IList<any>>;
+    tripsByIds(ids: seq.IList<string>): Q.Promise<seq.IList<any>>;
     putProgress(groupIndex: number): Q.Promise<void>;
     clearProgress(): Q.Promise<void>;
     progress(): Q.Promise<opt.IOption<any>>;
