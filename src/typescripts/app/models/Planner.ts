@@ -50,10 +50,10 @@ export class Trip {
     private static isInPeriod(startDate: Date, endDate: Date, when: Date): boolean {
         var start = moment(startDate);
         var end = moment(endDate);
-        return start.isBefore(when) && end.isAfter(when);
+        return (start.isBefore(when) || start.isSame(when, 'day')) && (end.isAfter(when) || end.isSame(when, 'day'));
     }
 
-    private static workToday(calendar: any, when: Date): boolean {
+    private static weekAvailability(service: any, when: Date): boolean {
         var dict = {
             1: 'monday',
             2: 'tuesday',
@@ -61,28 +61,42 @@ export class Trip {
             4: 'thursday',
             5: 'friday',
             6: 'saturday',
-            7: 'sunday'
+            0: 'sunday'
         };
-        return dict[when.getDay()] === '1';
+        var day = dict[when.getDay()];
+        return service[day] === "1";
     }
 
-    private static isException(calendarDates: any, when: Date): boolean {
-        var exception = new Date(calendarDates.date);
+    private static tripException(when: Date, serviceId: string, exceptions: any, isRemoved: boolean): boolean {
         var mwhen = moment(when);
-        if(mwhen.isSame(when, 'year') && mwhen.isSame(when, 'month') && mwhen.isSame(when, 'day')) {
-            return calendarDates.exceptionType === '2';
-        } else {
-            return false;
-        }
+        return opt.Option(exceptions[serviceId]).exists((exception:any) => {
+            if(mwhen.isSame(when, 'day')) {
+                return _.find(exception, (ex: any) => {
+                    return mwhen.isSame(ex.date, 'day') && ex.exceptionType === (isRemoved ? 2 : 1);
+                }) != null;
+            } else {
+                return false;
+            }
+        });
     }
 
-    public static isValidOn(trip: any, when: Date): boolean {
-        var startDate = new Date(trip.service.calendar.startDate);
-        var endDate = new Date(trip.service.calendar.endDate);
-        var calendar = trip.service.calendar;
-        var calendarDates = trip.service.calendarDates;
-        if(Trip.isInPeriod(startDate, endDate, when)) {
-            return !Trip.workToday(calendar, when) && !Trip.isException(calendarDates, when);
+    private static hasRemoved(when: Date, serviceId: string, exceptions: any): boolean {
+        return Trip.tripException(when, serviceId, exceptions, true);
+    }
+
+    private static hasAdded(when: Date, serviceId: string, exceptions: any): boolean {
+        return Trip.tripException(when, serviceId, exceptions, false);
+    }
+
+    public static isValidOn(trip: any, when: Date, exceptions: any): boolean {
+        var startDate = new Date(trip.service.startDate);
+        var endDate = new Date(trip.service.endDate);
+        var serviceId = trip.service.serviceId;
+
+        if(!Trip.hasRemoved(when, serviceId, exceptions) &&
+           ((Trip.isInPeriod(startDate, endDate, when) && Trip.weekAvailability(trip.service, when))
+            || Trip.hasAdded(when, serviceId, exceptions))) {
+            return true;
         } else {
             return false;
         }

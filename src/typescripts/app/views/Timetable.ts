@@ -59,7 +59,7 @@ class Timetable extends View implements IView {
         return false;
     }
 
-    buildWith(when: Date, schedules: planner.Schedules): Q.Promise<void> {
+    buildWith(when: Date, schedules: planner.Schedules, exceptions: any): Q.Promise<void> {
         return Templating.timetable.schedules().then((t) => {
             var $scope = this.$scope();
             var tripIds = schedules.stopTimes.map((stopTime) => {
@@ -71,7 +71,7 @@ class Timetable extends View implements IView {
                         return trip.id === stopTime.tripId;
                     }).map((trip) => {
                         return opt.Option(trip.service).filter(() => {
-                            return planner.Trip.isValidOn(trip, when)
+                            return planner.Trip.isValidOn(trip, when, exceptions)
                         }).map(() => {
                             return {
                                 timestamp: stopTime.departure,

@@ -184,8 +184,20 @@ class IndexedDBStorage implements Storage.IStorage {
         return add('cache', { key: 'treeStops', value: stopsTree });
     }
 
+    insertDateExceptions(exceptions: any): Q.Promise<void> {
+        return add('cache', { key: 'exceptions', value: exceptions });
+    }
+
     getStopsTree(): Q.Promise<opt.IOption<any>> {
         return get('cache', 'by_key', 'treeStops').then((maybe) => {
+            return maybe.map((d) => {
+                return d.value;
+            });
+        });
+    }
+
+    getDateExeptions(): Q.Promise<opt.IOption<any>> {
+        return get('cache', 'by_key', 'exceptions').then((maybe) => {
             return maybe.map((d) => {
                 return d.value;
             });

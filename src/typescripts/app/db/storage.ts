@@ -10,8 +10,10 @@ import WebSql = require('./websql');
 import Setup = require('../tasks/setup');
 
 export interface IStorage {
-    getStopsTree(): Q.Promise<any>;
+    getStopsTree(): Q.Promise<opt.IOption<any>>;
+    getDateExeptions(): Q.Promise<opt.IOption<any>>;
     reset(): Q.Promise<void>;
+    insertDateExceptions(exceptions: any): Q.Promise<void>;
     insertStopsTree(stopsTree): Q.Promise<void>;
     insertTrips(trips: Array<any>, progress: (string, any) => void): Q.Promise<void>;
     putVersion(version: string): Q.Promise<void>;
@@ -35,6 +37,7 @@ export function impl(): IStorage {
 }
 
 export var STOPS: opt.IOption<any> = new opt.None<any>();
+export var EXCEPTIONS: opt.IOption<any> = new opt.None<any>();
 export var TRIPS: opt.IOption<any> = new opt.None<any>();
 
 export function addTripsToCache(tripsToAdd: any): void {
@@ -54,8 +57,17 @@ export function stops(): any {
     });
 }
 
+export function exceptions(): any {
+    return EXCEPTIONS.map((exceptions) => {
+        return exceptions;
+    }).getOrElse(() => {
+        utils.error('exceptions not initialized !');
+        return null;
+    });
+}
+
 export function isInitialized(): boolean {
-    return STOPS.isDefined();
+    return STOPS.isDefined() && EXCEPTIONS.isDefined();
 }
 
 export function forceInstallDB(config: any, STORAGE: IStorage, progress: (string, any?) => void): Q.Promise<void> {
@@ -73,6 +85,9 @@ export function forceInstallDB(config: any, STORAGE: IStorage, progress: (string
                 return STORAGE.reset().then(() => {
                     return utils.measureF(() => STORAGE.insertStopsTree(db.treeStops), 'persistStops');
                 }).then(() => {
+                    return utils.measureF(() => STORAGE.insertDateExceptions(db.exceptions), 'persistExceptions');
+                    progress('setup:exceptions');
+                }).then(() => {
                     progress('setup:stops');
                     return utils.measureF(() => STORAGE.insertTrips(db.trips, progress), 'persistTrips');
                 }).then(() => {
@@ -89,6 +104,7 @@ export function cacheDB(progress: (string, any?) => void): Q.Promise<void> {
     var config = window['CONFIG'];
     return Api.db(config, progress).then((db) => {
         STOPS = new opt.Some(db.treeStops);
+        EXCEPTIONS = new opt.Some(db.exceptions);
         db.trips.data.forEach((d) => {
             addTripsToCache(d.trips);
         });
@@ -102,17 +118,22 @@ export function installDB(progress: (string, any?) => void): Q.Promise<void> {
     if(STOPS.isEmpty()) {
         STORAGE.version().then((maybeVersion) => {
             STORAGE.getStopsTree().then((maybeStops) => {
-                if(maybeVersion.isDefined() && maybeStops.isDefined()) {
-                    maybeStops.foreach((stops) => {
-                        STOPS = new opt.Some(stops);
-                    });
-                    d.resolve(null);
-                } else {
-                    cacheDB(progress).then(() => {
+                STORAGE.getDateExeptions().then((maybeExceptions) => {
+                    if(maybeVersion.isDefined() && maybeStops.isDefined() && maybeExceptions.isDefined()) {
+                        maybeStops.foreach((stops) => {
+                            STOPS = new opt.Some(stops);
+                        });
+                        maybeExceptions.foreach((exceptions) => {
+                            EXCEPTIONS = new opt.Some(exceptions);
+                        });
                         d.resolve(null);
-                    });
-                    Setup.start(progress);
-                }
+                    } else {
+                        cacheDB(progress).then(() => {
+                            d.resolve(null);
+                        });
+                        Setup.start(progress);
+                    }
+                });
             });
         }).fail((reason) => {
             utils.error(JSON.stringify(reason));

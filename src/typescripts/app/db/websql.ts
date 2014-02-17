@@ -77,6 +77,21 @@ class WebSqlStorage implements Storage.IStorage {
         return d.promise;
     }
 
+    insertDateExceptions(exceptions: any): Q.Promise<void> {
+        var d = Q.defer<void>();
+        db().then((DB) => {
+            DB.transaction((t) => {
+                t.executeSql('INSERT INTO cache (key, value) VALUES (?, ?)', ['exceptions', JSON.stringify(exceptions)], () => {
+                    d.resolve(null);
+                }, (t, error) => {
+                    utils.error(error);
+                    d.reject(error);
+                });
+            });
+        });
+        return d.promise;
+    }
+
     getStopsTree(): Q.Promise<opt.IOption<any>> {
         var d = Q.defer<any>();
         db().then((DB) => {
@@ -89,6 +104,27 @@ class WebSqlStorage implements Storage.IStorage {
                         return JSON.parse(r.value);
                     });
                     d.resolve(maybeStopsTree);
+                }, (t, error) => {
+                    utils.error(error);
+                    d.reject(error);
+                });
+            });
+        });
+        return d.promise;
+    }
+
+    getDateExeptions(): Q.Promise<opt.IOption<any>> {
+        var d = Q.defer<any>();
+        db().then((DB) => {
+            DB.readTransaction((t) => {
+                t.executeSql("SELECT value FROM cache WHERE key='exceptions'", [], (t, data) => {
+                    var maybeExceptions = opt.Option(data.rows).filter((rows:any) => {
+                        return rows.length > 0;
+                    }).map((rows:any) => {
+                        var r = rows.item(0);
+                        return JSON.parse(r.value);
+                    });
+                    d.resolve(maybeExceptions);
                 }, (t, error) => {
                     utils.error(error);
                     d.reject(error);

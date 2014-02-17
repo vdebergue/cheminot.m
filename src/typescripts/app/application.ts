@@ -38,6 +38,8 @@ function onSetupProgress(event: string, data: any) {
     if(event === 'worker.setup:fetch') {
         var percent = Math.round((parseInt(data, 10) * 30) / 100);
         $value.text(percent.toString());
+    } else if(event === 'worker.setup:exceptions') {
+        $value.text('40');
     } else if(event === 'worker.setup:stops') {
         $value.text('50');
     } else if(event === 'worker.setup:trip') {
@@ -130,8 +132,12 @@ export function init(views: seq.IList<IView>) {
             Planner.schedulesFor(start, end).then((maybeSchedules) => {
                 maybeSchedules.map((schedules) => {
                     var timetableView = <Timetable> view(views, 'timetable');
-                    timetableView.buildWith(new Date(when), schedules);
-                    timetableView.show();
+                    Storage.impl().getDateExeptions().then((exceptions) => {
+                        timetableView.buildWith(new Date(when), schedules, exceptions.getOrElse(() => {
+                            return {};
+                        }));
+                        timetableView.show();
+                    });
                 }).getOrElse(() => {
                 });
             }).fail((reason) => {
