@@ -5,6 +5,8 @@ import opt = require('../lib/immutable/Option');
 import utils = require('../utils/utils');
 import Storage = require('./storage');
 
+declare var IDBKeyRange;
+
 var DB_NAME = 'indexeddb_cheminot';
 
 function createCacheStore(db: any): void {
