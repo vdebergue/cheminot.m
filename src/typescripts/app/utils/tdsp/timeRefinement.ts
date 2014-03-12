@@ -6,7 +6,7 @@ import planner = require('models/Planner');
 
 export var INFINI = 9999999999999;
 
-export function timeRefinement(graph: any, vsId: string, veId: string, ts: number, exceptions: any): any {
+export function timeRefinement(graph: any, vsId: string, veId: string, ts: number): any {
 
     var RESULTS = {}
 
@@ -20,40 +20,31 @@ export function timeRefinement(graph: any, vsId: string, veId: string, ts: numbe
 
     RESULTS[hvs.stopId] = hvs;
 
-    console.log('--->')
-    console.log(hvs.gi.tripId);
-    console.log('<---')
-
-    refineArrivalTimes(graph, indexed, hvs, exceptions, (stopTime) => {
-        return (stopTime.arrivalTime > hvs.gi.arrivalTime) &&
-            (stopTime.tripId === hvs.gi.tripId) &&
-            (stopTime.direction === hvs.gi.direction);
-    });
+    refineArrivalTimes(graph, indexed, hvs);
 
     // OTHERS
     var timeout = 15;
     var start = Date.now();
-    // while(queue.length > 0 || ((Date.now() - start) < timeout)) {
-    //     queue = _.sortBy(queue, (el:any) => {
-    //         return el.gi.arrivalTime;
-    //     });
+    while(queue.length > 0 || ((Date.now() - start) < timeout)) {
+        queue = _.sortBy(queue, (el:any) => {
+            return el.gi.arrivalTime;
+        });
 
-    //     var hvi = queue.shift();
-    //     if(hvi.gi.arrivalTime === INFINI) {
-    //         console.log('BREAK');
-    //         break;
-    //     }
+        var hvi = queue.shift();
 
-    //     if(hvi) {
-    //         delete(indexed[hvi.stopId]);
+        if(hvi) {
+            delete(indexed[hvi.stopId]);
 
-    //         RESULTS[hvi.stopId] = hvi;
+            RESULTS[hvi.stopId] = hvi;
 
-    //         refineArrivalTimes(graph, indexed, hvi, (stopTime) => {
-    //             return stopTime.arrivalTime > hvi.gi.arrivalTime
-    //         });
-    //     }
-    // }
+            if(hvi.gi.arrivalTime === INFINI || hvi.stopId === veId) {
+                console.log('BREAK', hvi.stopId === veId);
+                break;
+            }
+
+            refineArrivalTimes(graph, indexed, hvi);
+         }
+    }
 
     if((Date.now() - start) > timeout) {
         console.log('Timeout !');
@@ -62,63 +53,36 @@ export function timeRefinement(graph: any, vsId: string, veId: string, ts: numbe
     return RESULTS;
 }
 
-function refineArrivalTimes(graph: any, indexed: any, indexedVi: any, exceptions: any, filter: (stopTime: any) => boolean) {
+function refineArrivalTimes(graph: any, indexed: any, indexedVi: any) {
     var vi = graph[indexedVi.stopId];
 
-    console.log(indexedVi);
-
-    var nextDepartures = vi.stopTimes.filter((st) => {
-        return st.departureTime > indexedVi.gi.arrivalTime;
+    var departureTimes = vi.stopTimes.filter((st) => {
+        return st.arrivalTime >= indexedVi.gi.arrivalTime;
+    }).sort((a, b) => {
+        return a.departureTime - b.departureTime;
     });
 
-    var tripIds = nextDepartures.map((x) => {
-        return x.tripId;
-    });
+    vi.edges.forEach((vjId) => {
+        var vj = graph[vjId];
+        var indexedVj = indexed[vjId];
 
-    Storage.impl().tripsByIds(seq.List.apply(null, tripIds)).then((trips) => {
-
-        var validTrips = trips.filter((trip) => {
-            return planner.Trip.isValidOn(trip, new Date(), exceptions);
+        var stopTimes = vj.stopTimes.sort((a: any, b: any) => {
+            return a.arrivalTime - b.arrivalTime;
         });
 
-        var validDepartures = nextDepartures.filter((d) => {
-            return validTrips.exists((t) => {
-                return t.id === d.tripId;
+        var maybeFound = _.find(stopTimes, (st: any) => {
+            return _.find(departureTimes, (dt: any) => {
+                return st.tripId === dt.tripId && st.arrivalTime > dt.departureTime;
             });
         });
 
-        console.log(_(_.sortBy(validDepartures, (d:any) => {
-            return d.departureTime;
-        })).map((d:any) => {
-            return new Date(d.departureTime) + " " + d.tripId;
-        }));
-
-        vi.edges.forEach((vjId) => {
-
-            var vj = graph[vjId];
-
-            var filtered = vj.stopTimes.filter((st) => {
-                return filter(st);
-            })
-
-            var sorted = _.sortBy(filtered, (st:any) => {
-                return st.arrivalTime;
-            });
-
-            var maybeFound = sorted[0];
-
-            var indexedVj = indexed[vjId];
-
-            if(maybeFound && indexedVj) {
-                if(indexedVj.gi.arrivalTime === INFINI || indexedVj.gi.arrivalTime > maybeFound.arrivalTime) {
-                    indexedVj.gi.arrivalTime = maybeFound.arrivalTime;
-                    indexedVj.tripId = maybeFound.tripId;
-                    indexedVj.gi.direction = maybeFound.direction;
-                }
+        if(maybeFound && indexedVj) {
+            if(indexedVj.gi.arrivalTime === INFINI || indexedVj.gi.arrivalTime > maybeFound.arrivalTime) {
+                indexedVj.gi.arrivalTime = maybeFound.arrivalTime;
+                indexedVj.tripId = maybeFound.tripId;
+                indexedVj.gi.direction = maybeFound.direction;
             }
-        });
-    }).fail((reason) => {
-        console.log(reason);
+        }
     });
 }
 
