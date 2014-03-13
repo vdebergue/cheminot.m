@@ -51,6 +51,8 @@ $.getJSON('http://localhost:9000/api/db/MjAxNC0wMS0xNF8wMC0xOS0wMA==', function(
             expect(asTimeString(x[STOPS['Rambouillet']].gi.arrivalTime)).to.equal('08:29:00');
             expect(asTimeString(x[STOPS['Versailles-Chantiers']].gi.arrivalTime)).to.equal('08:51:00');
             expect(asTimeString(x[STOPS['Paris-Montparnasse 1-2']].gi.arrivalTime)).to.equal('09:05:00');
+
+            console.log(ps.pathSelection(db.tdspGraph, x, ts, vsId, veId));
           });
 
         });

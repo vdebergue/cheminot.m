@@ -23,9 +23,7 @@ export function timeRefinement(graph: any, vsId: string, veId: string, ts: numbe
     refineArrivalTimes(graph, indexed, hvs);
 
     // OTHERS
-    var timeout = 15;
-    var start = Date.now();
-    while(queue.length > 0 || ((Date.now() - start) < timeout)) {
+    while(queue.length > 0) {
         queue = _.sortBy(queue, (el:any) => {
             return el.gi.arrivalTime;
         });
@@ -44,10 +42,6 @@ export function timeRefinement(graph: any, vsId: string, veId: string, ts: numbe
 
             refineArrivalTimes(graph, indexed, hvi);
          }
-    }
-
-    if((Date.now() - start) > timeout) {
-        console.log('Timeout !');
     }
 
     return RESULTS;

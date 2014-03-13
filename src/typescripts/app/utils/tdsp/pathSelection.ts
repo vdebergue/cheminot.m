@@ -1,22 +1,35 @@
-import tuple = require('lib/immutable/Tuple');
 
 export function pathSelection(graph: any, arrivalTimes: any, ts: number, vsId: string, veId: string): any {
 
     var vs = graph[vsId];
     var vj = graph[veId];
-    var p = [];
+    var arrivalTimeVe = arrivalTimes[vj.id];
+    var p = [arrivalTimeVe];
 
-    while(vj.stopId != vs.stopId) {
-        var gj = arrivalTimes[vj.stopId];
-        for(var i=0; i<gj.edges.length; i++) {
-            var vi = gj.edges[i];
-            var gi = arrivalTimes[vi.stopId];
-            if((gj.tripId === gi.tripId) && (gj.direction === gi.direction) && (gj.arrivalTime > gi.arrivalTime)) {
-                p.unshift(new tuple.Tuple2(gi, gj));
-                break;
+    while(vj.id != vs.id) {
+        var arrivalTimeVj = arrivalTimes[vj.id];
+
+        for(var i=0; i<vj.edges.length; i++) {
+
+            var vi = graph[vj.edges[i]];
+            var arrivalTimeVi = arrivalTimes[vi.id];
+
+            if(arrivalTimeVi) {
+
+                var maybeDepartureTime= _.find(vi.stopTimes, (st:any) => {
+                    return st.tripId === arrivalTimeVj.tripId && st.departureTime < arrivalTimeVj.gi.arrivalTime;
+                });
+
+                if(maybeDepartureTime) {
+                    vj = vi;
+                    p.unshift(arrivalTimeVj);
+                    break;
+                }
             }
         }
     }
+
+    p.unshift(arrivalTimes[vsId]);
 
     return p;
 }
