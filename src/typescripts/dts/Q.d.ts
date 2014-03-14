@@ -76,6 +76,8 @@ declare module Q {
     export function when<T>(value: IPromise<T>): Promise<T>;
     export function when<T>(value: T): Promise<T>;
 
+    export function reject<T>(reason: any): Promise<T>;
+
     // If a non-promise value is provided, it will not reject or progress
     export function when<T, U>(value: T, onFulfilled: (val: T) => IPromise<U>): Promise<U>;
     export function when<T, U>(value: T, onFulfilled: (val: T) => U): Promise<U>;

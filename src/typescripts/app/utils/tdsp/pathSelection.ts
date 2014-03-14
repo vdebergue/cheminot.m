@@ -1,4 +1,4 @@
-import tr = require('./timeRefinement');
+import tdsp = require('./tdsp');
 
 export function pathSelection(graph: any, arrivalTimes: any, ts: number, vsId: string, veId: string): any {
 
@@ -9,7 +9,7 @@ export function pathSelection(graph: any, arrivalTimes: any, ts: number, vsId: s
     var start = Date.now();
     var hasFoundTrip = false;
 
-    while(vj.id != vs.id && !tr.isTimeout(start)) {
+    while(vj.id != vs.id && !tdsp.isTimeout(start)) {
         var arrivalTimeVj = arrivalTimes[vj.id];
 
         for(var i=0; i<vj.edges.length; i++) {
@@ -20,7 +20,7 @@ export function pathSelection(graph: any, arrivalTimes: any, ts: number, vsId: s
             if(arrivalTimeVi) {
 
                 var maybeDepartureTime= _.find(vi.stopTimes, (st:any) => {
-                    return st.tripId === arrivalTimeVj.tripId && st.departureTime < arrivalTimeVj.gi.arrivalTime;
+                    return st.tripId === arrivalTimeVj.gi.tripId && st.departureTime < arrivalTimeVj.gi.arrivalTime;
                 });
 
                 if(maybeDepartureTime) {

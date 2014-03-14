@@ -15,6 +15,28 @@ export function flattenOptionPromise<T>(maybePromise: opt.IOption<Q.Promise<T>>)
     });
 }
 
+export function parPromises<T>(seq: Array<Q.Promise<T>>): Q.Promise<Array<T>> {
+    var d = Q.defer<Array<T>>();
+    var fullfilled = [];
+    var toFullFill = seq.length;
+    seq.forEach((f, i) => {
+        f.then((t) => {
+            fullfilled[i] = t;
+            toFullFill -= 1;
+            if(toFullFill <= 0) {
+                d.resolve(fullfilled);
+            }
+        }).fail((reason) => {
+            fullfilled[i] = reason;
+            toFullFill -= 1;
+            if(toFullFill <= 0) {
+                d.resolve(fullfilled);
+            }
+        });
+    });
+    return d.promise;
+}
+
 export function sequencePromises<T>(seq: Array<T>, f: (t: T) => Q.Promise<T>): Q.Promise<Array<T>> {
     if(seq.length === 0) {
         return Q([]);

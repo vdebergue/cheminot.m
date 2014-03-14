@@ -25,8 +25,8 @@ module.exports = function(grunt) {
                 }
             },
             'worker-dev': {
-                src: ["src/typescripts/worker/worker.ts"],
-                outDir: 'www/assets/javascripts/app/tasks',
+               src: ["src/typescripts/worker/**/*.ts"],
+                outDir: 'www/assets/javascripts/app/workers',
                 options: {
                     target: 'es3',
                     module: 'amd',
@@ -43,8 +43,8 @@ module.exports = function(grunt) {
                 }
             },
             'worker-prod': {
-                src: ["src/typescripts/worker/worker.ts"],
-                outDir: 'tmp/tasks',
+                src: ["src/typescripts/worker/**/*.ts"],
+                outDir: 'tmp/workers',
                 options: {
                     target: 'es3',
                     module: 'amd',
@@ -61,20 +61,7 @@ module.exports = function(grunt) {
                     optimize: 'none'
                 }
             },
-            'worker-prod': {
-                options: {
-                    wrap: {
-                        start: "importScripts('../../vendors/underscore-min.js');importScripts('../../vendors/q.min.js');importScripts('../../vendors/lz-string-1.3.3.js');importScripts('../../vendors/require.js');require.config({baseUrl: '/assets/javascripts/app'});",
-                        end: ''
-                    },
-                    skipModuleInsertion: true,
-                    baseUrl: "tmp",
-                    name: "tasks/worker",
-                    out: "www/assets/javascripts/app/tasks/worker.js",
-                    optimize: 'none'
-                }
-            },
-            'worker-dev': {
+            'worker-setup': {
                 options: {
                     wrap: {
                         start: "importScripts('../../vendors/underscore-min.js');importScripts('../../vendors/q.min.js');importScripts('../../vendors/lz-string-1.3.3.js');importScripts('../../vendors/require.js');require.config({baseUrl: '/assets/javascripts/app'});",
@@ -82,8 +69,21 @@ module.exports = function(grunt) {
                     },
                     skipModuleInsertion: true,
                     baseUrl: "www/assets/javascripts/app",
-                    name: "tasks/worker",
-                    out: "www/assets/javascripts/app/tasks/worker.js",
+                    name: "workers/setup",
+                    out: "www/assets/javascripts/app/workers/setup.js",
+                    optimize: 'none'
+                }
+            },
+            'worker-planner': {
+                options: {
+                    wrap: {
+                        start: "importScripts('../../vendors/underscore-min.js');importScripts('../../vendors/q.min.js');importScripts('../../vendors/lz-string-1.3.3.js');importScripts('../../vendors/require.js');require.config({baseUrl: '/assets/javascripts/app'});",
+                        end: ''
+                    },
+                    skipModuleInsertion: true,
+                    baseUrl: "www/assets/javascripts/app",
+                    name: "workers/planner",
+                    out: "www/assets/javascripts/app/workers/planner.js",
                     optimize: 'none'
                 }
             }
@@ -220,9 +220,9 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-text-replace');
 
     // Here we  go !
-    grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'ts:worker-dev', 'copy:dev', 'requirejs:worker-dev', 'inject:dev', 'replace:version']);
+    grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'ts:worker-dev', 'copy:dev', 'requirejs:worker-setup', 'requirejs:worker-planner', 'inject:dev', 'replace:version']);
     //grunt.registerTask('dev', ['clean:app', 'stylus:app', 'ts:dev', 'ts:worker-dev', 'copy:dev', 'requirejs:worker-dev', 'inject:dev', 'replace:version', 'watch']);
     grunt.registerTask('dev', ['stylus:app', 'ts:dev', 'watch']);
-    grunt.registerTask('prod', ['clean:app', 'stylus:app', 'ts:prod', 'ts:worker-prod', 'requirejs:app', 'requirejs:worker-prod', 'copy:prod', 'inject:prod', 'replace:version']);
+    grunt.registerTask('prod', ['clean:app', 'stylus:app', 'ts:prod', 'ts:worker-prod', 'requirejs:app', 'requirejs:worker-setup', 'requirejs:worker-planner', 'copy:prod', 'inject:prod', 'replace:version']);
     grunt.registerTask('cleanAll', ['clean:app']);
 };
