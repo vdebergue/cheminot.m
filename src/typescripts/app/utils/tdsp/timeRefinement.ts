@@ -6,24 +6,20 @@ import planner = require('models/Planner');
 
 export var INFINI = 9999999999999;
 
-export function timeRefinement(graph: any, vsId: string, veId: string, ts: number): any {
+export function isTimeout(start: number): boolean {
+    return (Date.now() - start) >= 2000;
+}
 
+export function timeRefinement(graph: any, vsId: string, veId: string, ts: number): any {
     var RESULTS = {}
 
     var Q = initialize(graph, vsId, ts);
     var indexed = Q._1;
     var queue = Q._2;
+    var start = Date.now();
+    var hasFoundTrip = false;
 
-    // STARTING NODE
-    var hvs = queue.shift();
-    delete(indexed[hvs.stopId]);
-
-    RESULTS[hvs.stopId] = hvs;
-
-    refineArrivalTimes(graph, indexed, hvs);
-
-    // OTHERS
-    while(queue.length > 0) {
+    while(queue.length > 0 && !isTimeout(start)) {
         queue = _.sortBy(queue, (el:any) => {
             return el.gi.arrivalTime;
         });
@@ -36,15 +32,16 @@ export function timeRefinement(graph: any, vsId: string, veId: string, ts: numbe
             RESULTS[hvi.stopId] = hvi;
 
             if(hvi.gi.arrivalTime === INFINI || hvi.stopId === veId) {
-                console.log('BREAK', hvi.stopId === veId);
+                if(hvi.stopId === veId) {
+                    hasFoundTrip = true;
+                }
                 break;
             }
 
             refineArrivalTimes(graph, indexed, hvi);
          }
     }
-
-    return RESULTS;
+    return hasFoundTrip ? RESULTS : null;
 }
 
 function refineArrivalTimes(graph: any, indexed: any, indexedVi: any) {
