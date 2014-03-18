@@ -7,7 +7,7 @@ var ready = Q.defer<boolean>();
 var readyPromise = ready.promise;
 var stash = [];
 
-var messages = {
+var EVENTS = {
     install: "install",
     config: 'config'
 };
@@ -34,17 +34,18 @@ self.addEventListener('message', function(e) {
 
 function receive(msg: any, Storage) {
     switch(msg.event) {
-    case messages.config: {
+    case EVENTS.config: {
         CONFIG = msg.data
         break;
     }
-    case messages.install: {
+    case EVENTS.install: {
         Storage.forceInstallDB(CONFIG, Storage.impl(), (event, data) => {
             (<any>self).postMessage(JSON.stringify({
                 event: event,
                 data: data
             }));
-        }).fail((reason) => {
+        }).fin((reason) => {
+            self.close();
         });
         break;
     }

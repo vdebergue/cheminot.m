@@ -1,7 +1,6 @@
 
 export function start(progress: (string, any?) => void) {
-    var p: Q.Promise<void>;
-    var worker = new Worker('assets/javascripts/app/workers/setup.js');
+    var worker = new Worker('app/workers/setup.js');
     worker.postMessage(JSON.stringify({
         event: 'config',
         data: window['CONFIG']

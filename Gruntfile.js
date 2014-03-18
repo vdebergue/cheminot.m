@@ -24,8 +24,17 @@ module.exports = function(grunt) {
                     sourceMap: false
                 }
             },
-            'worker-dev': {
-               src: ["src/typescripts/worker/**/*.ts"],
+            'worker-dev-setup': {
+               src: ["src/typescripts/worker/setup.ts"],
+                outDir: 'www/assets/javascripts/app/workers',
+                options: {
+                    target: 'es3',
+                    module: 'amd',
+                    sourceMap: false
+                }
+            },
+            'worker-dev-planner': {
+               src: ["src/typescripts/worker/planner.ts"],
                 outDir: 'www/assets/javascripts/app/workers',
                 options: {
                     target: 'es3',
@@ -41,16 +50,16 @@ module.exports = function(grunt) {
                     module: 'amd',
                     sourceMap: false
                 }
-            },
-            'worker-prod': {
-                src: ["src/typescripts/worker/**/*.ts"],
-                outDir: 'tmp/workers',
-                options: {
-                    target: 'es3',
-                    module: 'amd',
-                    sourceMap: false
-                }
             }
+            // 'worker-prod': {
+            //     src: ["src/typescripts/worker/**/*.ts"],
+            //     outDir: 'tmp/workers',
+            //     options: {
+            //         target: 'es3',
+            //         module: 'amd',
+            //         sourceMap: false
+            //     }
+            // }
         },
         requirejs: {
             app: {
@@ -220,9 +229,9 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-text-replace');
 
     // Here we  go !
-    grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'ts:worker-dev', 'copy:dev', 'requirejs:worker-setup', 'requirejs:worker-planner', 'inject:dev', 'replace:version']);
+    grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'ts:worker-dev-planner', 'ts:worker-dev-setup', 'copy:dev', 'requirejs:worker-setup', 'requirejs:worker-planner', 'inject:dev', 'replace:version']);
     //grunt.registerTask('dev', ['clean:app', 'stylus:app', 'ts:dev', 'ts:worker-dev', 'copy:dev', 'requirejs:worker-dev', 'inject:dev', 'replace:version', 'watch']);
     grunt.registerTask('dev', ['stylus:app', 'ts:dev', 'watch']);
-    grunt.registerTask('prod', ['clean:app', 'stylus:app', 'ts:prod', 'ts:worker-prod', 'requirejs:app', 'requirejs:worker-setup', 'requirejs:worker-planner', 'copy:prod', 'inject:prod', 'replace:version']);
+    grunt.registerTask('prod', ['clean:app', 'stylus:app', 'ts:prod', 'ts:worker-prod-planner', 'ts:worker-prod-setup', 'requirejs:app', 'requirejs:worker-setup', 'requirejs:worker-planner', 'copy:prod', 'inject:prod', 'replace:version']);
     grunt.registerTask('cleanAll', ['clean:app']);
 };

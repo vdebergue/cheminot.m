@@ -12,8 +12,10 @@ import Setup = require('../tasks/setup');
 export interface IStorage {
     getStopsTree(): Q.Promise<opt.IOption<any>>;
     getDateExeptions(): Q.Promise<opt.IOption<any>>;
+    getTdspGraph(): Q.Promise<opt.IOption<any>>;
     reset(): Q.Promise<void>;
     insertDateExceptions(exceptions: any): Q.Promise<void>;
+    insertTdspGraph(tdspGraph: any): Q.Promise<void>;
     insertStopsTree(stopsTree): Q.Promise<void>;
     insertTrips(trips: Array<any>, progress: (string, any) => void): Q.Promise<void>;
     putVersion(version: string): Q.Promise<void>;
@@ -39,6 +41,7 @@ export function impl(): IStorage {
 export var STOPS: opt.IOption<any> = new opt.None<any>();
 export var EXCEPTIONS: opt.IOption<any> = new opt.None<any>();
 export var TRIPS: opt.IOption<any> = new opt.None<any>();
+export var TDSPGRAPH: opt.IOption<any> = new opt.None<any>();
 
 export function addTripsToCache(tripsToAdd: any): void {
     TRIPS.map((trips) => {
@@ -49,30 +52,33 @@ export function addTripsToCache(tripsToAdd: any): void {
 }
 
 export function stops(): any {
-    return STOPS.map((stops) => {
-        return stops;
-    }).getOrElse(() => {
+    return STOPS.getOrElse(() => {
         utils.error('STOPS not initialized !');
         return null;
     });
 }
 
 export function exceptions(): any {
-    return EXCEPTIONS.map((exceptions) => {
-        return exceptions;
-    }).getOrElse(() => {
+    return EXCEPTIONS.getOrElse(() => {
         utils.error('exceptions not initialized !');
         return null;
     });
 }
 
+export function tdspGraph(): any {
+    return TDSPGRAPH.getOrElse(() => {
+        utils.error('tdspGraph not initialized !');
+        return null;
+    });
+}
+
 export function isInitialized(): boolean {
-    return STOPS.isDefined() && EXCEPTIONS.isDefined();
+    return STOPS.isDefined() && EXCEPTIONS.isDefined() && TDSPGRAPH.isDefined();
 }
 
 export function forceInstallDB(config: any, STORAGE: IStorage, progress: (string, any?) => void): Q.Promise<void> {
     return STORAGE.progress().then((maybeProgress) => {
-        maybeProgress.map((last) => {
+        return maybeProgress.map((last) => {
             utils.log('Resuming setup from: ' + last);
             return Api.db(config, progress, new opt.Some(last)).then((db) => {
                 return STORAGE.insertTrips(db.trips, progress).then(() => {
@@ -90,6 +96,9 @@ export function forceInstallDB(config: any, STORAGE: IStorage, progress: (string
                 }).then(() => {
                     progress('setup:stops');
                     return utils.measureF(() => STORAGE.insertTrips(db.trips, progress), 'persistTrips');
+                }).then(() => {
+                    return utils.measureF(() => STORAGE.insertTdspGraph(db.tdspGraph), 'persistTdspGraph');
+                    progress('setup:tdspgraph');
                 }).then(() => {
                     return STORAGE.putVersion(db.version);
                 }).then(() => {
@@ -119,20 +128,25 @@ export function installDB(progress: (string, any?) => void): Q.Promise<void> {
         STORAGE.version().then((maybeVersion) => {
             STORAGE.getStopsTree().then((maybeStops) => {
                 STORAGE.getDateExeptions().then((maybeExceptions) => {
-                    if(maybeVersion.isDefined() && maybeStops.isDefined() && maybeExceptions.isDefined()) {
-                        maybeStops.foreach((stops) => {
-                            STOPS = new opt.Some(stops);
-                        });
-                        maybeExceptions.foreach((exceptions) => {
-                            EXCEPTIONS = new opt.Some(exceptions);
-                        });
-                        d.resolve(null);
-                    } else {
-                        cacheDB(progress).then(() => {
+                    STORAGE.getTdspGraph().then((maybeTdspGraph) => {
+                        if(maybeVersion.isDefined() && maybeStops.isDefined() && maybeExceptions.isDefined()) {
+                            maybeStops.foreach((stops) => {
+                                STOPS = new opt.Some(stops);
+                            });
+                            maybeExceptions.foreach((exceptions) => {
+                                EXCEPTIONS = new opt.Some(exceptions);
+                            });
+                            maybeTdspGraph.foreach((tdspGraph) => {
+                                TDSPGRAPH = new opt.Some(tdspGraph);
+                            });
                             d.resolve(null);
-                        });
-                        Setup.start(progress);
-                    }
+                        } else {
+                            cacheDB(progress).then(() => {
+                                d.resolve(null);
+                            });
+                            Setup.start(progress);
+                        }
+                    });
                 });
             });
         }).fail((reason) => {

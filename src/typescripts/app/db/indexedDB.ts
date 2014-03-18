@@ -190,6 +190,10 @@ class IndexedDBStorage implements Storage.IStorage {
         return add('cache', { key: 'exceptions', value: exceptions });
     }
 
+    insertTdspGraph(tdspGraph: any): Q.Promise<void> {
+        return add('cache', { key: 'tdsp_graph', value: tdspGraph });
+    }
+
     getStopsTree(): Q.Promise<opt.IOption<any>> {
         return get('cache', 'by_key', 'treeStops').then((maybe) => {
             return maybe.map((d) => {
@@ -200,6 +204,14 @@ class IndexedDBStorage implements Storage.IStorage {
 
     getDateExeptions(): Q.Promise<opt.IOption<any>> {
         return get('cache', 'by_key', 'exceptions').then((maybe) => {
+            return maybe.map((d) => {
+                return d.value;
+            });
+        });
+    }
+
+    getTdspGraph(): Q.Promise<opt.IOption<any>> {
+        return get('cache', 'by_key', 'tdsp_graph').then((maybe) => {
             return maybe.map((d) => {
                 return d.value;
             });
