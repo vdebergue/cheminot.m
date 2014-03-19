@@ -53,13 +53,15 @@ function onSetupProgress(event: string, data: any) {
 
 export function init(views: seq.IList<IView>) {
 
+    var config = window['CONFIG'];
+
     function ensureInitApp(viewName: string): Q.Promise<void> {
         Upgrade.checkPeriodically();
         var p: Q.Promise<void>;
         if(!Storage.isInitialized()) {
             p = view(views, 'splashscreen').setup().then((splashscreenView) => {
                 return splashscreenView.show().then(() => {
-                    return Storage.installDB((event, data) => {
+                    return Storage.installDB(config, (event, data) => {
                         if(event === 'setup:fetch') {
                             (<Splashscreen>splashscreenView).progress(data);
                         } else if(event.indexOf('worker') >= 0) {

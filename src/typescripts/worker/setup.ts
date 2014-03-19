@@ -9,7 +9,8 @@ var stash = [];
 
 var EVENTS = {
     install: "install",
-    config: 'config'
+    config: 'config',
+    end: 'end'
 };
 
 var CONFIG = null;
@@ -32,6 +33,10 @@ self.addEventListener('message', function(e) {
     }
 }, false);
 
+function reply(data: any) {
+    (<any>self).postMessage(JSON.stringify(data));
+}
+
 function receive(msg: any, Storage) {
     switch(msg.event) {
     case EVENTS.config: {
@@ -40,12 +45,14 @@ function receive(msg: any, Storage) {
     }
     case EVENTS.install: {
         Storage.forceInstallDB(CONFIG, Storage.impl(), (event, data) => {
-            (<any>self).postMessage(JSON.stringify({
+            reply({
                 event: event,
                 data: data
-            }));
-        }).fin((reason) => {
-            self.close();
+            });
+        }).then(() => {
+            reply({
+                event: EVENTS.end
+            });
         });
         break;
     }

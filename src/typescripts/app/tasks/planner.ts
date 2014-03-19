@@ -1,18 +1,25 @@
 
-export function lookForBestTrip(vsId: string, veId: string, vsTripId: string, ts: number): Q.Promise<any> {
+export function lookForBestTrip(vsId, veId, stopTimes): Q.Promise<any> {
     var d = Q.defer<any>();
 
     var worker = new Worker('app/workers/planner.js');
     worker.postMessage(JSON.stringify({
         event: 'search',
+        stopTimes: stopTimes,
+        config: window['CONFIG'],
         vsId: vsId,
-        veId: veId,
-        vsTripId: vsTripId,
-        ts: ts
+        veId: veId
     }));
 
     worker.onmessage = (e) => {
-        d.resolve(JSON.parse(e.data));
+        var msg = JSON.parse(e.data)
+        console.log('DONE');
+        console.log(msg);
+        if(msg.data) {
+            d.resolve(msg.data);
+        } else {
+            d.reject("not found")
+        }
         worker.terminate();
     }
 

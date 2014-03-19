@@ -8,17 +8,19 @@ var readyPromise = ready.promise;
 var stash = [];
 
 var EVENTS = {
-    search: "search"
+    search: "search",
+    end: "end"
 };
 
 var CONFIG = null;
 
-require(["db/storage", "utils/tdsp/tdsp"], function(Storage, tdsp) {
+require(["db/storage", "utils/tdsp/tdsp", "utils/utils"], function(Storage, tdsp, utils) {
     ready.resolve(true);
     stash.forEach((msg) => {
         receive(msg, {
             Storage: Storage,
-            tdsp: tdsp
+            tdsp: tdsp,
+            utils: utils
         });
     });
     stash = [];
@@ -26,7 +28,8 @@ require(["db/storage", "utils/tdsp/tdsp"], function(Storage, tdsp) {
     self.addEventListener('message', function(e) {
         receive(JSON.parse(e.data), {
             Storage: Storage,
-            tdsp: tdsp
+            tdsp: tdsp,
+            utils: utils
         });
     });
 });
@@ -38,26 +41,39 @@ self.addEventListener('message', function(e) {
     }
 }, false);
 
+function reply(data: any) {
+    (<any>self).postMessage(JSON.stringify(data));
+}
+
 function receive(msg: any, deps: any) {
     switch(msg.event) {
     case EVENTS.search: {
         console.log("Let's starting !");
-        search(msg.vsId, msg.veId, msg.vsTripId, msg.ts, deps).then((results:any) => {
-            (<any>self).postMessage(JSON.stringify({
-                event: msg.event,
-                data: results
-            }));
-        }).fail((reason) => {
-            console.log(reason);
-        });
+        run(msg.vsId, msg.veId, msg.stopTimes, msg.config, deps);
         break;
     }
     default: break;
     }
 }
 
-function search(vsId: string, veId: string, vsTripId: string, ts: number, deps:any): Q.Promise<any> {
-    var tdspGraph = deps.Storage.tdspGraph();
-    var exceptions = deps.Storage.exceptions();
-    return deps.tdsp.lookForBestTrip(tdspGraph, vsId, veId, vsTripId, ts, exceptions);
+function run(vsId: string, veId: string, stopTimes, config: any, deps): Q.Promise<any> {
+    return deps.Storage.installDB(config, () => {}).then(() => {
+
+        var tdspGraph = deps.Storage.tdspGraph();
+        var exceptions = deps.Storage.exceptions();
+
+        return deps.utils.sequencePromises(stopTimes, (st) => {
+            return deps.tdsp.lookForBestTrip(tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions).fail(() => {});
+        }).then((results) => {
+            reply({
+                event: EVENTS.end,
+                data: results
+            });
+        }).fail((reason) => {
+            reply({
+                event: EVENTS.end,
+                data: null
+            });
+        });
+    });
 }

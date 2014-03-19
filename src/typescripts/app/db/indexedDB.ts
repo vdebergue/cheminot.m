@@ -302,7 +302,7 @@ class IndexedDBStorage implements Storage.IStorage {
         });
 
         var toQuery = _.difference(ids.asArray(), fromCacheIds.asArray());
-        console.log(toQuery);
+
         var step = (ids: seq.IList<string>, acc: seq.IList<any>) => {
             return ids.headOption().map((id) => {
                 return this.tripById(id).then((maybeTrip) => {

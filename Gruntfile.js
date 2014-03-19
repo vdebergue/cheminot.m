@@ -86,7 +86,7 @@ module.exports = function(grunt) {
             'worker-planner': {
                 options: {
                     wrap: {
-                        start: "importScripts('../../vendors/underscore-min.js');importScripts('../../vendors/q.min.js');importScripts('../../vendors/lz-string-1.3.3.js');importScripts('../../vendors/require.js');require.config({baseUrl: '/assets/javascripts/app'});",
+                        start: "importScripts('../../vendors/moment.min.js');importScripts('../../vendors/underscore-min.js');importScripts('../../vendors/q.min.js');importScripts('../../vendors/lz-string-1.3.3.js');importScripts('../../vendors/require.js');require.config({baseUrl: '/assets/javascripts/app'});",
                         end: ''
                     },
                     skipModuleInsertion: true,

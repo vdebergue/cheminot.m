@@ -45,7 +45,7 @@ export var TDSPGRAPH: opt.IOption<any> = new opt.None<any>();
 
 export function addTripsToCache(tripsToAdd: any): void {
     TRIPS.map((trips) => {
-        TRIPS = new opt.Some($.extend(trips, tripsToAdd));
+        TRIPS = new opt.Some(_.extend(trips, tripsToAdd));
     }).getOrElse(() => {
         TRIPS = new opt.Some(tripsToAdd);
     });
@@ -114,15 +114,15 @@ export function cacheDB(progress: (string, any?) => void): Q.Promise<void> {
     return Api.db(config, progress).then((db) => {
         STOPS = new opt.Some(db.treeStops);
         EXCEPTIONS = new opt.Some(db.exceptions);
+        TDSPGRAPH = new opt.Some(db.tdspGraph);
         db.trips.data.forEach((d) => {
             addTripsToCache(d.trips);
         });
     });
 }
 
-export function installDB(progress: (string, any?) => void): Q.Promise<void> {
+export function installDB(config: any, progress: (string, any?) => void): Q.Promise<void> {
     var STORAGE = impl();
-    var config = window['CONFIG'];
     var d = Q.defer<any>();
     if(STOPS.isEmpty()) {
         STORAGE.version().then((maybeVersion) => {
@@ -144,7 +144,9 @@ export function installDB(progress: (string, any?) => void): Q.Promise<void> {
                             cacheDB(progress).then(() => {
                                 d.resolve(null);
                             });
-                            Setup.start(progress);
+                            Setup.start(progress).then(() => {
+                                d.resolve(null);
+                            });
                         }
                     });
                 });
