@@ -130,7 +130,7 @@ require(['require', '../chai', '../mocha'], function(require, chai) {
                         //   done();
                         // });
 
-                        var x = departureTimes.length() / 8;
+                        var x = departureTimes.length() / 4;
 
                         var futures = departureTimes.grouped(x).map(function(stopTimes) {
                             return PlannerTask.lookForBestTrip(vsId, veId, stopTimes.asArray());
@@ -142,6 +142,11 @@ require(['require', '../chai', '../mocha'], function(require, chai) {
                         }).fail(function(reason) {
                             console.log('ERROR', reason);
                         });
+
+                        // var trips = seq.List("OCESN023900F0500118725", "OCESN830302F0100838248", "OCESN830911F0300138573");
+                        // Storage.impl().tripsByIds(trips).then(function(trips) {
+                        //     console.log(trips);
+                        // });
 
                     });
 

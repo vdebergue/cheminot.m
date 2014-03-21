@@ -62,6 +62,7 @@ export function cursor(storeName: string, f: (r: any) => boolean): Q.Promise<voi
         var tx = DB.transaction(storeName, "readonly");
         var store = tx.objectStore(storeName);
         var c = store.openCursor();
+        var results = seq.List<any>();
 
         c.onsuccess = (evt) => {
             var cursor = evt.target.result;
@@ -70,7 +71,7 @@ export function cursor(storeName: string, f: (r: any) => boolean): Q.Promise<voi
                     cursor.continue();
                 } else {
                     d.resolve(null);
-                }
+                };
             } else {
                 d.resolve(null);
             }
@@ -301,25 +302,26 @@ class IndexedDBStorage implements Storage.IStorage {
             return trip.id;
         });
 
-        var toQuery = _.difference(ids.asArray(), fromCacheIds.asArray());
+        var toQuery = (() => {
+            var diff = _.difference(ids.asArray(), fromCacheIds.asArray());
+            return seq.List.apply(null, diff);
+        })();
 
-        var step = (ids: seq.IList<string>, acc: seq.IList<any>) => {
-            return ids.headOption().map((id) => {
-                return this.tripById(id).then((maybeTrip) => {
-                    return maybeTrip.map((trip) => {
-                        return step(ids.tail(), acc.prependOne(trip));
-                    }).getOrElse(() => {
-                        utils.oops('Error while getting trip ' + id);
-                        return null;
-                    });
-                });
-            }).getOrElse(() => {
-                return Q(acc);
+        var results = new seq.Nil<any>();
+
+        return cursor("trips", (group) => {
+            Storage.addTripsToCache(group.trips);
+            var x = toQuery.partition((id) => {
+                return group.trips[id] != null;
             });
-        }
-        var fromDatabase = step(seq.List.apply(null, toQuery), new seq.Nil<any>());
-        return fromDatabase.then((fromDatabase) => {
-            return fromDatabase.append(fromCache);
+            toQuery = x._2;
+            var fetched = x._1.map((id) => {
+                return group.trips[id];
+            });
+            results = results.prepend(fetched);
+            return toQuery.length() > 0;
+        }).then(() => {
+            return results;
         });
     }
 

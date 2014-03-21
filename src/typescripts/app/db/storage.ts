@@ -45,6 +45,7 @@ export var TDSPGRAPH: opt.IOption<any> = new opt.None<any>();
 
 export function addTripsToCache(tripsToAdd: any): void {
     TRIPS.map((trips) => {
+        //TODO merge only if not already merged
         TRIPS = new opt.Some(_.extend(trips, tripsToAdd));
     }).getOrElse(() => {
         TRIPS = new opt.Some(tripsToAdd);
