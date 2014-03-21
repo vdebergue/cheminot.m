@@ -133,6 +133,12 @@ module.exports = function(grunt) {
                         expand: true
                     },
                     {
+                        cwd: 'src/images',
+                        src: ['**'],
+                        dest: 'www/assets/images',
+                        expand: true
+                    },
+                    {
                         src: ['src/index.html'],
                         dest: 'www/index.html'
                     },
@@ -231,6 +237,7 @@ module.exports = function(grunt) {
     // Here we  go !
     grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'ts:worker-dev-planner', 'ts:worker-dev-setup', 'copy:dev', 'requirejs:worker-setup', 'requirejs:worker-planner', 'inject:dev', 'replace:version']);
     //grunt.registerTask('dev', ['clean:app', 'stylus:app', 'ts:dev', 'ts:worker-dev', 'copy:dev', 'requirejs:worker-dev', 'inject:dev', 'replace:version', 'watch']);
+    grunt.registerTask('css', ['stylus:app', 'watch']);
     grunt.registerTask('dev', ['stylus:app', 'ts:dev', 'watch']);
     grunt.registerTask('prod', ['clean:app', 'stylus:app', 'ts:prod', 'ts:worker-prod-planner', 'ts:worker-prod-setup', 'requirejs:app', 'requirejs:worker-setup', 'requirejs:worker-planner', 'copy:prod', 'inject:prod', 'replace:version']);
     grunt.registerTask('cleanAll', ['clean:app']);

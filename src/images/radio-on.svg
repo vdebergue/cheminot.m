@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="104px" height="64px" viewBox="0 0 104 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <title>chemino 9@2x</title>
+    <description>Created with Sketch (http://www.bohemiancoding.com/sketch)</description>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="switch-on" sketch:type="MSLayerGroup">
+            <rect id="Rectangle-40" fill="#439DF7" sketch:type="MSShapeGroup" x="0" y="0" width="104" height="64" rx="40"></rect>
+            <path d="M72,61 C88.0162585,61 101,48.0162585 101,32 C101,15.9837415 88.0162585,3 72,3 C55.9837415,3 43,15.9837415 43,32 C43,48.0162585 55.9837415,61 72,61 Z" id="Oval-32" fill="#FFFFFF" sketch:type="MSShapeGroup"></path>
+        </g>
+    </g>
+</svg>

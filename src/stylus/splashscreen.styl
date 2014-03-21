@@ -1,37 +1,61 @@
 #splashscreen {
-    display: flex
-    align-items: center
     position: fixed
     top: 0
     left: 0
     right: 0
     bottom: 0
     z-index: 3
-    background: #FFF
+    background: blue
+    color: #FFF
 
     .middle {
+        height: 100%
         margin: auto
         text-align: center
     }
 
-    h1 {
-        font-size: 24px
-        font-weight: bold
+    .title {
+        display: flex
+        align-items: center
+        height: 40%
+
+        h1 {
+            margin: auto
+            font-size: 48px
+            font-weight: bold
+        }
+    }
+
+    .train {
+        height: 30%
     }
 
     .progress {
-        margin-top: 10px
-        font-size: 22px
-        font-weight: lighter
+        height: 40%
+        font-size: 18px
+        display: flex
+        align-items: center
 
         &.hidden {
             display: none
         }
 
-        .value {
-            width: 30px
-            display: inline-block
-            text-align: right
+        .info {
+            margin: auto
+
+            > p {
+                padding: 10px
+            }
+
+            .value, .percent {
+                color: #75C4FD
+            }
+
+            .value {
+                width: 30px
+                display: inline-block
+                text-align: right
+            }
         }
     }
 }
