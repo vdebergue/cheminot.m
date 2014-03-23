@@ -51,7 +51,7 @@ class Home extends View implements IView {
 
     adaptWrapperTop(): void {
         var $wrapper = this.$scope().find('#wrapper');
-        var offset = $('.stations > h2').offset();
+        var offset = $('.stations').offset();
         var top = offset.top + offset.height;
         $wrapper.css('top', top);
     }

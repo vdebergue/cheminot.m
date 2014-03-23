@@ -1,31 +1,33 @@
 <section class="view hidden" id="home">
-  <div class="when">
-    <div class="date">
-      <button class="btn active today" class="active">Aujourd'hui</button>
-      <button class="btn tomorrow">Demain</button>
-      <div class="btn other">
-        <span class="label">Autres</span>
-        <input type="date" name="others"/>
-      </div>
+  <ul class="list when">
+    <li class="today">
+      Aujourd'hui
+      <button class="radio active today" class="active"></button>
+    </li>
+    <li class="tomorrow">
+      Demain
+      <button class="radio tomorrow"></button>
+    </li>
+    <li class="other">
+      Autre
+    </li>
+  </ul>
+</div>
+<div class="search">
+  <form>
+    <div class="input">
+      <input name="start" type="text" placeholder="Départ" />
+      <button type="button" class="icon reset"></button>
     </div>
-    <button class="btn go">Go</button>
-  </div>
-  <div class="search container">
-    <form>
-      <div class="input">
-        <input name="start" type="text" placeholder="Départ" />
-        <button type="button" class="icon reset"></button>
-      </div>
-      <div class="input">
-        <input name="end" type="text" placeholder="Arrivée" />
-        <button type="button" class="icon reset"></button>
-      </div>
-    </form>
-  </div>
-  <div class="stations">
-    <h2>Stations</h2>
-    <div id="wrapper">
-      <ul class="suggestions list"></ul>
+    <div class="input">
+      <input name="end" type="text" placeholder="Arrivée" />
+      <button type="button" class="icon reset"></button>
     </div>
+  </form>
+</div>
+<div class="stations">
+  <div id="wrapper">
+    <ul class="suggestions list"></ul>
   </div>
+</div>
 </section>

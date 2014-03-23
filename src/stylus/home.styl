@@ -5,7 +5,6 @@
 
     .when {
         position: absolute
-        background: #F0F0F0
         width: 100%
         top: 0
         z-index: -1
@@ -14,104 +13,72 @@
         padding-bottom: 10px
         text-align: center
 
-        .date {
-            display: flex
-            justify-content: center
+        &.displayed {
+            z-index: 1
+        }
 
-            .btn {
-                margin-left: 5px
-                margin-right: 5px
+        li {
+            position: relative
 
-                &.other {
-                    padding: 5px
-                    position: relative
+            button {
+                border: none
+                outline: none
+                position: absolute
+                top: 0
+                right: 2%
+                height: 100%
+                width: 52px
 
-                    input[type=date] {
-                        margin: 0
-                        padding: 0
-                        opacity: 0
-                        position: absolute
-                        top: 0
-                        left: 0
-                        right: 0
-                        bottom: 0
+                &.radio {
+                    background: url('../../images/radio-off.svg') no-repeat center
+                    background-size: 100%
+
+                    &.active {
+                        background: url('../../images/radio-on.svg') no-repeat center
+                        background-size: 100%
                     }
                 }
             }
-        }
-
-        .btn.go {
-            margin-top: 15px
-        }
-
-        &.displayed {
-            z-index: 1
         }
     }
 
     .search {
         background: #FFF
-        padding-top: 15px
 
         form {
             .input {
                 position: relative
+
+                &:first-child {
+                    border-bottom: 2px solid grey-blue
+                }
 
                 input {
                     padding-right: 30px
                 }
 
                 button.reset {
-                    display: inline-block
                     position: absolute
                     top: 0
-                    right: 0
+                    right: 2%
                     border: none
                     outline: none
-                    background: transparent
                     display: none
+                    background: url('../../images/cross.svg') no-repeat center
+                    background-size: 100%
                     height: 100%
-                    padding-right: 2%
+                    width: 22px
 
                     &.filled {
                         display: block
                     }
-
-                    &:before {
-                        color: #525252
-                        content: 'X'
-                        vertical-align: -2px
-                    }
-                }
-
-                &:not(first-child) {
-                    margin-top: 17px
-                    margin-bottom: 17px
                 }
             }
         }
     }
 
     .stations {
-        border-top: 1px solid grey-dark
-
-        h2 {
-            padding-top: 13px
-            padding-bottom: 13px
-            box-sizing: border-box
-            display: none
-            margin: 0 auto
-            color: blue
-            width: 100%
-            border-bottom: 1px solid grey-light
-            text-align: center
-        }
-    }
-
-    .stations.searching {
-        h2 {
-            display: block
-        }
+        border-top: 10px solid grey-blue
     }
 
     #wrapper {
@@ -125,13 +92,12 @@
             width: 100%
 
             li {
-
                 > span {
                     line-height: 1px
                 }
 
                 .match {
-                    font-weight: bold
+                    color: #000
                 }
             }
         }

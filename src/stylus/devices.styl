@@ -4,11 +4,12 @@
 scale(value, factor)
   value * factor
 
-header_height_portrait = 44px
-header_size_portrait = 17px
-input_height_portrait = 34px
-input_size_portrait = 14px
-h2_size_portrait = 17px
+header_height_portrait = 64px
+header_size_portrait = 18px
+item_height_portrait = 66px
+item_size_portrait = 18px
+input_height_portrait = 66px
+input_size_portrait = 18px
 btn_size_portrait = 18px
 back_btn_size_portrait = 30px
 home_wrapper_top = 230px
@@ -18,18 +19,19 @@ trip_wrapper_top = 88px
 device(min_width, max_width, factor)
     portrait = "only screen and (min-device-width : " + min_width + ") and (max-device-width : " + max_width + ")"
     @media portrait
-        header, .list li {
+        header {
             height: scale(header_height_portrait, factor)
             font-size: scale(header_size_portrait, factor)
+        }
+
+        .list li {
+            height: scale(item_height_portrait, factor)
+            font-size: scale(item_size_portrait, factor)
         }
 
         input {
             height: scale(input_height_portrait, factor)
             font-size: scale(input_size_portrait, factor)
-        }
-
-        h2 {
-            font-size: scale(h2_size_portrait, factor)
         }
 
         .btn {
@@ -52,10 +54,6 @@ device(min_width, max_width, factor)
     input {
         height: input_height_portrait
         font-size: input_size_portrait
-    }
-
-    h2 {
-        font-size: h2_size_portrait
     }
 
     .btn {
