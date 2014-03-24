@@ -105,3 +105,10 @@ export function isAppleMobile() {
 export function isIOS7() {
     return isAppleMobile() && navigator.userAgent.match(/OS 7/);
 }
+
+export class Promise {
+
+    static DONE(): Q.Promise<void> {
+        return Q<void>(null);
+    }
+}

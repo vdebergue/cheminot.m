@@ -113,7 +113,7 @@ class Home extends View implements IView {
         var $when = this.$scope().find('.when');
         var whenIsDeplayed = $when.is('.displayed')
 
-        var eventuallyTransition =  whenIsDeplayed ? this.hideWhen() : Q<void>(null);
+        var eventuallyTransition =  whenIsDeplayed ? this.hideWhen() : utils.Promise.DONE();
         eventuallyTransition.then(() => {
             var timeout = whenIsDeplayed ? 600 : 0;
             setTimeout(() => {
@@ -282,9 +282,9 @@ class Home extends View implements IView {
     hideWhen(): Q.Promise<void> {
         var $when = this.$scope().find('.when');
         $when.removeClass('displayed');
-        return Q.delay(Q(null), 400).then(() => {
+        return Q.delay(utils.Promise.DONE(), 400).then(() => {
             return Zanimo.transform($when.get(0), 'translate3d(0,0,0)', true).then(() => {
-                return null;
+                return utils.Promise.DONE();
             });
         });
     }

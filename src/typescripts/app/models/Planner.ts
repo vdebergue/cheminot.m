@@ -8,7 +8,7 @@ import Storage = require('../db/storage');
 import TernaryTree = require('../utils/ternaryTree');
 import utils = require('../utils/utils');
 
-export function schedulesFor(startName: string, endName: string): Q.Promise<opt.IOption<Schedules>> {
+export function schedulesFor(startName: string, endName: string, startTime: number): Q.Promise<opt.IOption<Schedules>> {
 
     var stopsTree = Storage.stops();
     var maybeStart: opt.IOption<any> = TernaryTree.search(startName.toLowerCase(), stopsTree, 1).headOption();

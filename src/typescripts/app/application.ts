@@ -1,6 +1,7 @@
 /// <reference path='../dts/Q.d.ts'/>
 
 declare var Path: any;
+declare var Abyssa: any;
 
 import opt = require('lib/immutable/Option');
 import seq = require('./lib/immutable/List');
@@ -56,7 +57,7 @@ export function init(views: seq.IList<IView>) {
     var config = window['CONFIG'];
 
     function ensureInitApp(viewName: string): Q.Promise<void> {
-        Upgrade.checkPeriodically();
+        //Upgrade.checkPeriodically();
         var p: Q.Promise<void>;
         if(!Storage.isInitialized()) {
             p = view(views, 'splashscreen').setup().then((splashscreenView) => {
@@ -68,19 +69,19 @@ export function init(views: seq.IList<IView>) {
                             onSetupProgress(event, data);
                         }
                     }).then(() => {
-                        return Q.delay(Q(null), 1000);
+                        return Q.delay(utils.Promise.DONE(), 1000);
                     });
                 });
             }).fail((reason) => {
                 utils.error(reason);
             });
         } else {
-            p = Q<void>(null);
+            p = utils.Promise.DONE();
         }
         return p.then(() => {
             hideOtherViews(viewName);
             return view(views, viewName).setup().then(() => {
-                return null;
+                return utils.Promise.DONE();
             });
         });
     }
@@ -91,40 +92,54 @@ export function init(views: seq.IList<IView>) {
         });
     }
 
-    Path.map('#/').to(function() {
-        ensureInitApp('home').then(() => {
-            var homeView = <Home>view(views, 'home');
-            homeView.show();
-        });
-    });
+    Abyssa.Router({
+        app: Abyssa.State('', {
+            enter: function(params) {
+                return this.async(ensureInitApp('home').then(() => {
+                    var homeView = <Home>view(views, 'home');
+                    homeView.show();
+                }));
+            },
 
-    Path.map('#/start/:start').to(function() {
-        ensureInitApp('home').then(() => {
-            var start = this.params['start'];
-            var homeView = <Home>view(views, 'home');
-            homeView.fillSelectedStart(start);
-            homeView.show();
-        });
-    });
+            show: Abyssa.State(),
 
-    Path.map('#/end/:end').to(function() {
-        ensureInitApp('home').then(() => {
-            var end = this.params['end'];
-            var homeView = <Home>view(views, 'home');
-            homeView.fillSelectedEnd(end);
-            homeView.show();
-        });
-    });
+            onlyStart: Abyssa.State('start/:start', function(params) {
+                var start = params['start'];
+                var homeView = <Home>view(views, 'home');
+                homeView.fillSelectedStart(start);
+            }),
 
-    Path.map('#/schedule/:start/:end').to(function() {
-        ensureInitApp('home').then(() => {
-            var homeView = <Home> view(views, 'home');
-            var start = this.params['start'];
-            var end = this.params['end'];
-            homeView.show();
-            homeView.displayWhen(start, end);
-        });
-    });
+            onlyEnd: Abyssa.State('end/:end', function(params) {
+                var end = params['end'];
+                var homeView = <Home>view(views, 'home');
+                homeView.fillSelectedEnd(end);
+            }),
+
+            schedule: Abyssa.State('schedule/:start/:end', function(params) {
+                var start = params['start'];
+                var end = params['end'];
+                var homeView = <Home>view(views, 'home');
+                homeView.displayWhen(start, end);
+            }),
+
+            timetable: Abyssa.State('timetable/:start/:end/:when', function(params) {
+                opt.Option(params['start']).flatMap((start) => {
+                    opt.Option(params['end']).flatMap((end) => {
+                        opt.Option(params['when']).flatMap((when) => {
+                            return parseInt(when, 10);
+                        }).map((when) => {
+                            Planner.schedulesFor(start, end, when).then((trips) => {
+                                var timetableView = <Timetable>view(views, 'timetable');
+                                timetableView.show();
+                            });
+                        });
+                    });
+                }).getOrElse(() => {
+                    return utils.Promise.DONE();
+                });
+            })
+        })
+    }).init();
 
     Path.map('#/timetable/:start/:end/:when').to(function() {
         ensureInitApp('timetable').then(() => {
@@ -165,7 +180,7 @@ export function init(views: seq.IList<IView>) {
         navigate('/');
     });
 
-    Path.listen();
+    //Path.listen();
     if(!window.location.hash) {
         navigate('/');
     }
