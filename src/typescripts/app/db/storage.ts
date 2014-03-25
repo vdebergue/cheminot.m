@@ -161,35 +161,3 @@ export function installDB(config: any, progress: (string, any?) => void): Q.Prom
     }
     return d.promise;
 }
-
-export function getTripDirection(startId: string, stopId: string, tripId: string): Q.Promise<string> {
-    var direction = (trip: any) => {
-        var stationIds = seq.List.apply(null, trip.stopTimes).collect((stopTime) => {
-            if(stopTime.stop.id == startId || stopTime.stop.id == stopId) {
-                return opt.Option<string>(stopTime.stop.id);
-            } else {
-                return new opt.None<string>();
-            }
-        });
-
-        return stationIds.headOption().map((stationId) => {
-            if(stationId == startId) {
-                return "1";
-            } else {
-                return "0";
-            }
-        }).getOrElse(() => {
-            utils.oops('Error while getting trip direction: startId or stopId unknown');
-            return null;
-        });
-    }
-
-    return impl().tripById(tripId).then((maybeTrip) => {
-        return maybeTrip.map((trip) => {
-            return direction(trip);
-        }).getOrElse(() => {
-            utils.oops('Error while getting trip direction: can\'t find the trip');
-            return null;
-        });
-    });
-}

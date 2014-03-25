@@ -7,43 +7,26 @@ import seq = require('lib/immutable/List');
 import Storage = require('../db/storage');
 import TernaryTree = require('../utils/ternaryTree');
 import utils = require('../utils/utils');
+import PlannerTask = require('tasks/planner');
 
-export function schedulesFor(startName: string, endName: string, startTime: number): Q.Promise<opt.IOption<Schedules>> {
+export function schedulesFor(startName: string, endName: string, startTime: number): Q.Promise<opt.IOption<any>> {
+    var graph = Storage.tdspGraph();
+    var start = graph[startName];
+    var end = graph[endName];
 
-    var stopsTree = Storage.stops();
-    var maybeStart: opt.IOption<any> = TernaryTree.search(startName.toLowerCase(), stopsTree, 1).headOption();
-    var maybeEnd: opt.IOption<any> = TernaryTree.search(endName.toLowerCase(), stopsTree, 1).headOption();
+    var stopTimes = (function() {
+        var filtered = _.filter(start.stopTimes, (st:any) => {
+            return st.departureTime < startTime;
+        });
 
-    return utils.flattenOptionPromise<Schedules>(
-        maybeStart.flatMap<Q.Promise<Schedules>>((start) => {
-            return maybeEnd.map((end) => {
-                var tripIds: Array<any> = _.intersection(start.tripIds, end.tripIds);
-                var oneTripId = tripIds[0];
-                return Storage.getTripDirection(start.id, end.id, oneTripId).then<Schedules>((direction) => {
-                    return Storage.impl().tripsByIds(seq.List.apply(null, tripIds)).then((trips) => {
-                        var stopTimes = trips.filter((trip) => {
-                            return trip.direction === direction;
-                        }).flatMap<any>((trip) => {
-                            return seq.List.apply(null, trip.stopTimes).find((stopTime) => {
-                                return stopTime.stop.id === start.id;
-                            });
-                        });
-                        return new Schedules(start, stopTimes)
-                    });
-                });
-            });
-        })
-    );
-}
+        return _.sortBy(filtered, (st:any) => {
+            return st.departureTime;
+        });
+    })();
 
-export class Schedules {
-    station: any;
-    stopTimes: seq.IList<any>;
+    var max = 4;
 
-    constructor(station: any, stopTimes: seq.IList<any>) {
-        this.station = station;
-        this.stopTimes = stopTimes;
-    }
+    return PlannerTask.lookForBestTrip(startName, endName, stopTimes, max);
 }
 
 export class Trip {

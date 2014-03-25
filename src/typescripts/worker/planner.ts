@@ -49,22 +49,28 @@ function receive(msg: any, deps: any) {
     switch(msg.event) {
     case EVENTS.search: {
         console.log("Let's starting !");
-        run(msg.vsId, msg.veId, msg.stopTimes, msg.config, deps);
+        run(msg.vsId, msg.veId, msg.stopTimes, msg.max, msg.config, deps);
         break;
     }
     default: break;
     }
 }
 
-function run(vsId: string, veId: string, stopTimes, config: any, deps): Q.Promise<any> {
+function run(vsId: string, veId: string, stopTimes, max: number, config: any, deps): Q.Promise<any> {
     return deps.Storage.installDB(config, () => {}).then(() => {
 
         var tdspGraph = deps.Storage.tdspGraph();
         var exceptions = deps.Storage.exceptions();
+        var toFound = max;
 
         return deps.utils.sequencePromises(stopTimes, (st) => {
-            return deps.tdsp.lookForBestTrip(tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions).fail(() => {});
+            if(toFound > 0) {
+                return deps.tdsp.lookForBestTrip(tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions).fail(() => {});
+            } else {
+                return deps.utils.Promise.DONE();
+            }
         }).then((results) => {
+            --toFound;
             reply({
                 event: EVENTS.end,
                 data: results

@@ -72,7 +72,7 @@ class View {
 
     static bindEvents() {
         $('body').on('tap', '.back-btn', (e: Event) => {
-            App.navigateToBack();
+            App.Navigate.back();
             return true;
         });
     }

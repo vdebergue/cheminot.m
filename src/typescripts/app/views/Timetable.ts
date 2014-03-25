@@ -55,43 +55,17 @@ class Timetable extends View implements IView {
     onScheduleSelected(e: Event): boolean {
         var $schedule = $(e.currentTarget);
         var tripId = $schedule.data('trip');
-        App.navigateToTrip(tripId);
+        //App.navigateToTrip(tripId);
         return false;
     }
 
-    buildWith(when: Date, schedules: planner.Schedules, exceptions: any): Q.Promise<void> {
+    buildWith(when: Date, trips: any): Q.Promise<void> {
         return Templating.timetable.schedules().then((t) => {
-            var $scope = this.$scope();
-            var tripIds = schedules.stopTimes.map((stopTime) => {
-                return stopTime.tripId;
-            });
-            Storage.impl().tripsByIds(tripIds).then((trips) => {
-                var stopTimes = schedules.stopTimes.collect((stopTime) => {
-                    return trips.find((trip) => {
-                        return trip.id === stopTime.tripId;
-                    }).map((trip) => {
-                        return opt.Option(trip.service).filter(() => {
-                            return planner.Trip.isValidOn(trip, when, exceptions)
-                        }).map(() => {
-                            return {
-                                timestamp: stopTime.departure,
-                                departure: planner.StopTime.formatTime(stopTime.departure),
-                                arrival: planner.StopTime.formatTime(stopTime.arrival),
-                                tripId: stopTime.tripId,
-                            };
-                        });
-                    }).getOrElse(() => {
-                        utils.oops('Unable to find service data for trip: ' + stopTime.tripId);
-                        return null;
-                    });
-                });
-                var sortedStopTimes = stopTimes.asArray().sort((a:any, b:any) => {
-                    return a.timestamp - b.timestamp;
-                });
-                var dom = tmpl(t, { schedules: sortedStopTimes });
-                $scope.find('.schedules').html(dom);
-                this.myIScroll.refresh();
-            });
+            // var $scope = this.$scope();
+            // var dom = tmpl(t, { schedules: sortedStopTimes });
+            // $scope.find('.schedules').html(dom);
+            // this.myIScroll.refresh();
+            return null;
         });
     }
 }

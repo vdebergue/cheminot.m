@@ -1,5 +1,5 @@
 
-export function lookForBestTrip(vsId, veId, stopTimes): Q.Promise<any> {
+export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<number>, max: number): Q.Promise<any> {
     var d = Q.defer<any>();
 
     var worker = new Worker('app/workers/planner.js');
@@ -8,7 +8,8 @@ export function lookForBestTrip(vsId, veId, stopTimes): Q.Promise<any> {
         stopTimes: stopTimes,
         config: window['CONFIG'],
         vsId: vsId,
-        veId: veId
+        veId: veId,
+        max: max
     }));
 
     worker.onmessage = (e) => {

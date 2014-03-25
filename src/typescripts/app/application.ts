@@ -1,6 +1,5 @@
 /// <reference path='../dts/Q.d.ts'/>
 
-declare var Path: any;
 declare var Abyssa: any;
 
 import opt = require('lib/immutable/Option');
@@ -15,58 +14,23 @@ import Storage = require('./db/storage');
 import Planner = require('./models/Planner');
 import Upgrade = require('./tasks/upgrade');
 
-function view(views: seq.IList<IView>, name: string): IView {
-    return views.find((view) => {
-        return view.name == name;
-    }).getOrElse(() => {
-        utils.error("Can't get view " + name);
-        return null;
-    });
-}
-
-function viewsBut(views: seq.IList<IView>, exclude: string): seq.IList<IView> {
-    return views.filterNot((view) => {
-        return view.name === exclude;
-    });
-}
-
-function onSetupProgress(event: string, data: any) {
-    var $progress = $('#progress-install');
-    var $value = $progress.find('.value');
-    var current = parseInt($value.text(), 10);
-    $progress.removeClass('hidden');
-
-    if(event === 'worker.setup:fetch') {
-        var percent = Math.round((parseInt(data, 10) * 30) / 100);
-        $value.text(percent.toString());
-    } else if(event === 'worker.setup:exceptions') {
-        $value.text('40');
-    } else if(event === 'worker.setup:stops') {
-        $value.text('50');
-    } else if(event === 'worker.setup:trip') {
-        var percent = Math.round((((data.value / data.total) * 100) * 50) / 100)
-        $value.text((50 + percent).toString());
-    } else if(event === 'worker.setup:done') {
-        $value.text('100');
-        $progress.addClass('hidden');
-    }
-}
-
 export function init(views: seq.IList<IView>) {
 
+    var viewsHelper = new ViewsHelper(views);
     var config = window['CONFIG'];
 
     function ensureInitApp(viewName: string): Q.Promise<void> {
         //Upgrade.checkPeriodically();
         var p: Q.Promise<void>;
         if(!Storage.isInitialized()) {
-            p = view(views, 'splashscreen').setup().then((splashscreenView) => {
+            var splashscreenView = viewsHelper.splashscreen();
+            p = splashscreenView.setup().then(() => {
                 return splashscreenView.show().then(() => {
                     return Storage.installDB(config, (event, data) => {
                         if(event === 'setup:fetch') {
-                            (<Splashscreen>splashscreenView).progress(data);
+                            splashscreenView.progress(data);
                         } else if(event.indexOf('worker') >= 0) {
-                            onSetupProgress(event, data);
+                            ViewsHelper.onSetupProgress(event, data);
                         }
                     }).then(() => {
                         return Q.delay(utils.Promise.DONE(), 1000);
@@ -79,25 +43,18 @@ export function init(views: seq.IList<IView>) {
             p = utils.Promise.DONE();
         }
         return p.then(() => {
-            hideOtherViews(viewName);
-            return view(views, viewName).setup().then(() => {
+            viewsHelper.hideOthers(viewName);
+            return ViewsHelper.view(views, viewName).setup().then(() => {
                 return utils.Promise.DONE();
             });
         });
     }
 
-    var hideOtherViews = (but: string) => {
-        return viewsBut(views, but).foreach((view) => {
-            view.hide();
-        });
-    }
-
-    Abyssa.Router({
+    var CheminotApp = Abyssa.Router({
         app: Abyssa.State('', {
             enter: function(params) {
                 return this.async(ensureInitApp('home').then(() => {
-                    var homeView = <Home>view(views, 'home');
-                    homeView.show();
+                    viewsHelper.home().show();
                 }));
             },
 
@@ -105,121 +62,116 @@ export function init(views: seq.IList<IView>) {
 
             onlyStart: Abyssa.State('start/:start', function(params) {
                 var start = params['start'];
-                var homeView = <Home>view(views, 'home');
-                homeView.fillSelectedStart(start);
+                viewsHelper.home().fillSelectedStart(start);
             }),
 
             onlyEnd: Abyssa.State('end/:end', function(params) {
                 var end = params['end'];
-                var homeView = <Home>view(views, 'home');
-                homeView.fillSelectedEnd(end);
+                viewsHelper.home().fillSelectedEnd(end);
             }),
 
             schedule: Abyssa.State('schedule/:start/:end', function(params) {
                 var start = params['start'];
                 var end = params['end'];
-                var homeView = <Home>view(views, 'home');
-                homeView.displayWhen(start, end);
+                viewsHelper.home().displaySchedule(start, end);
             }),
 
             timetable: Abyssa.State('timetable/:start/:end/:when', function(params) {
-                opt.Option(params['start']).flatMap((start) => {
-                    opt.Option(params['end']).flatMap((end) => {
-                        opt.Option(params['when']).flatMap((when) => {
-                            return parseInt(when, 10);
-                        }).map((when) => {
-                            Planner.schedulesFor(start, end, when).then((trips) => {
-                                var timetableView = <Timetable>view(views, 'timetable');
-                                timetableView.show();
+                return this.async(
+                    opt.Option(params['start']).flatMap((start:string) => {
+                        return opt.Option(params['end']).flatMap((end:string) => {
+                            return opt.Option(params['when']).flatMap((when:string) => {
+                                return opt.Option(parseInt(when, 10));
+                            }).map((when:number) => {
+                                return Planner.schedulesFor(start, end, when).then((trips) => {
+                                    viewsHelper.timetable().show();
+                                });
                             });
                         });
-                    });
-                }).getOrElse(() => {
-                    return utils.Promise.DONE();
-                });
+                    }).getOrElse(() => {
+                        return utils.Promise.DONE();
+                    })
+                );
             })
         })
     }).init();
+}
 
-    Path.map('#/timetable/:start/:end/:when').to(function() {
-        ensureInitApp('timetable').then(() => {
-            var start = this.params['start'];
-            var end = this.params['end'];
-            var when = parseInt(this.params['when'], 10);
-            Planner.schedulesFor(start, end).then((maybeSchedules) => {
-                maybeSchedules.map((schedules) => {
-                    var timetableView = <Timetable> view(views, 'timetable');
-                    Storage.impl().getDateExeptions().then((exceptions) => {
-                        timetableView.buildWith(new Date(when), schedules, exceptions.getOrElse(() => {
-                            return {};
-                        }));
-                        timetableView.show();
-                    });
-                }).getOrElse(() => {
-                });
-            }).fail((reason) => {
-                utils.log(reason);
-            });
-        });
-    });
+export class Navigate {
 
-    Path.map('#/trip/:id').to(function() {
-        ensureInitApp('trip').then(() => {
-            var tripId = this.params['id'];
-            Storage.impl().tripById(tripId).then((maybeTrip) => {
-                maybeTrip.foreach((trip) => {
-                    var tripView = <Trip> view(views, 'trip');
-                    tripView.buildWith(trip);
-                    tripView.show();
-                });
-            });
-        });
-    });
+    static home(start: opt.IOption<string> = new opt.None<string>(), end: opt.IOption<string> = new opt.None<string>()) {
+    }
 
-    Path.rescue(() => {
-        navigate('/');
-    });
+    static schedule(start: string, end: string) {
+    }
 
-    //Path.listen();
-    if(!window.location.hash) {
-        navigate('/');
+    static timetable(start: string, end: string, when: number) {
+    }
+
+    static back() {
     }
 }
 
-function navigate(path: string): void {
-    var hash = "#" + path;
-    window.location.hash = hash;
-}
+class ViewsHelper {
 
-export function navigateToHome(maybeStart: opt.IOption<string> = new opt.None<string>(), maybeEnd: opt.IOption<string> = new opt.None<string>()): void {
-    if(!(maybeStart.isDefined() && maybeEnd.isDefined())) {
-        var route = maybeStart.map((start) => {
-            return '/start/' + start;
+    views: seq.IList<IView>;
+
+    constructor(views: seq.IList<IView>) {
+        this.views = views;
+    }
+
+    hideOthers = (but: string) => {
+        return ViewsHelper.viewsBut(this.views, but).foreach((view) => {
+            view.hide();
+        });
+    }
+
+    splashscreen(): Splashscreen {
+        return <Splashscreen>ViewsHelper.view(this.views, 'splashscreen');
+    }
+
+    home(): Home {
+        return <Home>ViewsHelper.view(this.views, 'home');
+    }
+
+    timetable(): Timetable {
+        return <Timetable>ViewsHelper.view(this.views, 'timetable');
+    }
+
+    static view(views: seq.IList<IView>, name: string): IView {
+        return views.find((view) => {
+            return view.name == name;
         }).getOrElse(() => {
-            return maybeEnd.map((end) => {
-                return '/end/' + end;
-            }).getOrElse(() => {
-                return '/';
-            });
+            utils.error("Can't get view " + name);
+            return null;
         });
-        navigate(route);
-    } else {
-        utils.oops('Unable to navigate to home: both start & end are already filled !');
     }
-}
 
-export function navigateToHomeWhen(start: string, end: string): void {
-    navigate('/schedule/' + start + '/' + end)
-}
+    static viewsBut(views: seq.IList<IView>, exclude: string): seq.IList<IView> {
+        return views.filterNot((view) => {
+            return view.name === exclude;
+        });
+    }
 
-export function navigateToTrip(tripId: string): void {
-    navigate('/trip/' + tripId);
-}
+    static onSetupProgress(event: string, data: any) {
+        var $progress = $('#progress-install');
+        var $value = $progress.find('.value');
+        var current = parseInt($value.text(), 10);
+        $progress.removeClass('hidden');
 
-export function navigateToTimetable(start: string, end: string, when: number): void {
-    navigate('/timetable/' + start + '/' + end + '/' + when);
-}
-
-export function navigateToBack(): void {
-    history.back();
+        if(event === 'worker.setup:fetch') {
+            var percent = Math.round((parseInt(data, 10) * 30) / 100);
+            $value.text(percent.toString());
+        } else if(event === 'worker.setup:exceptions') {
+            $value.text('40');
+        } else if(event === 'worker.setup:stops') {
+            $value.text('50');
+        } else if(event === 'worker.setup:trip') {
+            var percent = Math.round((((data.value / data.total) * 100) * 50) / 100)
+            $value.text((50 + percent).toString());
+        } else if(event === 'worker.setup:done') {
+            $value.text('100');
+            $progress.addClass('hidden');
+        }
+    }
 }

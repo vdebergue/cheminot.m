@@ -94,13 +94,13 @@ class Home extends View implements IView {
 
         if($input.is('[name=start]')) {
             this.reset();
-            App.navigateToHome(new opt.None<string>(), end);
+            App.Navigate.home(new opt.None<string>(), end);
         } else if($input.is('[name=end]')) {
             this.reset();
-            App.navigateToHome(start, new opt.None<string>());
+            App.Navigate.home(start, new opt.None<string>());
         } else {
             this.reset();
-            App.navigateToHome();
+            App.Navigate.home();
         }
         return true;
     }
@@ -176,17 +176,17 @@ class Home extends View implements IView {
             maybeEnd = new opt.Some(name);
         }
         if(maybeStart.isDefined() && maybeEnd.isEmpty()) {
-            App.navigateToHome(opt.Option<string>(name), new opt.None<string>());
+            App.Navigate.home(opt.Option<string>(name));
         } else if(maybeEnd.isDefined() && maybeStart.isEmpty()) {
-            App.navigateToHome(new opt.None<string>(), opt.Option<string>(name));
+            App.Navigate.home(new opt.None<string>(), opt.Option<string>(name));
         } else {
             maybeStart.foreach((start) => {
                 maybeEnd.foreach((end) => {
                     if(sameDeparture || sameArrival) {
                         this.clearSuggestions()
-                        this.displayWhen(start, end);
+                        this.displaySchedule(start, end);
                     } else {
-                    App.navigateToHomeWhen(start, end);
+                        App.Navigate.schedule(start, end);
                     }
                 });
             });
@@ -255,7 +255,7 @@ class Home extends View implements IView {
     onTripAndScheduleSelected(e: Event): boolean {
         this.maybeSelectedStart().flatMap((start) => {
             return this.maybeSelectedEnd().map((end) => {
-                App.navigateToTimetable(start, end, this.when());
+                App.Navigate.timetable(start, end, this.when());
             });
         }).getOrElse(() => {
             utils.oops('Unable to find start & end in order to go to timetable.');
@@ -263,7 +263,7 @@ class Home extends View implements IView {
         return true;
     }
 
-    displayWhen(start: string, end: string) {
+    displaySchedule(start: string, end: string) {
         this.fillSelectedStart(start);
         this.fillSelectedEnd(end);
         var $when = this.$scope().find('.when');
