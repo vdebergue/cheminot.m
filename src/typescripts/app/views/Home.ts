@@ -7,13 +7,13 @@ import seq = require('lib/immutable/List');
 import opt = require('lib/immutable/Option');
 import IView = require('./IView');
 import View = require('./View');
+import Schedule = require('./Schedule');
 import Templating = require('./templating')
 import utils = require('../utils/utils');
 import TernaryTree = require('../utils/ternaryTree');
 
 declare var tmpl;
 declare var IScroll;
-declare var Zanimo;
 
 export = Home;
 
@@ -21,9 +21,11 @@ class Home extends View implements IView {
 
     name: string;
     myIScroll: any;
+    scheduleView: Schedule;
 
     constructor(container: string, scope: string, name: string) {
         this.name = name;
+        this.scheduleView = new Schedule('#home', '#schedule', 'schedule');
         super(container, scope);
     }
 
@@ -43,9 +45,6 @@ class Home extends View implements IView {
         super.bindEvent('focus', 'input[name=start], input[name=end]', this.onStationFocus);
         super.bindEvent('tap', '.search .reset', this.onInputReset);
         super.bindEvent('tap', '.suggestions > li', this.onSuggestionSelected);
-        super.bindEvent('tap', '.when .btn:not(.go)', this.onWhenTapped);
-        super.bindEvent('change', '.when input[type=date]', this.onDaySelected);
-        super.bindEvent('tap', '.when .btn.go', this.onTripAndScheduleSelected);
         super.bindEvent('touchstart', '.suggestions', this.onScrollingStops);
     }
 
@@ -86,47 +85,44 @@ class Home extends View implements IView {
 
     onInputReset(e: Event): boolean {
         e.preventDefault();
-        var $scope = this.$scope();
-        var $button = $(e.currentTarget);
-        var $input = $button.siblings('input');
-        var start = opt.Option<string>($scope.find('.suggestions').attr('data-start'));
-        var end = opt.Option<string>($scope.find('.suggestions').attr('data-end'));
+
+        var $input = (() => {
+            var $scope = this.$scope();
+            var $button = $(e.currentTarget);
+            return $button.siblings('input');
+        })();
 
         if($input.is('[name=start]')) {
-            this.reset();
-            App.Navigate.home(new opt.None<string>(), end);
+            this.resetStart();
         } else if($input.is('[name=end]')) {
-            this.reset();
-            App.Navigate.home(start, new opt.None<string>());
-        } else {
-            this.reset();
-            App.Navigate.home();
+            this.resetEnd();
         }
+
+        App.Navigate.home(this.getStart(), this.getEnd());
         return true;
     }
 
     onStationKeyUp(e: Event): boolean {
         var stopsTree = Storage.stops();
-        var $scope = super.$scope();
         var $input = $(e.currentTarget);
         var term = $input.val();
-        var $when = this.$scope().find('.when');
-        var whenIsDeplayed = $when.is('.displayed')
 
-        var eventuallyTransition =  whenIsDeplayed ? this.hideWhen() : utils.Promise.DONE();
+        var eventuallyTransition =  this.scheduleView.isDisplayed() ? this.scheduleView.hide() : utils.Promise.DONE();
+
         eventuallyTransition.then(() => {
-            var timeout = whenIsDeplayed ? 600 : 0;
+            var timeout = this.scheduleView.isDisplayed() ? 600 : 0;
             setTimeout(() => {
                 if(term.trim() === '') {
-                    $input.siblings('.reset').removeClass('filled');
+                    this.getResetBtnFromInput($input).removeClass('filled');
                     this.clearSuggestions();
                 } else {
                     var founds = TernaryTree.search(term.toLowerCase(), stopsTree, 20);
-                    this.$resetFromInput($input).addClass('filled');
+                    this.getResetBtnFromInput($input).addClass('filled');
                     this.suggest(term, founds);
                 }
             }, timeout);
         });
+
         return true;
     }
 
@@ -161,150 +157,64 @@ class Home extends View implements IView {
 
     onceSelected(name: string): void {
         var $suggestions = this.$scope().find('.suggestions');
-        var maybeStart = this.maybeSelectedStart();
-        var maybeEnd = this.maybeSelectedEnd();
-        var sameDeparture = maybeStart.exists((s) => {
-            return s === name;
-        });
-        var sameArrival = maybeEnd.exists((e) => {
-            return e === name;
-        });
+        var maybeStart = this.getStart();
+        var maybeEnd = this.getEnd();
 
         if($suggestions.is('.start')) {
             maybeStart = new opt.Some(name);
         } else if($suggestions.is('.end')) {
             maybeEnd = new opt.Some(name);
         }
-        if(maybeStart.isDefined() && maybeEnd.isEmpty()) {
-            App.Navigate.home(opt.Option<string>(name));
-        } else if(maybeEnd.isDefined() && maybeStart.isEmpty()) {
-            App.Navigate.home(new opt.None<string>(), opt.Option<string>(name));
-        } else {
-            maybeStart.foreach((start) => {
-                maybeEnd.foreach((end) => {
-                    if(sameDeparture || sameArrival) {
-                        this.clearSuggestions()
-                        this.displaySchedule(start, end);
-                    } else {
-                        App.Navigate.schedule(start, end);
-                    }
-                });
-            });
-        }
+
+        App.Navigate.home(maybeStart, maybeEnd);
     }
 
-    when(): number {
-        var $btn = this.$scope().find('.when .active')
-        var timestamp = Date.now();
-        if($btn.is('.tomorrow')) {
-            timestamp = moment().add('days', 1).hours(12).toDate().getTime();
-        } else if($btn.is('.other')) {
-            timestamp = parseInt($btn.attr('data-date'), 10);
-        }
-        return timestamp;
-    }
-
-    $resetFromInput($input: ZeptoCollection): ZeptoCollection {
+    getResetBtnFromInput($input: ZeptoCollection): ZeptoCollection {
         return $input.siblings('.reset');
     }
 
-    fillSelectedStart(start: string): void {
+    fillStart(start: string): void {
         this.$scope().find('.suggestions').attr('data-start', start);
         var $input = this.$scope().find('input[name=start]');
         $input.val(start);
-        this.$resetFromInput($input).addClass('filled');
+        this.getResetBtnFromInput($input).addClass('filled');
+        this.clearSuggestions();
     }
 
-    fillSelectedEnd(end: string): void {
+    fillEnd(end: string): void {
         this.$scope().find('.suggestions').attr('data-end', end);
         var $input = this.$scope().find('input[name=end]');
         $input.val(end);
-        this.$resetFromInput($input).addClass('filled');
+        this.getResetBtnFromInput($input).addClass('filled');
     }
 
-    resetSelectedStart(): void {
+    resetStart(): void {
         this.$scope().find('.suggestions').removeAttr('data-start');
         var $input = this.$scope().find('input[name=start]');
         $input.val('');
-        this.$resetFromInput($input).removeClass('filled');
+        this.getResetBtnFromInput($input).removeClass('filled');
     }
 
-    resetSelectedEnd(): void {
+    resetEnd(): void {
         this.$scope().find('.suggestions').removeAttr('data-end');
         var $input = this.$scope().find('input[name=end]');
         $input.val('');
-        this.$resetFromInput($input).removeClass('filled');
+        this.getResetBtnFromInput($input).removeClass('filled');
     }
 
-    reset(): void {
-        this.clearSuggestions();
-        this.resetSelectedStart();
-        this.resetSelectedEnd();
-    }
-
-    maybeSelectedStart(): opt.IOption<string> {
+    getStart(): opt.IOption<string> {
         var $suggestions = this.$scope().find('.suggestions');
         return opt.Option<any>($suggestions.attr('data-start'));
     }
 
-    maybeSelectedEnd(): opt.IOption<string> {
+    getEnd(): opt.IOption<string> {
         var $suggestions = this.$scope().find('.suggestions');
         return opt.Option<any>($suggestions.attr('data-end'));
     }
 
-    onTripAndScheduleSelected(e: Event): boolean {
-        this.maybeSelectedStart().flatMap((start) => {
-            return this.maybeSelectedEnd().map((end) => {
-                App.Navigate.timetable(start, end, this.when());
-            });
-        }).getOrElse(() => {
-            utils.oops('Unable to find start & end in order to go to timetable.');
-        });
-        return true;
-    }
-
-    displaySchedule(start: string, end: string) {
-        this.fillSelectedStart(start);
-        this.fillSelectedEnd(end);
-        var $when = this.$scope().find('.when');
-        setTimeout(() => {
-            var viewOffset = this.$scope().offset();
-            var ios7Offset = utils.isIOS7() ? 20 : 0;
-            var translate = viewOffset.top + viewOffset.height - ios7Offset;
-            Zanimo.transform($when.get(0), 'translate3d(0,'+ translate + 'px,0)').then(() => {
-                setTimeout(() => {
-                    $when.addClass('displayed');
-                }, 600);
-            });
-        }, 120);
-    }
-
-    hideWhen(): Q.Promise<void> {
-        var $when = this.$scope().find('.when');
-        $when.removeClass('displayed');
-        return Q.delay(utils.Promise.DONE(), 400).then(() => {
-            return Zanimo.transform($when.get(0), 'translate3d(0,0,0)', true).then(() => {
-                return utils.Promise.DONE();
-            });
-        });
-    }
-
-    onWhenTapped(e: Event): boolean {
-        var $btn = $(e.currentTarget);
-        $btn.siblings('.btn.active').removeClass('active');
-        $btn.addClass('active');
-        return true;
-    }
-
-    onDaySelected(e: Event): boolean {
-        var $input = $(e.currentTarget);
-        var $btn = $input.parent();
-        var date = $input.val();
-        if(date != '') {
-            $btn.find('.label').text(date);
-            $input.val('');
-            $btn.attr('data-date', moment(date).toDate().getTime());
-        }
-        return true;
+    reset(): void {
+        this.clearSuggestions();
+        this.resetStart();
+        this.resetEnd();
     }
 }

@@ -8,6 +8,7 @@ import Api = require('../ws/api');
 import IndexedDB = require('./indexedDB');
 import WebSql = require('./websql');
 import Setup = require('../tasks/setup');
+import Cheminot = require('../Cheminot');
 
 export interface IStorage {
     getStopsTree(): Q.Promise<opt.IOption<any>>;
@@ -111,7 +112,7 @@ export function forceInstallDB(config: any, STORAGE: IStorage, progress: (string
 }
 
 export function cacheDB(progress: (string, any?) => void): Q.Promise<void> {
-    var config = window['CONFIG'];
+    var config = Cheminot.config();
     return Api.db(config, progress).then((db) => {
         STOPS = new opt.Some(db.treeStops);
         EXCEPTIONS = new opt.Some(db.exceptions);

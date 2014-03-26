@@ -111,4 +111,8 @@ export class Promise {
     static DONE(): Q.Promise<void> {
         return Q<void>(null);
     }
+
+    static pure<T>(t: T): Q.Promise<T> {
+        return Q<T>(t);
+    }
 }

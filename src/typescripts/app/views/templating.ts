@@ -30,9 +30,9 @@ var paths = {
 function getTemplate(name: string, directory: opt.IOption<string> = new opt.None<string>()): Q.Promise<string> {
     var d = Q.defer<string>();
     var url = directory.map((d) => {
-        return 'templates/' + d + '/' + paths[d][name];
+        return '/templates/' + d + '/' + paths[d][name];
     }).getOrElse(() => {
-        return 'templates/' + paths[name]
+        return '/templates/' + paths[name]
     });
 
     $.ajax({

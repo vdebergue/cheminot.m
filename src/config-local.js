@@ -1,3 +1,3 @@
-window.CONFIG = {
+window.config = {
     api: 'http://127.0.0.1:9000/api'
-}
+};

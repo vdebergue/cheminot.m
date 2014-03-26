@@ -2,22 +2,22 @@
 
 declare var Abyssa: any;
 
-import opt = require('lib/immutable/Option');
+import opt = require('./lib/immutable/Option');
 import seq = require('./lib/immutable/List');
 import utils = require('./utils/utils');
 import IView = require('./views/IView');
+import Schedule = require('./views/Schedule');
 import Timetable = require('./views/Timetable');
 import Splashscreen = require('./views/Splashscreen');
 import Home = require('./views/Home');
-import Trip = require('./views/Trip');
 import Storage = require('./db/storage');
 import Planner = require('./models/Planner');
 import Upgrade = require('./tasks/upgrade');
+import Cheminot = require('./Cheminot');
 
 export function init(views: seq.IList<IView>) {
 
     var viewsHelper = new ViewsHelper(views);
-    var config = window['CONFIG'];
 
     function ensureInitApp(viewName: string): Q.Promise<void> {
         //Upgrade.checkPeriodically();
@@ -26,7 +26,7 @@ export function init(views: seq.IList<IView>) {
             var splashscreenView = viewsHelper.splashscreen();
             p = splashscreenView.setup().then(() => {
                 return splashscreenView.show().then(() => {
-                    return Storage.installDB(config, (event, data) => {
+                    return Storage.installDB(Cheminot.config(), (event, data) => {
                         if(event === 'setup:fetch') {
                             splashscreenView.progress(data);
                         } else if(event.indexOf('worker') >= 0) {
@@ -58,22 +58,33 @@ export function init(views: seq.IList<IView>) {
                 }));
             },
 
-            show: Abyssa.State(),
+            show: Abyssa.State('', function() {
+                var homeView = viewsHelper.home();
+                homeView.reset();
+                return this.async(homeView.scheduleView.hide());
+            }),
 
             onlyStart: Abyssa.State('start/:start', function(params) {
                 var start = params['start'];
-                viewsHelper.home().fillSelectedStart(start);
+                var homeView = viewsHelper.home();
+                homeView.fillStart(start);
+                return this.async(homeView.scheduleView.hide());
             }),
 
             onlyEnd: Abyssa.State('end/:end', function(params) {
                 var end = params['end'];
-                viewsHelper.home().fillSelectedEnd(end);
+                var homeView = viewsHelper.home();
+                homeView.fillEnd(end);
+                return this.async(homeView.scheduleView.hide());
             }),
 
             schedule: Abyssa.State('schedule/:start/:end', function(params) {
                 var start = params['start'];
                 var end = params['end'];
-                viewsHelper.home().displaySchedule(start, end);
+                var homeView = viewsHelper.home();
+                homeView.fillStart(start);
+                homeView.fillEnd(end);
+                return this.async(homeView.scheduleView.show());
             }),
 
             timetable: Abyssa.State('timetable/:start/:end/:when', function(params) {
@@ -94,15 +105,32 @@ export function init(views: seq.IList<IView>) {
                 );
             })
         })
-    }).init();
+    });
+
+    Cheminot.initApp(CheminotApp);
 }
 
 export class Navigate {
 
-    static home(start: opt.IOption<string> = new opt.None<string>(), end: opt.IOption<string> = new opt.None<string>()) {
-    }
-
-    static schedule(start: string, end: string) {
+    static home(maybeStart: opt.IOption<string> = new opt.None<string>(), maybeEnd: opt.IOption<string> = new opt.None<string>()) {
+        if(maybeStart.isDefined() && maybeEnd.isDefined()) {
+            maybeStart.foreach((start) => {
+                maybeEnd.foreach((end) => {
+                    Cheminot.app().state('schedule/' + start + '/' + end);
+                });
+            });
+        } else {
+            if(maybeStart.isEmpty() && maybeEnd.isEmpty()) {
+                Cheminot.app().state('');
+            } else {
+                maybeStart.foreach((start) => {
+                    Cheminot.app().state('start/' + start);
+                });
+                maybeEnd.foreach((end) => {
+                    Cheminot.app().state('end/' + end);
+                });
+            }
+        }
     }
 
     static timetable(start: string, end: string, when: number) {

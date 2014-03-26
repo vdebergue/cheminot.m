@@ -1,11 +1,12 @@
+import Cheminot = require('../Cheminot');
 
 export function start(progress: (string, any?) => void): Q.Promise<void> {
     var d = Q.defer<any>();
 
-    var worker = new Worker('app/workers/setup.js');
+    var worker = new Worker('assets/javascripts/app/workers/setup.js');
     worker.postMessage(JSON.stringify({
         event: 'config',
-        data: window['CONFIG']
+        data: Cheminot.config
     }));
 
     worker.onmessage = (e) => {
