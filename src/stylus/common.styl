@@ -9,13 +9,33 @@ global-reset()
     font-family-light()
 }
 
+::-webkit-input-placeholder {
+    color: grey
+    font-family-light()
+}
+
+:-moz-placeholder {
+    color: grey
+    font-family-light()
+}
+
+::-moz-placeholder {
+    color: grey
+    font-family-light()
+}
+
+:-ms-input-placeholder {
+    color: grey
+    font-family-light()
+}
+
 html {
     height: 100%
     overflow: hidden
 }
 
 h1 {
-    font-family-medium()
+    font-family-regular()
 }
 
 input {
@@ -24,7 +44,7 @@ input {
     padding-left: 8px
     box-sizing: border-box
     width: 100%
-    color: grey-dark
+    color: dark-blue
     outline: none
     border: none
 
@@ -78,11 +98,10 @@ header {
 .list {
     li {
         color: grey
-        border-bottom: 1px solid grey-blue
         padding: 14px 8px 14px 8px
         display: flex
         align-items: center
-        border-bottom: 1px solid grey-light
+        border-bottom: 2px solid grey-blue
         box-sizing: border-box
     }
 }

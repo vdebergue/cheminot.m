@@ -6,7 +6,7 @@
     #schedule {
         position: absolute
         width: 100%
-        top: 0
+        top: -200px
         z-index: -1
         transition: 0.600s
         text-align: center
@@ -17,26 +17,6 @@
 
         li {
             position: relative
-
-            button {
-                border: none
-                outline: none
-                position: absolute
-                top: 0
-                right: 2%
-                height: 100%
-                width: 52px
-
-                &.radio {
-                    background: url('../../images/radio-off.svg') no-repeat center
-                    background-size: 100%
-
-                    &.active {
-                        background: url('../../images/radio-on.svg') no-repeat center
-                        background-size: 100%
-                    }
-                }
-            }
         }
     }
 
@@ -95,7 +75,7 @@
                 }
 
                 .match {
-                    color: #000
+                    color: dark-blue
                 }
             }
         }

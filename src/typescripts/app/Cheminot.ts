@@ -1,5 +1,6 @@
 
 export function initApp(app) {
+    app.configure({urlSync: 'hash'});
     app.init();
     window['CheminitApp'] = app;
 }

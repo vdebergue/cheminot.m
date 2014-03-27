@@ -99,6 +99,7 @@ class Home extends View implements IView {
         }
 
         App.Navigate.home(this.getStart(), this.getEnd());
+
         return true;
     }
 
@@ -112,12 +113,12 @@ class Home extends View implements IView {
         eventuallyTransition.then(() => {
             var timeout = this.scheduleView.isDisplayed() ? 600 : 0;
             setTimeout(() => {
+                var $reset = this.getResetBtnFromInput($input);
+                $reset.removeClass('filled');
                 if(term.trim() === '') {
-                    this.getResetBtnFromInput($input).removeClass('filled');
                     this.clearSuggestions();
                 } else {
                     var founds = TernaryTree.search(term.toLowerCase(), stopsTree, 20);
-                    this.getResetBtnFromInput($input).addClass('filled');
                     this.suggest(term, founds);
                 }
             }, timeout);
@@ -135,10 +136,18 @@ class Home extends View implements IView {
     onStationFocus(e: Event): boolean {
         var $input = $(e.currentTarget);
         var $suggestions = this.$scope().find('.suggestions');
+        var $reset = this.getResetBtnFromInput($input);
+
         if($input.is('[name=start]')) {
             $suggestions.removeClass('end').addClass('start');
+            if($reset.is('.filled')) {
+                App.Navigate.home(new opt.None<string>(), this.getEnd());
+            }
         } else {
             $suggestions.removeClass('start').addClass('end');
+            if($reset.is('.filled')) {
+                App.Navigate.home(this.getStart());
+            }
         }
         return true;
     }

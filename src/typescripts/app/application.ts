@@ -68,6 +68,7 @@ export function init(views: seq.IList<IView>) {
                 var start = params['start'];
                 var homeView = viewsHelper.home();
                 homeView.fillStart(start);
+                homeView.resetEnd();
                 return this.async(homeView.scheduleView.hide());
             }),
 
@@ -75,6 +76,7 @@ export function init(views: seq.IList<IView>) {
                 var end = params['end'];
                 var homeView = viewsHelper.home();
                 homeView.fillEnd(end);
+                homeView.resetStart();
                 return this.async(homeView.scheduleView.hide());
             }),
 

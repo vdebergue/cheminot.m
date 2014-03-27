@@ -21,10 +21,13 @@ class Schedule extends View implements IView {
 
     show(): Q.Promise<void> {
         var d = Q.defer<void>();
-        var $schedule = this.$scope();
         setTimeout(() => {
-            var viewOffset = this.$scope().offset();
-            var translate = viewOffset.top + viewOffset.height;
+            var containerOffset = super.$container().offset();
+            var $schedule = this.$scope();
+            var scheduleOffet = $schedule.offset();
+            var translate = containerOffset.top + containerOffset.height + Math.abs(scheduleOffet.top);
+            $schedule.attr('data-origin-top', scheduleOffet.top);
+
             Zanimo.transform($schedule.get(0), 'translate3d(0,'+ translate + 'px,0)').then(() => {
                 setTimeout(() => {
                     $schedule.addClass('displayed');
@@ -36,13 +39,18 @@ class Schedule extends View implements IView {
     }
 
     hide(): Q.Promise<void> {
-        var $schedule = this.$scope();
-        $schedule.removeClass('displayed');
-        return Q.delay(utils.Promise.DONE(), 400).then(() => {
-            return Zanimo.transform($schedule.get(0), 'translate3d(0,0,0)', true).then(() => {
-                return utils.Promise.DONE();
+        if(this.isDisplayed()) {
+            var $schedule = this.$scope();
+            var originTop = $schedule.attr('data-origin-top');
+            $schedule.removeClass('displayed');
+            return Q.delay(utils.Promise.DONE(), 400).then(() => {
+                return Zanimo.transform($schedule.get(0), 'translate3d(0,'+ originTop +'px,0)', true).then(() => {
+                    return utils.Promise.DONE();
+                });
             });
-        });
+        } else {
+            return utils.Promise.DONE();
+        }
     }
 
     bindEvents(): void {
