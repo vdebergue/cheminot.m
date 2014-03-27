@@ -184,7 +184,8 @@ class ViewsHelper {
     }
 
     static onSetupProgress(event: string, data: any) {
-        var $progress = $('#progress-install');
+        var $progress = $('.setup-progress');
+        var $bar = $progress.find('.bar');
         var $value = $progress.find('.value');
         var current = parseInt($value.text(), 10);
         $progress.removeClass('hidden');
@@ -192,15 +193,20 @@ class ViewsHelper {
         if(event === 'worker.setup:fetch') {
             var percent = Math.round((parseInt(data, 10) * 30) / 100);
             $value.text(percent.toString());
+            $bar.css('width', percent.toString() + '%');
         } else if(event === 'worker.setup:exceptions') {
-            $value.text('40');
+            $value.text('40%');
+            $bar.css('width', '40%');
         } else if(event === 'worker.setup:stops') {
-            $value.text('50');
+            $value.text('50%');
+            $bar.css('width', '50%');
         } else if(event === 'worker.setup:trip') {
-            var percent = Math.round((((data.value / data.total) * 100) * 50) / 100)
-            $value.text((50 + percent).toString());
+            var percent = Math.round((((data.value / data.total) * 100) * 50) / 100);
+            $value.text((50 + percent).toString() + '%');
+            $bar.css('width', (50 + percent).toString() + '%');
         } else if(event === 'worker.setup:done') {
-            $value.text('100');
+            $value.text('100%');
+            $bar.css('width', '100%');
             $progress.addClass('hidden');
         }
     }

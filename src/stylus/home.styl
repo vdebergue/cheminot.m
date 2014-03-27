@@ -1,5 +1,8 @@
 @import 'colors';
 @import 'font';
+@import 'buttons';
+
+button-margin-right=4%
 
 #home {
 
@@ -17,6 +20,19 @@
 
         li {
             position: relative
+
+            &.submit {
+                color: dark-blue
+
+                .go {
+                    position: absolute
+                    right: button-margin-right
+                    top: 0
+                    height: 100%
+                    width: 16px
+                    forward_button()
+                }
+            }
         }
     }
 
@@ -37,15 +53,12 @@
 
                 button.reset {
                     position: absolute
-                    top: 0
-                    right: 2%
-                    border: none
-                    outline: none
                     display: none
-                    background: url('../../images/cross.svg') no-repeat center
-                    background-size: 100%
+                    top: 0
+                    right: button-margin-right
                     height: 100%
                     width: 22px
+                    reset_button()
 
                     &.filled {
                         display: block

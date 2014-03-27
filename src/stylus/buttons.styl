@@ -1,3 +1,5 @@
+@import 'colors';
+
 clear-button() {
     margin: 0
     padding: 0
@@ -7,16 +9,24 @@ clear-button() {
     outline: none
 }
 
-back_button(size) {
-    header .buttons {
-        position: absolute
-        height: 100%
-        display: flex
+/* backward_button(size) { */
+/*     clear-button() */
+/*     icon('left-arrow', size, size, blue, size) */
+/* } */
 
-        .back-btn {
-            clear-button()
-            align-self: center
-            icon('left-arrow', size, size, #FFF, size)
-        }
-    }
+/* forward_button(size) { */
+/*     clear-button() */
+/*     icon('right-arrow', size, size, blue, size) */
+/* } */
+
+reset_button() {
+    clear-button()
+    background: url('../../images/cross.svg') no-repeat center
+    background-size: 100%
+}
+
+forward_button() {
+    clear-button()
+    background: url('../../images/arrow-right.svg') no-repeat center
+    background-size: 100%
 }

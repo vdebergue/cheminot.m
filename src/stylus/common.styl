@@ -35,7 +35,7 @@ html {
 }
 
 h1 {
-    font-family-regular()
+    font-family-bold()
 }
 
 input {
@@ -76,9 +76,30 @@ header {
     }
 }
 
-#progress-install {
-    align-self: center
-    margin-right: 10px
+.setup-progress {
+    text-align: center
+    padding: 14px 8px 14px 8px
+    box-sizing: border-box
+    background: dark-green
+    position: relative
+    color: #FFF
+    font-size: 12px
+
+    .text {
+        position: relative
+        z-index: 1
+    }
+
+    .bar {
+        position: absolute
+        top: 0
+        left: 0
+        height: 100%
+        width: 0%
+        background: green
+        transition: 0.2s
+        transition-property: width
+    }
 
     &.hidden {
         display: none

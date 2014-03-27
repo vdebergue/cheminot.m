@@ -44,6 +44,7 @@ function receive(msg: any, Storage) {
         break;
     }
     case EVENTS.install: {
+        console.log(JSON.stringify(CONFIG));
         Storage.forceInstallDB(CONFIG, Storage.impl(), (event, data) => {
             reply({
                 event: event,
