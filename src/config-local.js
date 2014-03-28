@@ -1,3 +1,3 @@
 window.config = {
-    api: 'http://127.0.0.1:9000/api'
+    api: 'http://192.168.0.12:9000/api'
 };

@@ -8,12 +8,14 @@ import opt = require('lib/immutable/Option');
 import IView = require('./IView');
 import View = require('./View');
 import Schedule = require('./Schedule');
-import Templating = require('./templating')
+import Templating = require('./templating');
 import utils = require('../utils/utils');
 import TernaryTree = require('../utils/ternaryTree');
+import Interactions = require('./Interactions');
 
 declare var tmpl;
 declare var IScroll;
+declare var Zanimo;
 
 export = Home;
 
@@ -22,10 +24,12 @@ class Home extends View implements IView {
     name: string;
     myIScroll: any;
     scheduleView: Schedule;
+    interactions: Interactions;
 
     constructor(container: string, scope: string, name: string) {
         this.name = name;
-        this.scheduleView = new Schedule('#home', '#schedule', 'schedule');
+        this.interactions = new Interactions();
+        this.scheduleView = new Schedule('#home', '#schedule', 'schedule', this.interactions);
         super(container, scope);
     }
 
@@ -43,6 +47,7 @@ class Home extends View implements IView {
     bindEvents(): void {
         super.bindEvent('keyup', 'input[name=start], input[name=end]', this.onStationKeyUp);
         super.bindEvent('focus', 'input[name=start], input[name=end]', this.onStationFocus);
+        super.bindEvent('blur', 'input[name=start], input[name=end]', this.onStationBlur);
         super.bindEvent('tap', '.search .reset', this.onInputReset);
         super.bindEvent('tap', '.suggestions > li', this.onSuggestionSelected);
         super.bindEvent('touchstart', '.suggestions', this.onScrollingStops);
@@ -50,7 +55,7 @@ class Home extends View implements IView {
 
     adaptWrapperTop(): void {
         var $wrapper = this.$scope().find('#wrapper');
-        var offset = $('.stations').offset();
+        var offset = $('.search .end').offset();
         var top = offset.top + offset.height;
         $wrapper.css('top', top);
     }
@@ -64,11 +69,10 @@ class Home extends View implements IView {
     }
 
     suggest(term: string, suggestions: seq.IList<any>): Q.Promise<void> {
-        var $scope = super.$scope();
-        var $suggestions = $scope.find('.suggestions');
+        var $suggestions = this.$getSuggestions();
         $suggestions.empty();
         if(!suggestions.isEmpty()) {
-            $scope.find('.stations').addClass('searching');
+            this.$scope().find('.stations').addClass('searching');
         }
         return Templating.home.suggestions().then((t) => {
             var data = suggestions.map((s) => {
@@ -86,15 +90,11 @@ class Home extends View implements IView {
     onInputReset(e: Event): boolean {
         e.preventDefault();
 
-        var $input = (() => {
-            var $scope = this.$scope();
-            var $button = $(e.currentTarget);
-            return $button.siblings('input');
-        })();
+        var $input = $(e.currentTarget).siblings('input');
 
-        if($input.is('[name=start]')) {
+        if(this.isStartInput($input)) {
             this.resetStart();
-        } else if($input.is('[name=end]')) {
+        } else if(this.isEndInput($input)) {
             this.resetEnd();
         }
 
@@ -112,7 +112,7 @@ class Home extends View implements IView {
 
         eventuallyTransition.then(() => {
             var timeout = this.scheduleView.isDisplayed() ? 600 : 0;
-            setTimeout(() => {
+            return Q.delay(timeout).then(() => {
                 var $reset = this.getResetBtnFromInput($input);
                 $reset.removeClass('filled');
                 if(term.trim() === '') {
@@ -121,7 +121,7 @@ class Home extends View implements IView {
                     var founds = TernaryTree.search(term.toLowerCase(), stopsTree, 20);
                     this.suggest(term, founds);
                 }
-            }, timeout);
+            });
         });
 
         return true;
@@ -130,22 +130,45 @@ class Home extends View implements IView {
     clearSuggestions(): void {
         var $scope = this.$scope();
         $scope.find('.stations').removeClass('searching');
-        $scope.find('.suggestions').empty();
+        this.$getSuggestions().empty();
+    }
+
+    onStationBlur(e: Event): boolean {
+        var $input = $(e.currentTarget);
+        if($input.is('[name=start]')) {
+            this.showEnd();
+        } else if($input.is('[name=end]')) {
+            this.showStart();
+        }
+        return true;
+    }
+
+    isResetDisplayed($input: ZeptoCollection): boolean {
+        return this.getResetBtnFromInput($input).is('.filled');
+    }
+
+    isStartInput($input: ZeptoCollection): boolean {
+        return $input.is('[name=start]');
+    }
+
+    isEndInput($input: ZeptoCollection): boolean {
+        return $input.is('[name=end]');
     }
 
     onStationFocus(e: Event): boolean {
         var $input = $(e.currentTarget);
-        var $suggestions = this.$scope().find('.suggestions');
-        var $reset = this.getResetBtnFromInput($input);
+        var $suggestions = this.$getSuggestions();
 
-        if($input.is('[name=start]')) {
+        if(this.isStartInput($input)) {
             $suggestions.removeClass('end').addClass('start');
-            if($reset.is('.filled')) {
+            this.hideEnd();
+            if(this.isResetDisplayed($input)) {
                 App.Navigate.home(new opt.None<string>(), this.getEnd());
             }
-        } else {
+        } else if(this.isEndInput($input)) {
             $suggestions.removeClass('start').addClass('end');
-            if($reset.is('.filled')) {
+            this.hideStart();
+            if(this.isResetDisplayed($input)) {
                 App.Navigate.home(this.getStart());
             }
         }
@@ -153,7 +176,8 @@ class Home extends View implements IView {
     }
 
     onScrollingStops(e: Event): boolean {
-        this.$scope().find('input[name=start], input[name=end]').blur();
+        this.$getStart().blur();
+        this.$getEnd().blur();
         return true;
     }
 
@@ -165,7 +189,7 @@ class Home extends View implements IView {
     }
 
     onceSelected(name: string): void {
-        var $suggestions = this.$scope().find('.suggestions');
+        var $suggestions = this.$getSuggestions();
         var maybeStart = this.getStart();
         var maybeEnd = this.getEnd();
 
@@ -175,7 +199,9 @@ class Home extends View implements IView {
             maybeEnd = new opt.Some(name);
         }
 
-        App.Navigate.home(maybeStart, maybeEnd);
+        this.interactions.await().then(() => {
+            App.Navigate.home(maybeStart, maybeEnd);
+        });
     }
 
     getResetBtnFromInput($input: ZeptoCollection): ZeptoCollection {
@@ -183,47 +209,98 @@ class Home extends View implements IView {
     }
 
     fillStart(start: string): void {
-        this.$scope().find('.suggestions').attr('data-start', start);
-        var $input = this.$scope().find('input[name=start]');
+        this.$getSuggestions().attr('data-start', start);
+        var $input = this.$getStart();
         $input.val(start);
         this.getResetBtnFromInput($input).addClass('filled');
         this.clearSuggestions();
     }
 
     fillEnd(end: string): void {
-        this.$scope().find('.suggestions').attr('data-end', end);
-        var $input = this.$scope().find('input[name=end]');
+        this.$getSuggestions().attr('data-end', end);
+        var $input = this.$getEnd();
         $input.val(end);
         this.getResetBtnFromInput($input).addClass('filled');
     }
 
     resetStart(): void {
-        this.$scope().find('.suggestions').removeAttr('data-start');
-        var $input = this.$scope().find('input[name=start]');
+        this.$getSuggestions().removeAttr('data-start');
+        var $input = this.$getStart();
         $input.val('');
         this.getResetBtnFromInput($input).removeClass('filled');
     }
 
     resetEnd(): void {
-        this.$scope().find('.suggestions').removeAttr('data-end');
-        var $input = this.$scope().find('input[name=end]');
+        this.$getSuggestions().removeAttr('data-end');
+        var $input = this.$getEnd();
         $input.val('');
         this.getResetBtnFromInput($input).removeClass('filled');
     }
 
     getStart(): opt.IOption<string> {
-        var $suggestions = this.$scope().find('.suggestions');
-        return opt.Option<any>($suggestions.attr('data-start'));
+        var $suggestions = this.$getSuggestions();
+        return opt.Option<string>($suggestions.attr('data-start'));
     }
 
     getEnd(): opt.IOption<string> {
-        var $suggestions = this.$scope().find('.suggestions');
-        return opt.Option<any>($suggestions.attr('data-end'));
+        var $suggestions = this.$getSuggestions();
+        return opt.Option<string>($suggestions.attr('data-end'));
     }
 
     reset(): void {
         this.clearSuggestions();
         this.resetStart();
         this.resetEnd();
+    }
+
+    hideEnd(): Q.Promise<void> {
+        var $end = this.$scope().find('.input.end');
+        var $start = this.$scope().find('.input.start');
+        $start.removeClass('animating');
+        $end.addClass('animating');
+        var translate = $start.offset().top - $end.offset().top;
+        var f = Zanimo.transform($end.get(0), 'translate3d(0,'+ translate + 'px,0)', true)
+        this.interactions.register(f);
+        return f.then(() => {
+            this.adaptWrapperTop();
+        });
+    }
+
+    hideStart(): Q.Promise<void> {
+        var $end = this.$scope().find('.input.end');
+        var translate = this.$scope().find('.input.start').height();
+        $end.addClass('animating above');
+        var f = Zanimo.transform($end.get(0), 'translate3d(0,-'+ translate + 'px,0)', true);
+        this.interactions.register(f);
+        return f.then(() => {
+            this.adaptWrapperTop();
+        });
+    }
+
+    showStart(): Q.Promise<void> {
+        return this.showEnd();
+    }
+
+    showEnd(): Q.Promise<void> {
+        var $end = this.$scope().find('.input.end');
+        var f = Zanimo.transform($end.get(0), 'translate3d(0,0,0)', true).then(() => {
+            return Q.delay(250).then(() => {
+                $end.removeClass('animating').removeClass('above');
+            });
+        });
+        this.interactions.register(f);
+        return f;
+    }
+
+    $getStart(): ZeptoCollection {
+        return this.$scope().find('input[name=start]');
+    }
+
+    $getEnd(): ZeptoCollection {
+        return this.$scope().find('input[name=end]');
+    }
+
+    $getSuggestions(): ZeptoCollection {
+        return this.$scope().find('.suggestions');
     }
 }

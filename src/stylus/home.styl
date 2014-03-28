@@ -22,29 +22,51 @@ button-margin-right=4%
             position: relative
 
             &.submit {
-                color: dark-blue
-
                 .go {
                     position: absolute
                     right: button-margin-right
                     top: 0
                     height: 100%
                     width: 16px
-                    forward_button()
+                    forward_button(false)
+                }
+            }
+
+            &.enabled {
+                color: dark-blue
+
+                .go {
+                    forward_button(true)
                 }
             }
         }
     }
 
     .search {
+        position: relative
         background: #FFF
 
         form {
             .input {
                 position: relative
+                z-index: 2
 
-                &:first-child {
-                    border-bottom: 2px solid grey-blue
+                &.animating {
+                    position: absolute
+                    width: 100%
+                    transition: 0.2s
+                    z-index: 1
+                    &.above {
+                        z-index: 3
+                    }
+                }
+
+                &:not(:first-child) {
+                    border-top: 2px solid grey-blue
+                }
+
+                &:last-child {
+                    border-bottom: 10px solid grey-blue
                 }
 
                 input {
@@ -66,10 +88,6 @@ button-margin-right=4%
                 }
             }
         }
-    }
-
-    .stations {
-        border-top: 10px solid grey-blue
     }
 
     #wrapper {

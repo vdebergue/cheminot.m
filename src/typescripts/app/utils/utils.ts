@@ -89,7 +89,7 @@ export function isMobile() {
        navigator.userAgent.match(/webOS/i) ||
        navigator.userAgent.match(/BlackBerry/i) ||
        navigator.userAgent.match(/Windows Phone/i) ||
-       isAppleMobile()) {
+       isAppleMobile() && window['cordova']) {
         return true;
     } else {
         return false;

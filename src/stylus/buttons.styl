@@ -25,8 +25,15 @@ reset_button() {
     background-size: 100%
 }
 
-forward_button() {
+forward_button(isDisabled) {
     clear-button()
-    background: url('../../images/arrow-right.svg') no-repeat center
+
+    if isDisabled {
+        background: url('../../images/arrow-right.svg') no-repeat center
+    }
+    unless {
+        background: url('../../images/arrow-right-disabled.svg') no-repeat center
+    }
+
     background-size: 100%
 }

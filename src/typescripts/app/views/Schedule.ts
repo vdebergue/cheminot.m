@@ -1,6 +1,7 @@
 import IView = require('./IView');
 import View = require('./View');
 import utils = require('../utils/utils');
+import Interactions = require('./Interactions');
 
 declare var Zanimo;
 
@@ -9,9 +10,11 @@ export = Schedule;
 class Schedule extends View implements IView {
 
     name: string;
+    interactions: any;
 
-    constructor(container: string, scope: string, name: string) {
+    constructor(container: string, scope: string, name: string, interactions: Interactions) {
         this.name = name;
+        this.interactions = interactions;
         super(container, scope);
     }
 
@@ -20,22 +23,19 @@ class Schedule extends View implements IView {
     }
 
     show(): Q.Promise<void> {
-        var d = Q.defer<void>();
-        setTimeout(() => {
-            var containerOffset = super.$container().offset();
+        return Q.delay(120).then(() => {
+            var offset = super.$container().offset();
             var $schedule = this.$scope();
             var scheduleOffet = $schedule.offset();
-            var translate = containerOffset.top + containerOffset.height + Math.abs(scheduleOffet.top);
-            $schedule.attr('data-origin-top', scheduleOffet.top);
-
-            Zanimo.transform($schedule.get(0), 'translate3d(0,'+ translate + 'px,0)').then(() => {
-                setTimeout(() => {
+            var translate = offset.top + offset.height + Math.abs(scheduleOffet.top);;
+            var f = Zanimo.transform($schedule.get(0), 'translate3d(0,'+ translate + 'px,0)', true).then(() => {
+                return Q.delay(600).then(() => {
                     $schedule.addClass('displayed');
-                    d.resolve(null);
-                }, 600);
+                });
             });
-        }, 120);
-        return d.promise;
+            this.interactions.register(f);
+            return f;
+        });
     }
 
     hide(): Q.Promise<void> {
@@ -43,11 +43,13 @@ class Schedule extends View implements IView {
             var $schedule = this.$scope();
             var originTop = $schedule.attr('data-origin-top');
             $schedule.removeClass('displayed');
-            return Q.delay(utils.Promise.DONE(), 400).then(() => {
-                return Zanimo.transform($schedule.get(0), 'translate3d(0,'+ originTop +'px,0)', true).then(() => {
+            var f =  Q.delay(utils.Promise.DONE(), 400).then(() => {
+                return Zanimo.transform($schedule.get(0), 'translate3d(0,0,0)', true).then(() => {
                     return utils.Promise.DONE();
                 });
             });
+            this.interactions.register(f);
+            return f;
         } else {
             return utils.Promise.DONE();
         }
