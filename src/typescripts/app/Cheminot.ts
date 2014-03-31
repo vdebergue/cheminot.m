@@ -1,7 +1,7 @@
 import utils = require('./utils/utils');
 
 export function initApp(app) {
-    if(utils.isMobile()) {
+    if(window['cordova']) {
         app.configure({urlSync: false});
     } else {
         app.configure({urlSync: 'hash'});

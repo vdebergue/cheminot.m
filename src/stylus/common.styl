@@ -4,11 +4,6 @@
 
 global-reset()
 
-* {
-    -webkit-font-smoothing: antialiased
-    font-family-light()
-}
-
 ::-webkit-input-placeholder {
     color: grey
     font-family-light()
@@ -34,6 +29,15 @@ html {
     overflow: hidden
 }
 
+html, body {
+    height: 100%
+    width: 100%
+    position: absolute
+    overflow: hidden
+    -webkit-font-smoothing: antialiased
+    font-family-light()
+}
+
 h1 {
     font-family-bold()
 }
@@ -50,6 +54,10 @@ input {
 
     &:focus {
         border-color: blue
+    }
+
+    &:disabled {
+        background-color: #FFF
     }
 }
 

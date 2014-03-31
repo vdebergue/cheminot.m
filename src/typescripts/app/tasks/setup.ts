@@ -14,7 +14,6 @@ export function start(progress: (string, any?) => void): Q.Promise<void> {
             var ns = "worker."
             progress(ns + msg.event, msg.data);
         } else {
-            console.log('Setup terminated');
             worker.terminate();
             d.resolve(null);
         }

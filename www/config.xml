@@ -1,15 +1,14 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="io.cheminot.m" version="0.0.1" versionCode="391" versionName="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="io.cheminot.m" version="0.0.1" versionCode="667" versionName="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>cheminot.m</name>
     <description></description>
     <author email="sre@cheminot.io" href="http://cordova.io">sre</author>
-    <content src="index.html" />
-    <access origin="*" />
-    <preference name="phonegap-version" value="3.3.1" />
-    <preference name="Fullscreen" value="false" />
-    <preference name="DisallowOverscroll" value="true" />
-    <preference name="WebViewBounce" value="false" />
-    <preference name="HideKeyboardFormAccessoryBar" value="true"/>
-    <preference name="KeyboardShrinksView" value="false" />
-    <preference name="EnableViewportScale" value="false" />
+    <content src="index.html"/>
+    <access origin="*"/>
+    <preference name="phonegap-version" value="3.4.0"/>
+    <preference name="DisallowOverscroll" value="true"/>
+    <feature name="Keyboard">
+      <param name="ios-package" value="CDVKeyboard" onload="true" />
+    </feature>
 </widget>
+

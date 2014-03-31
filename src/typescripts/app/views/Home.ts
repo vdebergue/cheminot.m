@@ -47,7 +47,6 @@ class Home extends View implements IView {
     bindEvents(): void {
         super.bindEvent('keyup', 'input[name=start], input[name=end]', this.onStationKeyUp);
         super.bindEvent('focus', 'input[name=start], input[name=end]', this.onStationFocus);
-        super.bindEvent('blur', 'input[name=start], input[name=end]', this.onStationBlur);
         super.bindEvent('tap', '.search .reset', this.onInputReset);
         super.bindEvent('tap', '.suggestions > li', this.onSuggestionSelected);
         super.bindEvent('touchstart', '.suggestions', this.onScrollingStops);
@@ -94,11 +93,29 @@ class Home extends View implements IView {
 
         if(this.isStartInput($input)) {
             this.resetStart();
+            this.showEnd();
         } else if(this.isEndInput($input)) {
             this.resetEnd();
+            this.showStart();
         }
 
-        App.Navigate.home(this.getStart(), this.getEnd());
+        this.clearSuggestions();
+
+        var $start = this.$getStart();
+        var $end = this.$getEnd();
+
+        $start.attr('disabled', 'true');
+        $end.attr('disabled', 'true');
+        $start.blur();
+        $end.blur();
+
+        this.interactions.await().then(() => {
+            App.Navigate.home(this.getStart(), this.getEnd());
+            return Q.delay(200).then(() => {
+                $start.removeAttr('disabled');
+                $end.removeAttr('disabled');
+            });
+        });
 
         return true;
     }
@@ -118,6 +135,7 @@ class Home extends View implements IView {
                 if(term.trim() === '') {
                     this.clearSuggestions();
                 } else {
+                    $reset.addClass('filled');
                     var founds = TernaryTree.search(term.toLowerCase(), stopsTree, 20);
                     this.suggest(term, founds);
                 }
@@ -131,16 +149,6 @@ class Home extends View implements IView {
         var $scope = this.$scope();
         $scope.find('.stations').removeClass('searching');
         this.$getSuggestions().empty();
-    }
-
-    onStationBlur(e: Event): boolean {
-        var $input = $(e.currentTarget);
-        if($input.is('[name=start]')) {
-            this.showEnd();
-        } else if($input.is('[name=end]')) {
-            this.showStart();
-        }
-        return true;
     }
 
     isResetDisplayed($input: ZeptoCollection): boolean {
@@ -158,16 +166,19 @@ class Home extends View implements IView {
     onStationFocus(e: Event): boolean {
         var $input = $(e.currentTarget);
         var $suggestions = this.$getSuggestions();
-
         if(this.isStartInput($input)) {
             $suggestions.removeClass('end').addClass('start');
-            this.hideEnd();
+            this.hideEnd().then(() => {
+                this.getResetBtnFromInput($input).addClass('filled');
+            });
             if(this.isResetDisplayed($input)) {
                 App.Navigate.home(new opt.None<string>(), this.getEnd());
             }
         } else if(this.isEndInput($input)) {
             $suggestions.removeClass('start').addClass('end');
-            this.hideStart();
+            this.hideStart().then(() => {
+                this.getResetBtnFromInput($input).addClass('filled');
+            });
             if(this.isResetDisplayed($input)) {
                 App.Navigate.home(this.getStart());
             }
@@ -194,8 +205,10 @@ class Home extends View implements IView {
         var maybeEnd = this.getEnd();
 
         if($suggestions.is('.start')) {
+            this.showEnd();
             maybeStart = new opt.Some(name);
         } else if($suggestions.is('.end')) {
+            this.showStart();
             maybeEnd = new opt.Some(name);
         }
 

@@ -10,8 +10,13 @@ import Splashscreen = require('./views/Splashscreen');
 import App = require('./application');
 import utils = require('./utils/utils');
 
+declare var Keyboard;
+
 if(window['cordova'] != null) {
     document.addEventListener("deviceready", () => {
+        Keyboard.shrinkView(true);
+        Keyboard.hideFormAccessoryBar(true);
+        Keyboard.disableScrollingInShrinkView(true);
         ready();
     }, false);
 } else {
