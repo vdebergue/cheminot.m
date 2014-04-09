@@ -24,6 +24,10 @@ global-reset()
     font-family-light()
 }
 
+.ios7 header {
+    padding-top: 18px
+}
+
 html {
     height: 100%
     overflow: hidden
@@ -73,6 +77,12 @@ header {
     background: blue
     color: #FFF
     box-sizing: border-box
+    transition: 0s
+    transition-property: height
+
+    &.fold {
+        height: 0
+    }
 
     &.hidden {
         display: none
@@ -85,12 +95,14 @@ header {
 
 .setup-progress {
     text-align: center
-    padding: 14px 8px 14px 8px
     box-sizing: border-box
     background: dark-green
     position: relative
     color: #FFF
     font-size: 12px
+    transition: 0.2s
+    transition-property: height
+    height: 0
 
     .text {
         position: relative
@@ -108,8 +120,8 @@ header {
         transition-property: width
     }
 
-    &.hidden {
-        display: none
+    &.on {
+        height: 100%
     }
 }
 

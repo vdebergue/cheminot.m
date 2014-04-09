@@ -7,6 +7,9 @@
     "installed_plugins": {
         "org.apache.cordova.keyboard": {
             "PACKAGE_NAME": "io.cheminot.m"
+        },
+        "org.apache.cordova.statusbar": {
+            "PACKAGE_NAME": "io.cheminot.m"
         }
     },
     "dependent_plugins": {}

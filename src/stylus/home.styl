@@ -2,7 +2,7 @@
 @import 'font';
 @import 'buttons';
 
-button-margin-right=4%
+global-margin-right=4%
 
 #home {
 
@@ -14,6 +14,9 @@ button-margin-right=4%
         transition: 0.600s
         text-align: center
 
+        input[type=date], input[type=time] {
+        }
+
         &.displayed {
             z-index: 1
         }
@@ -24,10 +27,10 @@ button-margin-right=4%
             &.submit {
                 .go {
                     position: absolute
-                    right: button-margin-right
                     top: 0
                     height: 100%
                     width: 16px
+                    right: global-margin-right
                     forward_button(false)
                 }
             }
@@ -38,6 +41,32 @@ button-margin-right=4%
                 .go {
                     forward_button(true)
                 }
+            }
+
+            .day, .time {
+                position: relative
+                display: inline-block
+                width: 50%
+                line-height: 3.6
+
+                input[type=date], input[type=time] {
+                    opacity: 0
+                    position: absolute
+                    top: 0
+                    bottom: 0
+                    right: 0
+                    left: 0
+                }
+            }
+
+            .day {
+                text-align: left
+            }
+
+            .time {
+                text-align: right
+                color: blue
+                margin-right: (global-margin-right / 2)
             }
         }
     }
@@ -85,10 +114,9 @@ button-margin-right=4%
                     position: absolute
                     display: none
                     top: 0
-                    right: button-margin-right
                     height: 100%
-                    width: 22px
                     reset_button()
+                    right: global-margin-right
 
                     &.filled {
                         display: block

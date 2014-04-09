@@ -90,7 +90,7 @@ class Home extends View implements IView {
         e.preventDefault();
 
         var $input = $(e.currentTarget).siblings('input');
-
+        this.unfoldHeader();
         if(this.isStartInput($input)) {
             this.resetStart();
             this.showEnd();
@@ -163,9 +163,24 @@ class Home extends View implements IView {
         return $input.is('[name=end]');
     }
 
+    foldHeader(): Q.Promise<void> {
+        var $header = $('header');
+        var f = utils.Transition.spy($header.get(0));
+        $header.addClass('fold');
+        return f;
+    }
+
+    unfoldHeader(): Q.Promise<void> {
+        var $header = $('header');
+        var f = utils.Transition.spy($header.get(0));
+        $('header').removeClass('fold');
+        return f;
+    }
+
     onStationFocus(e: Event): boolean {
         var $input = $(e.currentTarget);
         var $suggestions = this.$getSuggestions();
+        this.foldHeader()
         if(this.isStartInput($input)) {
             $suggestions.removeClass('end').addClass('start');
             this.hideEnd().then(() => {
@@ -204,6 +219,9 @@ class Home extends View implements IView {
         var maybeStart = this.getStart();
         var maybeEnd = this.getEnd();
 
+        this.clearSuggestions();
+        this.unfoldHeader();
+
         if($suggestions.is('.start')) {
             this.showEnd();
             maybeStart = new opt.Some(name);
@@ -211,7 +229,6 @@ class Home extends View implements IView {
             this.showStart();
             maybeEnd = new opt.Some(name);
         }
-
         this.interactions.await().then(() => {
             App.Navigate.home(maybeStart, maybeEnd);
         });
@@ -226,7 +243,6 @@ class Home extends View implements IView {
         var $input = this.$getStart();
         $input.val(start);
         this.getResetBtnFromInput($input).addClass('filled');
-        this.clearSuggestions();
     }
 
     fillEnd(end: string): void {

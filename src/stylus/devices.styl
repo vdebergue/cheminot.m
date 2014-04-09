@@ -4,67 +4,57 @@
 scale(value, factor)
   value * factor
 
-header_height_portrait = 64px
-header_size_portrait = 18px
-item_height_portrait = 66px
-item_size_portrait = 18px
-input_height_portrait = 66px
-input_size_portrait = 18px
-btn_size_portrait = 18px
-back_btn_size_portrait = 30px
-home_wrapper_top = 230px
-timetable_wrapper_top = 88px
-trip_wrapper_top = 88px
+header_height=64px
+header_size=18px
+item_height=66px
+item_size=18px
+input_height=66px
+input_size=18px
+reset_btn_size=22px
 
 device(min_width, max_width, factor)
     portrait = "only screen and (min-device-width : " + min_width + ") and (max-device-width : " + max_width + ")"
     @media portrait
         header {
-            height: scale(header_height_portrait, factor)
-            font-size: scale(header_size_portrait, factor)
+            height: scale(header_height, factor)
+            font-size: scale(header_size, factor)
         }
 
         .list li {
-            height: scale(item_height_portrait, factor)
-            font-size: scale(item_size_portrait, factor)
+            height: scale(item_height, factor)
+            font-size: scale(item_size, factor)
         }
 
         input {
-            height: scale(input_height_portrait, factor)
-            font-size: scale(input_size_portrait, factor)
+            height: scale(input_height, factor)
+            font-size: scale(input_size, factor)
         }
 
-        .btn {
-            font-size: scale(btn_size_portrait, factor)
+        button.reset {
+            width: scale(reset_btn_size, factor)
         }
-
-        .icon {
-            font-size: scale(btn_size_portrait, factor)
-        }
-
-        back_button(scale(back_btn_size_portrait, factor))
 
 // IPHONE 5 (default)
 @media only screen {
-    header, .list li {
-        height: header_height_portrait
-        font-size: header_size_portrait
+    header {
+        height: header_height
+        font-size: header_size
+    }
+
+    .list li {
+        height: item_height
+        font-size: item_size
+
     }
 
     input {
-        height: input_height_portrait
-        font-size: input_size_portrait
+        height: input_height
+        font-size: input_size
     }
 
-    .btn {
-        font-size: btn_size_portrait
+    button.reset {
+        width: reset_btn_size
     }
-
-    .icon {
-        font-size: btn_size_portrait
-    }
-
-    back_button(back_btn_size_portrait)
 }
 
 // IPAD

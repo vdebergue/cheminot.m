@@ -188,7 +188,7 @@ class ViewsHelper {
         var $bar = $progress.find('.bar');
         var $value = $progress.find('.value');
         var current = parseInt($value.text(), 10);
-        $progress.removeClass('hidden');
+        $progress.addClass('on');
 
         if(event === 'worker.setup:fetch') {
             var percent = Math.round((parseInt(data, 10) * 30) / 100);

@@ -116,3 +116,24 @@ export class Promise {
         return Q<T>(t);
     }
 }
+
+export class Transition {
+
+    static transitionEnd(): string {
+        var transitionend = "transitionend"
+        if( 'WebkitTransition' in document.body.style
+            && !("OTransition" in document.body.style) ) {
+            transitionend = 'webkitTransitionEnd';
+        }
+        return transitionend;
+    }
+
+    static spy(el: any): Q.Promise<void> {
+        var d = Q.defer<void>();
+        $(el).one(Transition.transitionEnd(), () => {
+            d.resolve(null);
+            return true;
+        });
+        return d.promise;
+    }
+}

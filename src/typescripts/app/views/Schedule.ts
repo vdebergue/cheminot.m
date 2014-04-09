@@ -27,7 +27,7 @@ class Schedule extends View implements IView {
             var offset = super.$container().offset();
             var $schedule = this.$scope();
             var scheduleOffet = $schedule.offset();
-            var translate = offset.top + offset.height + Math.abs(scheduleOffet.top);;
+            var translate = offset.top + offset.height + Math.abs(scheduleOffet.top);
             var f = Zanimo.transform($schedule.get(0), 'translate3d(0,'+ translate + 'px,0)', true).then(() => {
                 return Q.delay(600).then(() => {
                     $schedule.addClass('displayed');
@@ -56,6 +56,12 @@ class Schedule extends View implements IView {
     }
 
     bindEvents(): void {
+        super.bindEvent('keyup', 'li', this.onItemSelected);
+    }
+
+    onItemSelected(e: Event): boolean {
+        this.$scope().find('input[type=date]');
+        return true;
     }
 
     getSelectedTime(): number {

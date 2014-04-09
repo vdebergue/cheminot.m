@@ -11,12 +11,13 @@ import App = require('./application');
 import utils = require('./utils/utils');
 
 declare var Keyboard;
+declare var StatusBar;
 
 if(window['cordova'] != null) {
     document.addEventListener("deviceready", () => {
         Keyboard.shrinkView(true);
-        Keyboard.hideFormAccessoryBar(true);
         Keyboard.disableScrollingInShrinkView(true);
+        StatusBar.styleLightContent();
         ready();
     }, false);
 } else {
@@ -26,6 +27,9 @@ if(window['cordova'] != null) {
 }
 
 function ready() {
+    if(utils.isIOS7()) {
+        $('body').addClass('ios7');
+    }
     View.bindEvents();
     var homeView = new Home('#viewport', '#home', 'home');
     var timetableView = new Timetable('#viewport', '#timetable', 'timetable');
