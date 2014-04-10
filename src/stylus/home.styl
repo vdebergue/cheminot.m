@@ -14,9 +14,6 @@ global-margin-right=4%
         transition: 0.600s
         text-align: center
 
-        input[type=date], input[type=time] {
-        }
-
         &.displayed {
             z-index: 1
         }
@@ -44,10 +41,9 @@ global-margin-right=4%
             }
 
             .day, .time {
-                position: relative
                 display: inline-block
                 width: 50%
-                line-height: 3.6
+                padding: 8% 0 8% 0
 
                 input[type=date], input[type=time] {
                     opacity: 0
@@ -61,12 +57,39 @@ global-margin-right=4%
 
             .day {
                 text-align: left
+                position: relative
+
+                .calendar {
+                    position: absolute
+                    top: 0
+                    right: 0
+                    height: 100%
+                    calendar_button()
+                    padding: global-margin-right
+                }
             }
 
             .time {
                 text-align: right
-                color: blue
-                margin-right: (global-margin-right / 2)
+                clock_button()
+
+                &:before {
+                    margin-right: global-margin-right
+                }
+            }
+
+            &.other {
+                button {
+                    position: relative
+                }
+
+                .day {
+                    width: 70%
+                }
+
+                .time {
+                    width: 29.3%
+                }
             }
         }
     }

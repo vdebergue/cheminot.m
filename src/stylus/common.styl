@@ -1,6 +1,7 @@
 @import 'reset';
 @import 'colors';
 @import 'font';
+@import 'buttons';
 
 global-reset()
 
@@ -26,6 +27,19 @@ global-reset()
 
 .ios7 header {
     padding-top: 18px
+    .back {
+        top: 8px
+    }
+}
+
+.ios header {
+    .back {
+        display: block
+        position: absolute
+        height: 100%
+        backward_button()
+        padding: 2%
+    }
 }
 
 html {
@@ -77,11 +91,12 @@ header {
     background: blue
     color: #FFF
     box-sizing: border-box
-    transition: 0s
+    transition: .2s
     transition-property: height
 
     &.fold {
         height: 0
+        padding: 0
     }
 
     &.hidden {
@@ -90,6 +105,10 @@ header {
 
     h1 {
         margin: auto
+    }
+
+    .back {
+        display: none
     }
 }
 
@@ -138,7 +157,7 @@ header {
 .list {
     li {
         color: grey
-        padding: 14px 8px 14px 8px
+        padding: 0 8px 0 8px
         display: flex
         align-items: center
         border-bottom: 2px solid grey-blue

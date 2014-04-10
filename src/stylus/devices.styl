@@ -10,7 +10,7 @@ item_height=66px
 item_size=18px
 input_height=66px
 input_size=18px
-reset_btn_size=22px
+btn_size=22px
 
 device(min_width, max_width, factor)
     portrait = "only screen and (min-device-width : " + min_width + ") and (max-device-width : " + max_width + ")"
@@ -30,9 +30,14 @@ device(min_width, max_width, factor)
             font-size: scale(input_size, factor)
         }
 
-        button.reset {
-            width: scale(reset_btn_size, factor)
+        .font:before {
+            font-size: scale(btn_size, factor)
         }
+
+        button.reset {
+            width: scale(btn_size, factor)
+        }
+
 
 // IPHONE 5 (default)
 @media only screen {
@@ -53,7 +58,11 @@ device(min_width, max_width, factor)
     }
 
     button.reset {
-        width: reset_btn_size
+        width: btn_size
+    }
+
+    .font:before {
+        font-size: btn_size
     }
 }
 

@@ -1,4 +1,5 @@
 @import 'colors';
+@import 'icons';
 
 clear-button() {
     margin: 0
@@ -9,15 +10,20 @@ clear-button() {
     outline: none
 }
 
-/* backward_button(size) { */
-/*     clear-button() */
-/*     icon('left-arrow', size, size, blue, size) */
-/* } */
+backward_button(color = blue) {
+    clear-button()
+    icon('left-arrow', white)
+}
 
-/* forward_button(size) { */
-/*     clear-button() */
-/*     icon('right-arrow', size, size, blue, size) */
-/* } */
+clock_button(color = blue) {
+    clear-button()
+    icon('clock', color)
+}
+
+calendar_button(color = blue) {
+    clear-button()
+    icon('calendar', color)
+}
 
 reset_button() {
     clear-button()
@@ -25,7 +31,7 @@ reset_button() {
     background-size: 100%
 }
 
-forward_button(isDisabled) {
+forward_button() {
     clear-button()
 
     if isDisabled {

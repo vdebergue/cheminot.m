@@ -296,18 +296,15 @@ class Home extends View implements IView {
     }
 
     hideStart(): Q.Promise<void> {
-        var $end = this.$scope().find('.input.end');
-        var translate = this.$scope().find('.input.start').height();
-        $end.addClass('animating above');
-        var f = Zanimo.transform($end.get(0), 'translate3d(0,-'+ translate + 'px,0)', true);
-        this.interactions.register(f);
-        return f.then(() => {
-            this.adaptWrapperTop();
-        });
+        this.$getStart().parent().hide();
+        this.adaptWrapperTop();
+        return utils.Promise.DONE();
     }
 
     showStart(): Q.Promise<void> {
-        return this.showEnd();
+        this.$getStart().parent().show();
+        this.adaptWrapperTop();
+        return utils.Promise.DONE();
     }
 
     showEnd(): Q.Promise<void> {

@@ -5,21 +5,26 @@
     font-style: normal
 }
 
-icon(name, width, height, color = black, font-size = 12px)
-    &:before
+icon(name, color = black) {
+    &:before {
         font-family: 'Fontello'
         color: color
         display: block
-        width: width
-        height: height
-        line-height: height
 
-    if name is 'left-arrow'
-        &:before
+        if name is 'left-arrow' {
             content: '\e800'
-            font-size: font-size
+        }
 
-    if name is 'right-arrow'
-        &:before
+        if name is 'right-arrow' {
             content: '\e801'
-            font-size: font-size
+        }
+
+        if name is 'clock' {
+            content: '\e802'
+        }
+
+        if name is 'calendar' {
+            content: '\e803'
+        }
+    }
+}

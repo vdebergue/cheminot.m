@@ -27,9 +27,13 @@ if(window['cordova'] != null) {
 }
 
 function ready() {
+    if(utils.isAppleMobile()) {
+        $('body').addClass('ios');
+    }
     if(utils.isIOS7()) {
         $('body').addClass('ios7');
     }
+
     View.bindEvents();
     var homeView = new Home('#viewport', '#home', 'home');
     var timetableView = new Timetable('#viewport', '#timetable', 'timetable');
