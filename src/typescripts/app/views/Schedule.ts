@@ -16,6 +16,7 @@ class Schedule extends View implements IView {
         this.name = name;
         this.interactions = interactions;
         super(container, scope);
+        this.bindEvents();
     }
 
     setup(): Q.Promise<IView> {
@@ -56,11 +57,23 @@ class Schedule extends View implements IView {
     }
 
     bindEvents(): void {
-        super.bindEvent('keyup', 'li', this.onItemSelected);
+        super.bindEvent('change', 'input[type=date], input[type=time]', this.onDateTimeSelected);
     }
 
-    onItemSelected(e: Event): boolean {
-        this.$scope().find('input[type=date]');
+    isCurrentlyFilled($input: ZeptoCollection): boolean {
+        var $item = $input.closest('li');
+        return !!$item.find('.filled').size();
+    }
+
+    onDateTimeSelected(e: Event): boolean {
+        var $input = $(e.currentTarget);
+        var $button = $input.parent();
+        if(this.isCurrentlyFilled($input)) {
+            $input.closest('li').siblings('li.enabled').find('.time, .calendar').removeClass('filled');
+        } else {
+            this.$scope().find('.time, .calendar').removeClass('filled');
+        }
+        $button.addClass('filled');
         return true;
     }
 

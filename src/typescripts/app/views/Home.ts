@@ -29,13 +29,13 @@ class Home extends View implements IView {
     constructor(container: string, scope: string, name: string) {
         this.name = name;
         this.interactions = new Interactions();
-        this.scheduleView = new Schedule('#home', '#schedule', 'schedule', this.interactions);
         super(container, scope);
     }
 
     setup(): Q.Promise<IView> {
         return super.ensure(Templating.home.layout).then(() => {
             this.bindEvents();
+            this.scheduleView = new Schedule('#home', '#schedule', 'schedule', this.interactions);
             return this;
         });
     }
