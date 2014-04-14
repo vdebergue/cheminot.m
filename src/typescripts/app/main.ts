@@ -17,6 +17,7 @@ if(window['cordova'] != null) {
     document.addEventListener("deviceready", () => {
         Keyboard.shrinkView(true);
         Keyboard.disableScrollingInShrinkView(true);
+        Keyboard.hideFormAccessoryBar(true);
         StatusBar.styleLightContent();
         ready();
     }, false);

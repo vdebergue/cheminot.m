@@ -11,11 +11,11 @@ import Schedule = require('./Schedule');
 import Templating = require('./templating');
 import utils = require('../utils/utils');
 import TernaryTree = require('../utils/ternaryTree');
-import Interactions = require('./Interactions');
 
 declare var tmpl;
 declare var IScroll;
 declare var Zanimo;
+declare var Keyboard;
 
 export = Home;
 
@@ -24,18 +24,16 @@ class Home extends View implements IView {
     name: string;
     myIScroll: any;
     scheduleView: Schedule;
-    interactions: Interactions;
 
     constructor(container: string, scope: string, name: string) {
         this.name = name;
-        this.interactions = new Interactions();
         super(container, scope);
     }
 
     setup(): Q.Promise<IView> {
         return super.ensure(Templating.home.layout).then(() => {
             this.bindEvents();
-            this.scheduleView = new Schedule('#home', '#schedule', 'schedule', this.interactions);
+            this.scheduleView = new Schedule('#home', '#schedule', 'schedule');
             return this;
         });
     }
@@ -55,7 +53,11 @@ class Home extends View implements IView {
     adaptWrapperTop(): void {
         var $wrapper = this.$scope().find('#wrapper');
         var offset = $('.search .end').offset();
-        var top = offset.top + offset.height;
+        var borderWidth = (function() {
+            var width = $('.input.end').css('border-bottom-width');
+            return parseInt(width.substring(0, width.length - 2), 10);
+        })();
+        var top = offset.top + offset.height + (borderWidth / 2);
         $wrapper.css('top', top);
     }
 
@@ -89,17 +91,23 @@ class Home extends View implements IView {
     onInputReset(e: Event): boolean {
         e.preventDefault();
 
+        this.clearSuggestions();
+
         var $input = $(e.currentTarget).siblings('input');
-        this.unfoldHeader();
+
         if(this.isStartInput($input)) {
             this.resetStart();
-            this.showEnd();
         } else if(this.isEndInput($input)) {
             this.resetEnd();
-            this.showStart();
         }
 
-        this.clearSuggestions();
+        var finput = () => {
+            if(this.isStartInput($input)) {
+                return this.showEnd();
+            } else if(this.isEndInput($input)) {
+                return this.showStart();
+            }
+        };
 
         var $start = this.$getStart();
         var $end = this.$getEnd();
@@ -109,9 +117,10 @@ class Home extends View implements IView {
         $start.blur();
         $end.blur();
 
-        this.interactions.await().then(() => {
-            App.Navigate.home(this.getStart(), this.getEnd());
-            return Q.delay(200).then(() => {
+        App.Navigate.home(this.getStart(), this.getEnd()).then(() => {
+            var g = finput();
+            var h = this.unfoldHeader();
+            return Q.all([h, g]).then(() => {
                 $start.removeAttr('disabled');
                 $end.removeAttr('disabled');
             });
@@ -121,26 +130,19 @@ class Home extends View implements IView {
     }
 
     onStationKeyUp(e: Event): boolean {
-        var stopsTree = Storage.stops();
         var $input = $(e.currentTarget);
-        var term = $input.val();
+        var $reset = this.getResetBtnFromInput($input);
+        var term = $input.val().trim();
 
-        var eventuallyTransition =  this.scheduleView.isDisplayed() ? this.scheduleView.hide() : utils.Promise.DONE();
+        $reset.removeClass('filled');
 
-        eventuallyTransition.then(() => {
-            var timeout = this.scheduleView.isDisplayed() ? 600 : 0;
-            return Q.delay(timeout).then(() => {
-                var $reset = this.getResetBtnFromInput($input);
-                $reset.removeClass('filled');
-                if(term.trim() === '') {
-                    this.clearSuggestions();
-                } else {
-                    $reset.addClass('filled');
-                    var founds = TernaryTree.search(term.toLowerCase(), stopsTree, 20);
-                    this.suggest(term, founds);
-                }
-            });
-        });
+        if(term === '') {
+            this.clearSuggestions();
+        } else {
+            $reset.addClass('filled');
+            var founds = TernaryTree.search(term.toLowerCase(), Storage.stops(), 20);
+            this.suggest(term, founds);
+        }
 
         return true;
     }
@@ -172,32 +174,52 @@ class Home extends View implements IView {
 
     unfoldHeader(): Q.Promise<void> {
         var $header = $('header');
-        var f = utils.Transition.spy($header.get(0));
-        $('header').removeClass('fold');
-        return f;
+        if($header.is('.fold')) {
+            var f = utils.Transition.spy($header.get(0));
+            $('header').removeClass('fold');
+            return f;
+        } else {
+            return utils.Promise.DONE();
+        }
     }
 
     onStationFocus(e: Event): boolean {
+        //Keyboard.hideFormAccessoryBar(true);
         var $input = $(e.currentTarget);
         var $suggestions = this.$getSuggestions();
-        this.foldHeader()
-        if(this.isStartInput($input)) {
-            $suggestions.removeClass('end').addClass('start');
-            this.hideEnd().then(() => {
-                this.getResetBtnFromInput($input).addClass('filled');
-            });
-            if(this.isResetDisplayed($input)) {
-                App.Navigate.home(new opt.None<string>(), this.getEnd());
+
+        this.getResetBtnFromInput($input).addClass('filled');
+
+        var fpannel = (() => {
+            if(this.isStartInput($input)) {
+                if(this.isResetDisplayed($input)) {
+                    $suggestions.removeClass('end').addClass('start');
+                    return App.Navigate.home(new opt.None<string>(), this.getEnd());
+                } else {
+                    return utils.Promise.DONE();
+                }
+            } else if(this.isEndInput($input)) {
+                $suggestions.removeClass('start').addClass('end');
+                if(this.isResetDisplayed($input)) {
+                    return App.Navigate.home(this.getStart());
+                } else {
+                    return utils.Promise.DONE();
+                }
             }
-        } else if(this.isEndInput($input)) {
-            $suggestions.removeClass('start').addClass('end');
-            this.hideStart().then(() => {
-                this.getResetBtnFromInput($input).addClass('filled');
-            });
-            if(this.isResetDisplayed($input)) {
-                App.Navigate.home(this.getStart());
+        })();
+
+        var finput = () => {
+            if(this.isStartInput($input)) {
+                return this.hideEnd();
+            } else if(this.isEndInput($input)) {
+                return this.hideStart();
             }
-        }
+        };
+
+        fpannel.then(() => {
+            return Q.all([this.foldHeader(), finput()]);
+        });
+
         return true;
     }
 
@@ -229,9 +251,7 @@ class Home extends View implements IView {
             this.showStart();
             maybeEnd = new opt.Some(name);
         }
-        this.interactions.await().then(() => {
-            App.Navigate.home(maybeStart, maybeEnd);
-        });
+        App.Navigate.home(maybeStart, maybeEnd);
     }
 
     getResetBtnFromInput($input: ZeptoCollection): ZeptoCollection {
@@ -288,9 +308,7 @@ class Home extends View implements IView {
         $start.removeClass('animating');
         $end.addClass('animating');
         var translate = $start.offset().top - $end.offset().top;
-        var f = Zanimo.transform($end.get(0), 'translate3d(0,'+ translate + 'px,0)', true)
-        this.interactions.register(f);
-        return f.then(() => {
+        return Zanimo.transform($end.get(0), 'translate3d(0,'+ translate + 'px,0)', true).then(() => {
             this.adaptWrapperTop();
         });
     }
@@ -309,13 +327,9 @@ class Home extends View implements IView {
 
     showEnd(): Q.Promise<void> {
         var $end = this.$scope().find('.input.end');
-        var f = Zanimo.transform($end.get(0), 'translate3d(0,0,0)', true).then(() => {
-            return Q.delay(250).then(() => {
-                $end.removeClass('animating').removeClass('above');
-            });
+        return Zanimo.transform($end.get(0), 'translate3d(0,0,0)', true).then(() => {
+            $end.removeClass('animating').removeClass('above');
         });
-        this.interactions.register(f);
-        return f;
     }
 
     $getStart(): ZeptoCollection {

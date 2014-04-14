@@ -20,6 +20,7 @@ global-margin-right=4%
 
         li {
             position: relative
+            color: dark-blue
 
             &.submit {
                 .go {
@@ -33,70 +34,10 @@ global-margin-right=4%
             }
 
             &.enabled {
-                color: dark-blue
+                color: blue
 
                 .go {
                     forward_button(true)
-                }
-            }
-
-            .font.time, .font.calendar {
-                &.filled {
-                    &:before {
-                        color: dark-green;
-                    }
-                }
-            }
-
-            .day {
-                text-align: left
-                position: relative
-
-                .calendar {
-                    position: absolute
-                    top: 0
-                    right: 0
-                    height: 100%
-                    calendar_button()
-                    padding: global-margin-right
-                }
-            }
-
-            .time {
-                text-align: right
-                clock_button()
-
-                &:before {
-                    margin-right: global-margin-right
-                }
-            }
-
-            .day, .time {
-                display: inline-block
-                width: 50%
-                padding: 8% 0 8% 0
-
-                input[type=date], input[type=time] {
-                    opacity: 0
-                    position: absolute
-                    top: 0
-                    bottom: 0
-                    right: 0
-                    left: 0
-                }
-            }
-
-            &.other {
-                button {
-                    position: relative
-                }
-
-                .day {
-                    width: 70%
-                }
-
-                .time {
-                    width: 29.3%
                 }
             }
         }

@@ -114,28 +114,43 @@ export function init(views: seq.IList<IView>) {
 
 export class Navigate {
 
-    static home(maybeStart: opt.IOption<string> = new opt.None<string>(), maybeEnd: opt.IOption<string> = new opt.None<string>()) {
-        if(maybeStart.isDefined() && maybeEnd.isDefined()) {
-            maybeStart.foreach((start) => {
-                maybeEnd.foreach((end) => {
-                    Cheminot.app().state('schedule/' + start + '/' + end);
+    static home(maybeStart: opt.IOption<string> = new opt.None<string>(), maybeEnd: opt.IOption<string> = new opt.None<string>()): Q.Promise<void> {
+        var f = (() => {
+            if(maybeStart.isDefined() && maybeEnd.isDefined()) {
+                return maybeStart.map((start) => {
+                    return maybeEnd.map((end) => {
+                        return Cheminot.app().state('schedule/' + start + '/' + end);
+                    }).getOrElse(() => {
+                        return utils.Promise.DONE();
+                    });
+                }).getOrElse(() => {
+                    return utils.Promise.DONE();
                 });
-            });
-        } else {
-            if(maybeStart.isEmpty() && maybeEnd.isEmpty()) {
-                Cheminot.app().state('');
             } else {
-                maybeStart.foreach((start) => {
-                    Cheminot.app().state('start/' + start);
-                });
-                maybeEnd.foreach((end) => {
-                    Cheminot.app().state('end/' + end);
-                });
+                if(maybeStart.isEmpty() && maybeEnd.isEmpty()) {
+                    return Cheminot.app().state('');
+                } else {
+                    return maybeStart.map((start) => {
+                        return Cheminot.app().state('start/' + start);
+                    }).getOrElse(() => {
+                        return maybeEnd.map((end) => {
+                            return Cheminot.app().state('end/' + end);
+                        }).getOrElse(() => {
+                            return utils.Promise.DONE();
+                        });
+                    });
+                }
             }
-        }
+        })();
+
+        return f.fail((reason) => {
+            console.log(reason);
+            return utils.Promise.DONE();
+        });
     }
 
-    static timetable(start: string, end: string, when: number) {
+    static timetable(start: string, end: string, when: number): Q.Promise<void> {
+        return utils.Promise.DONE();
     }
 
     static back() {
