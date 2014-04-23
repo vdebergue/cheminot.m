@@ -6,52 +6,59 @@ global-margin-right=4%
 
 #home {
 
-    #schedule {
-        position: absolute
-        width: 100%
-        top: -200px
-        z-index: -1
-        transition: 0.600s
-        text-align: center
+    .date-selection {
+        background: dark-blue
+        overflow: hidden
 
-        &.displayed {
-            z-index: 1
+        .hint {
+            opacity: 0
         }
 
         li {
+            color: grey-dark
+            line-height: 4
+            width: 33.3%
+            float: left
+            font-size: 16px
+            text-align: center
             position: relative
-            color: dark-blue
 
-            &.submit {
-                .go {
+            &.selected {
+                color: #FFF
+
+                .hint {
+                    opacity: 1
+                    transition: 0.4s
                     position: absolute
-                    top: 0
-                    height: 100%
-                    width: 16px
-                    right: global-margin-right
-                    forward_button(false)
+                    left: 0
+                    right: 0
+                    bottom: 0
+                    background: blue
+                    height: 8%
                 }
             }
+        }
+    }
 
-            &.enabled {
-                color: blue
+    .request .date {
+        display: none;
 
-                .go {
-                    forward_button(true)
-                }
-            }
+        &.other {
+            display: flex
         }
     }
 
     .search {
         position: relative
         background: #FFF
+        border-top: 10px solid grey-blue
 
         form {
             .input {
                 position: relative
                 z-index: 2
                 width: 100%
+                border-top: 1px solid grey-blue
 
                 &.animating {
                     position: absolute
@@ -63,15 +70,11 @@ global-margin-right=4%
 
                     &.end {
                         transition: 0.1s
-                    }
+                     }
 
                     &.above {
                         z-index: 3
                     }
-                }
-
-                &:not(:first-child) {
-                    border-top: 2px solid grey-blue
                 }
 
                 &:last-child {
@@ -80,6 +83,12 @@ global-margin-right=4%
 
                 input {
                     padding-right: 30px
+
+                    &[name=start] {
+                    }
+
+                    &[name=end] {
+                    }
                 }
 
                 button.reset {

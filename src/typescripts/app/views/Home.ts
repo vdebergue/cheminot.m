@@ -7,7 +7,6 @@ import seq = require('lib/immutable/List');
 import opt = require('lib/immutable/Option');
 import IView = require('./IView');
 import View = require('./View');
-import Schedule = require('./Schedule');
 import Templating = require('./templating');
 import utils = require('../utils/utils');
 import TernaryTree = require('../utils/ternaryTree');
@@ -23,7 +22,6 @@ class Home extends View implements IView {
 
     name: string;
     myIScroll: any;
-    scheduleView: Schedule;
 
     constructor(container: string, scope: string, name: string) {
         this.name = name;
@@ -33,7 +31,6 @@ class Home extends View implements IView {
     setup(): Q.Promise<IView> {
         return super.ensure(Templating.home.layout).then(() => {
             this.bindEvents();
-            this.scheduleView = new Schedule('#home', '#schedule', 'schedule');
             return this;
         });
     }
@@ -47,17 +44,14 @@ class Home extends View implements IView {
         super.bindEvent('focus', 'input[name=start], input[name=end]', this.onStationFocus);
         super.bindEvent('tap', '.search .reset', this.onInputReset);
         super.bindEvent('tap', '.suggestions > li', this.onSuggestionSelected);
+        super.bindEvent('tap', '.date-selection > li', this.onDateSelected);
         super.bindEvent('touchstart', '.suggestions', this.onScrollingStops);
     }
 
     adaptWrapperTop(): void {
         var $wrapper = this.$scope().find('#wrapper');
         var offset = $('.search .end').offset();
-        var borderWidth = (function() {
-            var width = $('.input.end').css('border-bottom-width');
-            return parseInt(width.substring(0, width.length - 2), 10);
-        })();
-        var top = offset.top + offset.height + (borderWidth / 2);
+        var top = offset.top + offset.height;
         $wrapper.css('top', top);
     }
 
@@ -120,10 +114,12 @@ class Home extends View implements IView {
         App.Navigate.home(this.getStart(), this.getEnd()).then(() => {
             var g = finput();
             var h = this.unfoldHeader();
-            return Q.all([h, g]).then(() => {
+            return Q.all([this.showDatesPanel(), h, g]).then(() => {
                 $start.removeAttr('disabled');
                 $end.removeAttr('disabled');
             });
+        }).then(() => {
+            return this.showRequestPanel();
         });
 
         return true;
@@ -183,11 +179,32 @@ class Home extends View implements IView {
         }
     }
 
+    showRequestPanel(): Q.Promise<void> {
+        this.$scope().find('.request').show();
+        return utils.Promise.DONE();
+    }
+
+    hideRequestPanel(): Q.Promise<void> {
+        this.$scope().find('.request').hide();
+        return utils.Promise.DONE();
+    }
+
+    showDatesPanel(): Q.Promise<void> {
+        this.$scope().find('.date-selection').show();
+        return utils.Promise.DONE();
+    }
+
+    hideDatesPanel(): Q.Promise<void> {
+        this.$scope().find('.date-selection').hide();
+        return utils.Promise.DONE();
+    }
+
     onStationFocus(e: Event): boolean {
-        //Keyboard.hideFormAccessoryBar(true);
+        Keyboard.hideFormAccessoryBar(true);
         var $input = $(e.currentTarget);
         var $suggestions = this.$getSuggestions();
 
+        this.hideRequestPanel();
         this.getResetBtnFromInput($input).addClass('filled');
 
         var fpannel = (() => {
@@ -217,7 +234,7 @@ class Home extends View implements IView {
         };
 
         fpannel.then(() => {
-            return Q.all([this.foldHeader(), finput()]);
+            return Q.all([this.hideDatesPanel(), this.foldHeader(), finput()]);
         });
 
         return true;
@@ -229,6 +246,22 @@ class Home extends View implements IView {
         return true;
     }
 
+    onDateSelected(e: Event): boolean {
+        var $date = $(e.currentTarget);
+        var $inputDate = this.$scope().find('.request .date');
+
+        $date.siblings('li').removeClass('selected');
+        $date.addClass('selected');
+
+        if($date.is('.other')) {
+            $inputDate.addClass('other');
+        } else {
+            $inputDate.removeClass('other');
+        }
+
+        return true;
+    }
+
     onSuggestionSelected(e: Event): boolean {
         var $suggestion = $(e.currentTarget);
         var name = $suggestion.attr('data-name');
@@ -236,12 +269,13 @@ class Home extends View implements IView {
         return true;
     }
 
-    onceSelected(name: string): void {
+    onceSelected(name: string): Q.Promise<void> {
         var $suggestions = this.$getSuggestions();
         var maybeStart = this.getStart();
         var maybeEnd = this.getEnd();
 
         this.clearSuggestions();
+        this.showDatesPanel();
         this.unfoldHeader();
 
         if($suggestions.is('.start')) {
@@ -251,7 +285,9 @@ class Home extends View implements IView {
             this.showStart();
             maybeEnd = new opt.Some(name);
         }
-        App.Navigate.home(maybeStart, maybeEnd);
+        return App.Navigate.home(maybeStart, maybeEnd).then(() => {
+            return this.showRequestPanel();
+        });
     }
 
     getResetBtnFromInput($input: ZeptoCollection): ZeptoCollection {

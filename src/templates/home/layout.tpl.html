@@ -1,36 +1,32 @@
 <section class="view hidden" id="home">
-  <ul id="schedule" class="list">
-    <li class="today enabled">
-      <span class="day">Aujourd'hui</span>
-    </li>
-    <li class="tomorrow enabled">
-      <span class="day">Demain</span>
-    </li>
-    <li class="other enabled">
-      <span class="day">Autre</span>
-    </li>
-    <li class="submit">Rechercher horaires<button class="go"></button></li>
-  </ul>
-</div>
-<div class="setup-progress">
-  <p class="text">Mise à jour des horaires&nbsp;<span class="value">0%</span></p>
-  <div class="bar"></div>
-</div>
-<div class="search">
-  <form>
-    <div class="input start">
-      <input name="start" type="text" placeholder="Départ" />
-      <button type="button" class="icon reset"></button>
-    </div>
-    <div class="input end">
-      <input name="end" type="text" placeholder="Arrivée" />
-      <button type="button" class="icon reset"></button>
-    </div>
-  </form>
-</div>
-<div class="stations">
-  <div id="wrapper">
-    <ul class="suggestions list"></ul>
+  <div class="setup-progress">
+    <p class="text">Mise à jour des horaires&nbsp;<span class="value">0%</span></p>
+    <div class="bar"></div>
   </div>
-</div>
+  <ul class="date-selection">
+    <li class="selected">Aujourd'hui<div class="hint"></div></li>
+    <li>Demain<div class="hint"></div></li>
+    <li class="other">Autre<div class="hint"></div></li>
+  </ul>
+  <div class="search">
+    <form>
+      <div class="input start">
+        <input name="start" type="text" placeholder="Départ" />
+        <button type="button" class="icon reset"></button>
+      </div>
+      <div class="input end">
+        <input name="end" type="text" placeholder="Arrivée" />
+        <button type="button" class="icon reset"></button>
+      </div>
+    </form>
+  </div>
+  <div class="stations">
+    <div id="wrapper">
+      <ul class="suggestions list"></ul>
+    </div>
+  </div>
+  <ul class="list request">
+    <li class="date">Date de départ</li>
+    <li class="time">Heure de départ</li>
+  </ul>
 </section>
