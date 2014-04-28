@@ -14,7 +14,6 @@ import TernaryTree = require('../utils/ternaryTree');
 declare var tmpl;
 declare var IScroll;
 declare var Zanimo;
-declare var Keyboard;
 
 export = Home;
 
@@ -51,7 +50,7 @@ class Home extends View implements IView {
     adaptWrapperTop(): void {
         var $wrapper = this.$scope().find('#wrapper');
         var offset = $('.search .end').offset();
-        var top = offset.top + offset.height;
+        var top = offset.top + offset.height + Math.abs($('body').offset().top);
         $wrapper.css('top', top);
     }
 
@@ -113,8 +112,8 @@ class Home extends View implements IView {
 
         App.Navigate.home(this.getStart(), this.getEnd()).then(() => {
             var g = finput();
-            var h = this.unfoldHeader();
-            return Q.all([this.showDatesPanel(), h, g]).then(() => {
+            var h = this.moveDown();
+            return Q.all([h, g]).then(() => {
                 $start.removeAttr('disabled');
                 $end.removeAttr('disabled');
             });
@@ -161,24 +160,6 @@ class Home extends View implements IView {
         return $input.is('[name=end]');
     }
 
-    foldHeader(): Q.Promise<void> {
-        var $header = $('header');
-        var f = utils.Transition.spy($header.get(0));
-        $header.addClass('fold');
-        return f;
-    }
-
-    unfoldHeader(): Q.Promise<void> {
-        var $header = $('header');
-        if($header.is('.fold')) {
-            var f = utils.Transition.spy($header.get(0));
-            $('header').removeClass('fold');
-            return f;
-        } else {
-            return utils.Promise.DONE();
-        }
-    }
-
     showRequestPanel(): Q.Promise<void> {
         this.$scope().find('.request').show();
         return utils.Promise.DONE();
@@ -189,18 +170,7 @@ class Home extends View implements IView {
         return utils.Promise.DONE();
     }
 
-    showDatesPanel(): Q.Promise<void> {
-        this.$scope().find('.date-selection').show();
-        return utils.Promise.DONE();
-    }
-
-    hideDatesPanel(): Q.Promise<void> {
-        this.$scope().find('.date-selection').hide();
-        return utils.Promise.DONE();
-    }
-
     onStationFocus(e: Event): boolean {
-        Keyboard.hideFormAccessoryBar(true);
         var $input = $(e.currentTarget);
         var $suggestions = this.$getSuggestions();
 
@@ -234,7 +204,7 @@ class Home extends View implements IView {
         };
 
         fpannel.then(() => {
-            return Q.all([this.hideDatesPanel(), this.foldHeader(), finput()]);
+            return Q.all([this.moveUp(), finput()]);
         });
 
         return true;
@@ -269,14 +239,26 @@ class Home extends View implements IView {
         return true;
     }
 
+    moveUp(): Q.Promise<void> {
+        var $body = $('body');
+        $body.addClass('up');
+        var searchHeight = this.$scope().find('.date-selection').offset().height;
+        var headerHeight = $('header').offset().height;
+        var translate = searchHeight + headerHeight;
+        return Zanimo.transform($body.get(0), 'translate3d(0,-'+ translate + 'px,0)', true);
+    }
+
+    moveDown(): Q.Promise<void> {
+        return Zanimo.transform($('body').get(0), 'translate3d(0,0,0)', true);
+    }
+
     onceSelected(name: string): Q.Promise<void> {
         var $suggestions = this.$getSuggestions();
         var maybeStart = this.getStart();
         var maybeEnd = this.getEnd();
 
         this.clearSuggestions();
-        this.showDatesPanel();
-        this.unfoldHeader();
+        this.moveDown();
 
         if($suggestions.is('.start')) {
             this.showEnd();

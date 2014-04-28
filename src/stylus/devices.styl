@@ -15,7 +15,7 @@ btn_size=22px
 device(min_width, max_width, factor)
     portrait = "only screen and (min-device-width : " + min_width + ") and (max-device-width : " + max_width + ")"
     @media portrait
-        header {
+        header, .date-selection {
             height: scale(header_height, factor)
             font-size: scale(header_size, factor)
         }
@@ -41,7 +41,7 @@ device(min_width, max_width, factor)
 
 // IPHONE 5 (default)
 @media only screen {
-    header {
+    header, .date-selection {
         height: header_height
         font-size: header_size
     }

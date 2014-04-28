@@ -4,17 +4,24 @@
 
 global-margin-right=4%
 
+body.up {
+    transition: .1s
+}
+
 #home {
 
     .date-selection {
         background: dark-blue
         overflow: hidden
+        transition: .2s
+        transition-property: height
 
         .hint {
             opacity: 0
         }
 
         li {
+            height: 100%
             color: grey-dark
             line-height: 4
             width: 33.3%
@@ -40,11 +47,38 @@ global-margin-right=4%
         }
     }
 
-    .request .date {
-        display: none;
+    .request {
 
-        &.other {
-            display: flex
+        li {
+            position: relative
+        }
+
+        input[type=date], input[type=time] {
+            position: absolute
+            top: 0
+            bottom: 0
+            right: 0
+            left: 0
+            opacity: 0
+        }
+
+        .date {
+            display: none;
+
+            &.other {
+                display: flex
+            }
+        }
+
+        .submit {
+            .go {
+                position: absolute
+                top: 0
+                height: 100%
+                width: 16px
+                right: global-margin-right
+                forward_button(false)
+            }
         }
     }
 
