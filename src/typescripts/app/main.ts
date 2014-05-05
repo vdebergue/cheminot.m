@@ -22,6 +22,10 @@ if(window['cordova'] != null) {
     }, false);
 } else {
     $(document).ready(function() {
+        window['StatusBar'] = {
+            hide: () => {},
+            show: () => {}
+        };
         ready();
     });
 }

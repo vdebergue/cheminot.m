@@ -14,6 +14,7 @@ import TernaryTree = require('../utils/ternaryTree');
 declare var tmpl;
 declare var IScroll;
 declare var Zanimo;
+declare var StatusBar;
 
 export = Home;
 
@@ -165,6 +166,7 @@ class Home extends View implements IView {
             var g = finput();
             var h = this.moveDown();
             return Q.all([h, g]).then(() => {
+                StatusBar.show();
                 $start.removeAttr('disabled');
                 $end.removeAttr('disabled');
             });
@@ -255,7 +257,9 @@ class Home extends View implements IView {
         };
 
         fpannel.then(() => {
-            return Q.all([this.moveUp(), finput()]);
+            return Q.all([this.moveUp(), finput()]).then(() => {
+                StatusBar.hide();
+            });
         });
 
         return true;
@@ -268,11 +272,21 @@ class Home extends View implements IView {
     }
 
     onDateSelected(e: Event): boolean {
+        var $scope = this.$scope();
         var $date = $(e.currentTarget);
-        var $inputDate = this.$scope().find('.request .date');
+        var $inputDate = $scope.find('.request .date');
 
         $date.siblings('li').removeClass('selected');
         $date.addClass('selected');
+
+        (() => {
+            var $date = $scope.find('.request .date .value');
+            var $time = $scope.find('.request .time .value');
+            $date.text('');
+            $date.siblings('input').val('')
+            $time.text('');
+            $time.siblings('input').val('')
+        })();
 
         if($date.is('.other')) {
             $inputDate.addClass('other');
@@ -326,6 +340,7 @@ class Home extends View implements IView {
             this.showStart();
             maybeEnd = new opt.Some(name);
         }
+
         return App.Navigate.home(maybeStart, maybeEnd).then(() => {
             return this.showRequestPanel();
         });
