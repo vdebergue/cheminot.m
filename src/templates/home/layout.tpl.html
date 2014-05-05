@@ -4,8 +4,8 @@
     <div class="bar"></div>
   </div>
   <ul class="date-selection">
-    <li class="selected">Aujourd'hui<div class="hint"></div></li>
-    <li>Demain<div class="hint"></div></li>
+    <li class="today selected">Aujourd'hui<div class="hint"></div></li>
+    <li class="tomorrow">Demain<div class="hint"></div></li>
     <li class="other">Autre<div class="hint"></div></li>
   </ul>
   <div class="search">
@@ -26,8 +26,19 @@
     </div>
   </div>
   <ul class="list request">
-    <li class="date">Date de départ<input type="date" /></li>
-    <li class="time">Heure de départ<input type="time" /></li>
-    <li class="submit">Rechercher<button class="go"></button></li>
+    <li class="date">
+      <span class="label">Date de départ</span>
+      <span class="value"></span>
+      <input type="date" />
+    </li>
+    <li class="time">
+      <span class="label">Heure de départ</span>
+      <span class="value"></span>
+      <input type="time" />
+    </li>
+    <li class="submit disabled">
+      <span>Rechercher</span>
+      <button class="go"></button>
+    </li>
   </ul>
 </section>

@@ -41,6 +41,7 @@ class Home extends View implements IView {
     bindEvents(): void {
         super.bindEvent('keyup', 'input[name=start], input[name=end]', this.onStationKeyUp);
         super.bindEvent('focus', 'input[name=start], input[name=end]', this.onStationFocus);
+        super.bindEvent('change', 'input[type=date], input[type=time]', this.onRequestChange);
         super.bindEvent('tap', '.search .reset', this.onInputReset);
         super.bindEvent('tap', '.suggestions > li', this.onSuggestionSelected);
         super.bindEvent('tap', '.date-selection > li', this.onDateSelected);
@@ -50,7 +51,8 @@ class Home extends View implements IView {
     adaptWrapperTop(): void {
         var $wrapper = this.$scope().find('#wrapper');
         var offset = $('.search .end').offset();
-        var top = offset.top + offset.height + Math.abs($('body').offset().top);
+        var $body = $('.body');
+        var top = offset.top + offset.height + Math.abs($body.offset().top);
         $wrapper.css('top', top);
     }
 
@@ -79,6 +81,55 @@ class Home extends View implements IView {
             this.adaptWrapperTop();
             this.myIScroll.refresh();
         });
+    }
+
+    enableSubmit(): boolean {
+        this.$scope().find('.request .submit').removeClass('disabled').addClass('enabled');
+        return true;
+    }
+
+    disableSubmit(): boolean {
+        this.$scope().find('.request .submit').removeClass('enabled').addClass('disabled');
+        return true;
+    }
+
+    dateValue(): opt.IOption<string> {
+        var $date = this.$scope().find('.request .date .value');
+        return opt.Option<string>($date.text().trim()).filter((d) => {
+            return !!d;
+        });
+    }
+
+    timeValue(): opt.IOption<string> {
+        var $time = this.$scope().find('.request .time .value');
+        return opt.Option<string>($time.text().trim()).filter((t) => {
+            return !!t;
+        });
+    }
+
+    checkRequest(): boolean {
+        var $selectedDate = this.$scope().find('.date-selection .selected');
+        if(this.getStart().isDefined() && this.getEnd().isDefined()) {
+            if($selectedDate.is('.other')) {
+                if(this.dateValue().isDefined() && this.timeValue().isDefined()) {
+                    return this.enableSubmit();
+                }
+            } else {
+                if(this.timeValue().isDefined()) {
+                    return this.enableSubmit();
+                }
+            }
+        }
+        return this.disableSubmit();
+    }
+
+    onRequestChange(e: Event): boolean {
+        var $input = $(e.currentTarget);
+
+        $input.siblings('.value').text($input.val());
+        $input.val('');
+
+        return this.checkRequest();
     }
 
     onInputReset(e: Event): boolean {
@@ -229,6 +280,8 @@ class Home extends View implements IView {
             $inputDate.removeClass('other');
         }
 
+        this.checkRequest();
+
         return true;
     }
 
@@ -236,20 +289,26 @@ class Home extends View implements IView {
         var $suggestion = $(e.currentTarget);
         var name = $suggestion.attr('data-name');
         this.onceSelected(name);
+        this.checkRequest();
         return true;
     }
 
     moveUp(): Q.Promise<void> {
-        var $body = $('body');
+        var $body = $('.body');
         $body.addClass('up');
         var searchHeight = this.$scope().find('.date-selection').offset().height;
         var headerHeight = $('header').offset().height;
         var translate = searchHeight + headerHeight;
-        return Zanimo.transform($body.get(0), 'translate3d(0,-'+ translate + 'px,0)', true);
+        return Zanimo.transform($body.get(0), 'translate3d(0,-'+ translate + 'px,0)', true).then(() => {
+            $body.css('bottom', '-' + translate + 'px');
+        });
     }
 
     moveDown(): Q.Promise<void> {
-        return Zanimo.transform($('body').get(0), 'translate3d(0,0,0)', true);
+        var $body = $('.body');
+        return Zanimo.transform($body.get(0), 'translate3d(0,0,0)', true).then(() => {
+            $body.css('bottom', 0);
+        });
     }
 
     onceSelected(name: string): Q.Promise<void> {
