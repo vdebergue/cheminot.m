@@ -1,7 +1,7 @@
 import utils = require('./utils/utils');
 
 export function initApp(app) {
-    if(window['cordova']) {
+    if(!utils.isEmulator()) {
         app.configure({urlSync: false});
     } else {
         app.configure({urlSync: 'hash'});

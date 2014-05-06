@@ -460,6 +460,8 @@ interface ZeptoCollection {
 	**/
 	append(content: HTMLElement): ZeptoCollection;
 
+    focus(): ZeptoCollection;
+
 	/**
 	* @see ZeptoCollection.append
 	**/

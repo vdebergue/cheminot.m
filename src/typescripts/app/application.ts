@@ -143,7 +143,6 @@ export class Navigate {
         })();
 
         return f.fail((reason) => {
-            console.log(reason);
             return utils.Promise.DONE();
         });
     }

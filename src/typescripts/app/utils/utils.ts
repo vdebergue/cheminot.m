@@ -3,6 +3,8 @@
 import seq = require('lib/immutable/List');
 import opt = require('lib/immutable/Option');
 
+declare var cordova;
+
 var DEBUG: boolean = true;
 
 export function flattenOptionPromise<T>(maybePromise: opt.IOption<Q.Promise<T>>): Q.Promise<opt.IOption<T>> {
@@ -102,8 +104,33 @@ export function isAppleMobile() {
         navigator.userAgent.match(/iPod/i);
 }
 
+export function isAndroid() {
+    return navigator.userAgent.match(/Android/i);
+}
+
+export function cssValue(value: string): number {
+    return parseInt(value.replace(/[^-\d\.]/g, ''), 10);
+}
+
 export function isIOS7() {
     return isAppleMobile() && navigator.userAgent.match(/OS 7/);
+}
+
+export function isEmulator(): boolean {
+    return !window['cordova']
+}
+
+export function showKeyboard($el: ZeptoCollection) {
+    if(isAndroid()) {
+        cordova.plugins.SoftKeyboard.show();
+    }
+    $el.focus();
+}
+
+export function hideKeyboard() {
+    if(isAndroid()) {
+        cordova.plugins.SoftKeyboard.hide();
+    }
 }
 
 export class Promise {

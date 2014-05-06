@@ -41,7 +41,7 @@ class Home extends View implements IView {
 
     bindEvents(): void {
         super.bindEvent('keyup', 'input[name=start], input[name=end]', this.onStationKeyUp);
-        super.bindEvent('focus', 'input[name=start], input[name=end]', this.onStationFocus);
+        super.bindEvent('tap', 'input[name=start], input[name=end]', this.onStationClick);
         super.bindEvent('change', 'input[type=date], input[type=time]', this.onRequestChange);
         super.bindEvent('tap', '.search .reset', this.onInputReset);
         super.bindEvent('tap', '.suggestions > li', this.onSuggestionSelected);
@@ -137,6 +137,7 @@ class Home extends View implements IView {
         e.preventDefault();
 
         this.clearSuggestions();
+        utils.hideKeyboard();
 
         var $input = $(e.currentTarget).siblings('input');
 
@@ -154,27 +155,34 @@ class Home extends View implements IView {
             }
         };
 
-        var $start = this.$getStart();
-        var $end = this.$getEnd();
-
-        $start.attr('disabled', 'true');
-        $end.attr('disabled', 'true');
-        $start.blur();
-        $end.blur();
+        this.disableInputsStation();
 
         App.Navigate.home(this.getStart(), this.getEnd()).then(() => {
-            var g = finput();
-            var h = this.moveDown();
-            return Q.all([h, g]).then(() => {
-                StatusBar.show();
-                $start.removeAttr('disabled');
-                $end.removeAttr('disabled');
+            return Q.all([finput(), this.moveDown()]).then(() => {
+                return Q.delay(200).then(() => {
+                    StatusBar.show();
+                    this.disableInputsStation();
+                });
             });
         }).then(() => {
             return this.showRequestPanel();
         });
 
         return true;
+    }
+
+    disableInputsStation() {
+        var $start = this.$getStart();
+        var $end = this.$getEnd();
+        $start.blur();
+        $end.blur();
+        $start.attr('readonly', 'true');
+        $end.attr('readonly', 'true');
+    }
+
+    enableInputsStation() {
+        this.$getStart().removeAttr('readonly');
+        this.$getEnd().removeAttr('readonly');
     }
 
     onStationKeyUp(e: Event): boolean {
@@ -223,14 +231,17 @@ class Home extends View implements IView {
         return utils.Promise.DONE();
     }
 
-    onStationFocus(e: Event): boolean {
+    onStationClick(e: Event): boolean {
+        e.preventDefault();
+        e.stopPropagation();
+
         var $input = $(e.currentTarget);
         var $suggestions = this.$getSuggestions();
 
         this.hideRequestPanel();
         this.getResetBtnFromInput($input).addClass('filled');
 
-        var fpannel = (() => {
+        var fpannel = () => {
             if(this.isStartInput($input)) {
                 if(this.isResetDisplayed($input)) {
                     $suggestions.removeClass('end').addClass('start');
@@ -246,7 +257,7 @@ class Home extends View implements IView {
                     return utils.Promise.DONE();
                 }
             }
-        })();
+        };
 
         var finput = () => {
             if(this.isStartInput($input)) {
@@ -256,9 +267,11 @@ class Home extends View implements IView {
             }
         };
 
-        fpannel.then(() => {
-            return Q.all([this.moveUp(), finput()]).then(() => {
+        Q.all([fpannel(), this.moveUp(), finput()]).then(() => {
+            return Q.delay(400).then(() => {
                 StatusBar.hide();
+                utils.showKeyboard($input);
+                this.enableInputsStation();
             });
         });
 
@@ -279,15 +292,6 @@ class Home extends View implements IView {
         $date.siblings('li').removeClass('selected');
         $date.addClass('selected');
 
-        (() => {
-            var $date = $scope.find('.request .date .value');
-            var $time = $scope.find('.request .time .value');
-            $date.text('');
-            $date.siblings('input').val('')
-            $time.text('');
-            $time.siblings('input').val('')
-        })();
-
         if($date.is('.other')) {
             $inputDate.addClass('other');
         } else {
@@ -302,6 +306,8 @@ class Home extends View implements IView {
     onSuggestionSelected(e: Event): boolean {
         var $suggestion = $(e.currentTarget);
         var name = $suggestion.attr('data-name');
+        utils.hideKeyboard();
+        this.disableInputsStation();
         this.onceSelected(name);
         this.checkRequest();
         return true;
@@ -309,9 +315,9 @@ class Home extends View implements IView {
 
     moveUp(): Q.Promise<void> {
         var $body = $('.body');
-        $body.addClass('up');
         var searchHeight = this.$scope().find('.date-selection').offset().height;
-        var headerHeight = $('header').offset().height;
+        var $header = $('header');
+        var headerHeight = $header.offset().height;
         var translate = searchHeight + headerHeight;
         return Zanimo.transform($body.get(0), 'translate3d(0,-'+ translate + 'px,0)', true).then(() => {
             $body.css('bottom', '-' + translate + 'px');
