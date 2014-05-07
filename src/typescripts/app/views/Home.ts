@@ -46,6 +46,7 @@ class Home extends View implements IView {
         super.bindEvent('tap', '.search .reset', this.onInputReset);
         super.bindEvent('tap', '.suggestions > li', this.onSuggestionSelected);
         super.bindEvent('tap', '.date-selection > li', this.onDateSelected);
+        super.bindEvent('tap', '.request .submit.enabled', this.onSubmit);
         super.bindEvent('touchstart', '.suggestions', this.onScrollingStops);
     }
 
@@ -122,6 +123,66 @@ class Home extends View implements IView {
             }
         }
         return this.disableSubmit();
+    }
+
+    getDateAndTime(): opt.IOption<Date> {
+        var $scope = this.$scope();
+        var $dateSelected = $scope.find('.date-selection .selected');
+
+        var maybeDate = (() => {
+            var date = $scope.find('.request .date .value').text();
+            return opt.Option<string>(date).filter((d) => {
+                return !!d.trim();
+            });
+        })();
+
+        var maybeTime = (() => {
+            var time = $scope.find('.request .time .value').text();
+            return opt.Option<string>(time).filter((t) => {
+                return !!t.trim();
+            });
+        })();
+
+        var date = maybeDate.orElse(() => {
+            if($dateSelected.is('.today')) {
+                return new opt.Some(moment().format('YYYY-MM-DD'));
+            } else if($dateSelected.is('.tomorrow')) {
+                return new opt.Some(moment().add('days', 1).format('YYYY-MM-DD'));
+            } else {
+                return new opt.None();
+            }
+        });
+
+        var time = maybeTime.orElse(() => {
+            if($dateSelected.is('.today')) {
+                return new opt.Some(moment().format('hh:mm'));
+            } else {
+                return new opt.None();
+            }
+        });
+
+        return date.flatMap((d) => {
+            return time.map((t) => {
+                return moment(d + ' ' + d).toDate();
+            })
+        });
+    }
+
+    onSubmit(e: Event): boolean {
+        this.getStart().map((start) => {
+            this.getEnd().map((end) => {
+                this.getDateAndTime().map((dateAndTime) => {
+                    var graph = Storage.tdspGraph();
+                    var vs = graph[start];
+                    var departureTimes = seq.List.apply(null, _.sortBy(vs.stopTimes, (st:any) => {
+                        return st.departureTime;
+                    }));
+                    console.log(departureTimes);
+                });
+            })
+        });
+
+        return true;
     }
 
     onRequestChange(e: Event): boolean {
