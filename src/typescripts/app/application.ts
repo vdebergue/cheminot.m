@@ -60,7 +60,6 @@ export function init(views: seq.IList<IView>) {
             show: Abyssa.State('', function() {
                 var homeView = viewsHelper.home();
                 homeView.reset();
-                //return this.async(homeView.scheduleView.hide());
             }),
 
             onlyStart: Abyssa.State('start/:start', function(params) {
@@ -68,7 +67,6 @@ export function init(views: seq.IList<IView>) {
                 var homeView = viewsHelper.home();
                 homeView.fillStart(start);
                 homeView.resetEnd();
-                //return this.async(homeView.scheduleView.hide());
             }),
 
             onlyEnd: Abyssa.State('end/:end', function(params) {
@@ -76,7 +74,6 @@ export function init(views: seq.IList<IView>) {
                 var homeView = viewsHelper.home();
                 homeView.fillEnd(end);
                 homeView.resetStart();
-                //return this.async(homeView.scheduleView.hide());
             }),
 
             schedule: Abyssa.State('schedule/:start/:end', function(params) {
@@ -85,7 +82,6 @@ export function init(views: seq.IList<IView>) {
                 var homeView = viewsHelper.home();
                 homeView.fillStart(start);
                 homeView.fillEnd(end);
-                //return this.async(homeView.scheduleView.show());
             }),
 
             timetable: Abyssa.State('timetable/:start/:end/:when', function(params) {

@@ -2,8 +2,12 @@ require.config({
     baseUrl: 'app'
 });
 
-window.CONFIG = {
-    api: 'http://127.0.0.1:9000/api'
+window.config = {
+    api: 'http://127.0.0.1:9000/api',
+    workers: {
+        planner: 'app/workers/planner.js',
+        setup: 'app/workers/setup.js'
+    }
 };
 
 var STOPS = {
@@ -33,13 +37,31 @@ require(['require', '../chai', '../mocha'], function(require, chai) {
 
     require(['utils/tdsp/tdsp', 'db/storage', 'models/Planner', 'lib/immutable/List', 'lib/immutable/Option', 'utils/utils', 'tasks/planner'], function(tdsp, Storage, planner, seq, opt, utils, PlannerTask) {
 
-        var config = {
-            api: 'http://195.154.9.131/api'
-        };
-
-        Storage.installDB(config, function() { console.log('...'); }).then(function() {
+        Storage.installDB(window.config, function() { console.log('...'); }).then(function() {
 
             describe('Time dependent graph', function() {
+
+                describe('From Chartres to Paris Montparnasse at any valid start time', function() {
+                    this.timeout(1000 * 60 * 2);
+
+                    it('should return valid trips for one day at different starting time', function(done) {
+                        var vsId = STOPS['Chartres'];
+                        var veId = STOPS['Paris-Montparnasse 1-2'];
+                        var vs = Storage.tdspGraph()[vsId];
+
+                        var departureTimes = seq.List.apply(null, _.sortBy(vs.stopTimes, function(st) {
+                            return st.departureTime;
+                        }));
+
+                        PlannerTask.lookForBestTrip(vsId, veId, departureTimes.take(20).asArray(), 4).then(function(results) {
+                            console.log(results);
+                            done();
+                        }).fail(function(reason) {
+                            console.log('ERROR', reason);
+                        });
+                    });
+                });
+
 
                 // describe('From Chartres to Paris-Montparnasse', function() {
                 //   this.timeout(1000 * 60);
@@ -67,7 +89,6 @@ require(['require', '../chai', '../mocha'], function(require, chai) {
                 //   this.timeout(1000 * 60);
 
                 //   it('should find a trip with some changes', function(done) {
-
                 //     var ts = moment().hours(6).minutes(17).seconds(0).toDate().getTime();
                 //     var vsId = STOPS['Laval'];
                 //     var veId = STOPS['Chartres'];
@@ -79,78 +100,7 @@ require(['require', '../chai', '../mocha'], function(require, chai) {
                 //       done();
                 //     });
                 //   });
-
                 // });
-
-                describe('From Chartres to Paris Montparnasse at any valid start time', function() {
-                    this.timeout(1000 * 60 * 2);
-
-                    it('should return valid trips for one day at different starting time', function(done) {
-                        var vsId = STOPS['Chartres'];
-                        var veId = STOPS['Paris-Montparnasse 1-2'];
-                        var vs = Storage.tdspGraph()[vsId];
-
-                        console.log(Storage.tdspGraph());
-
-                        var departureTimes = seq.List.apply(null, _.sortBy(vs.stopTimes, function(st) {
-                            return st.departureTime;
-                        }));
-
-                        // utils.sequencePromises(departureTimes, function(st) {
-                        //   var ts = st.departureTime;
-                        //   return tdsp.lookForBestTrip(db.tdspGraph, vsId, veId, st.tripId, ts, db.exceptions).then(function(results) {
-                        //     return [ts, results];
-                        //   }).fail(function(reason) {
-                        //     console.log(reason);
-                        //     return [ts, null];
-                        //   });
-                        // }).then(function(results) {
-                        //   results.filter(function(x) {
-                        //     return x[1];
-                        //   }).forEach(function(x) {
-                        //     console.log(new Date(x[0]), x[1]);
-                        //   });
-                        //   done();
-                        // });
-
-                        // utils.sequencePromises(departureTimes, function(st) {
-                        //   var ts = st.departureTime;
-                        //   return PlannerTask.lookForBestTrip(vsId, veId, st.tripId, ts).then(function(results) {
-                        //     return [ts, results];
-                        //   }).fail(function(reason) {
-                        //     console.log(reason);
-                        //     return [ts, null];
-                        //   });
-                        // }).then(function(results) {
-                        //   results.filter(function(x) {
-                        //     return x[1];
-                        //   }).forEach(function(x) {
-                        //     console.log(new Date(x[0]), x[1]);
-                        //   });
-                        //   done();
-                        // });
-
-                        var x = departureTimes.length() / 4;
-
-                        var futures = departureTimes.grouped(x).map(function(stopTimes) {
-                            return PlannerTask.lookForBestTrip(vsId, veId, stopTimes.asArray());
-                        }).asArray();
-
-                        utils.parPromises(futures).then(function(results) {
-                            console.log(results);
-                            done();
-                        }).fail(function(reason) {
-                            console.log('ERROR', reason);
-                        });
-
-                        // var trips = seq.List("OCESN023900F0500118725", "OCESN830302F0100838248", "OCESN830911F0300138573");
-                        // Storage.impl().tripsByIds(trips).then(function(trips) {
-                        //     console.log(trips);
-                        // });
-
-                    });
-
-                });
 
                 mocha.run();
 
@@ -160,3 +110,49 @@ require(['require', '../chai', '../mocha'], function(require, chai) {
 
     });
 });
+
+// var futures = departureTimes.grouped(x).map(function(stopTimes) {
+//     return PlannerTask.lookForBestTrip(vsId, veId, stopTimes.asArray());
+// }).asArray();
+
+
+// utils.parPromises(futures).then(function(results) {
+//     console.log(results);
+//     done();
+// }).fail(function(reason) {
+//     console.log('ERROR', reason);
+// });
+
+// utils.sequencePromises(departureTimes, function(st) {
+//   var ts = st.departureTime;
+//   return tdsp.lookForBestTrip(db.tdspGraph, vsId, veId, st.tripId, ts, db.exceptions).then(function(results) {
+//     return [ts, results];
+//   }).fail(function(reason) {
+//     console.log(reason);
+//     return [ts, null];
+//   });
+// }).then(function(results) {
+//   results.filter(function(x) {
+//     return x[1];
+//   }).forEach(function(x) {
+//     console.log(new Date(x[0]), x[1]);
+//   });
+//   done();
+// });
+
+// utils.sequencePromises(departureTimes, function(st) {
+//   var ts = st.departureTime;
+//   return PlannerTask.lookForBestTrip(vsId, veId, st.tripId, ts).then(function(results) {
+//     return [ts, results];
+//   }).fail(function(reason) {
+//     console.log(reason);
+//     return [ts, null];
+//   });
+// }).then(function(results) {
+//   results.filter(function(x) {
+//     return x[1];
+//   }).forEach(function(x) {
+//     console.log(new Date(x[0]), x[1]);
+//   });
+//   done();
+// });

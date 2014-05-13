@@ -121,14 +121,14 @@ export function isEmulator(): boolean {
 }
 
 export function showKeyboard($el: ZeptoCollection) {
-    if(isAndroid()) {
+    if(isAndroid() && !isEmulator()) {
         cordova.plugins.SoftKeyboard.show();
     }
     $el.focus();
 }
 
 export function hideKeyboard() {
-    if(isAndroid()) {
+    if(isAndroid() && !isEmulator()) {
         cordova.plugins.SoftKeyboard.hide();
     }
 }

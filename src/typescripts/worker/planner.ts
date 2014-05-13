@@ -61,16 +61,20 @@ function run(vsId: string, veId: string, stopTimes, max: number, config: any, de
 
         var tdspGraph = deps.Storage.tdspGraph();
         var exceptions = deps.Storage.exceptions();
-        var toFound = max;
+        var limit = max;
 
         return deps.utils.sequencePromises(stopTimes, (st) => {
-            if(toFound > 0) {
-                return deps.tdsp.lookForBestTrip(tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions).fail(() => {});
+            if(limit > 0) {
+                return deps.tdsp.lookForBestTrip(tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions).then((result) => {
+                    console.log("RESULT>>", result);
+                }).fail((reason) => {
+                    console.log("ERROR>>", reason);
+                });
             } else {
                 return deps.utils.Promise.DONE();
             }
         }).then((results) => {
-            --toFound;
+            --limit;
             reply({
                 event: EVENTS.end,
                 data: results

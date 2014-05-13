@@ -57,7 +57,7 @@ export function timeRefinement(graph: any, vsId: string, veId: string, vsTripId:
                     }
                 }
 
-                return refineArrivalTimes(graph, indexed, hvi, exceptions, (hvi.stopId === vsId)).then<any>(() => {
+                return refineArrivalTimes(graph, indexed, hvi, exceptions, (hvi.stopId === vsId)).then(() => {
                     return loop(queue, RESULTS);
                 });
             }

@@ -8,6 +8,7 @@ import opt = require('lib/immutable/Option');
 import IView = require('./IView');
 import View = require('./View');
 import Templating = require('./templating');
+import PlannerTask = require('../tasks/planner');
 import utils = require('../utils/utils');
 import TernaryTree = require('../utils/ternaryTree');
 
@@ -75,7 +76,8 @@ class Home extends View implements IView {
         return Templating.home.suggestions().then((t) => {
             var data = suggestions.map((s) => {
                 return {
-                    name: s.name
+                    name: s.name,
+                    id: s.id
                 };
             });
             var dom = tmpl(t, { term: term, stations: data });
@@ -169,15 +171,16 @@ class Home extends View implements IView {
     }
 
     onSubmit(e: Event): boolean {
-        this.getStart().map((start) => {
-            this.getEnd().map((end) => {
+        this.getStart().map((startId) => {
+            this.getEnd().map((endId) => {
                 this.getDateAndTime().map((dateAndTime) => {
-                    var graph = Storage.tdspGraph();
-                    var vs = graph[start];
+                    var vs = Storage.tdspGraph()[startId];
                     var departureTimes = seq.List.apply(null, _.sortBy(vs.stopTimes, (st:any) => {
                         return st.departureTime;
                     }));
-                    console.log(departureTimes);
+                    PlannerTask.lookForBestTrip(startId, endId, departureTimes.asArray(), 4).then((x) => {
+                        console.log(x);
+                    });
                 });
             })
         });
@@ -366,11 +369,12 @@ class Home extends View implements IView {
 
     onSuggestionSelected(e: Event): boolean {
         var $suggestion = $(e.currentTarget);
-        var name = $suggestion.attr('data-name');
+        var id = $suggestion.attr('data-id');
         utils.hideKeyboard();
         this.disableInputsStation();
-        this.onceSelected(name);
-        this.checkRequest();
+        this.onceSelected(id).then(() => {
+            this.checkRequest();
+        });
         return true;
     }
 
@@ -392,7 +396,7 @@ class Home extends View implements IView {
         });
     }
 
-    onceSelected(name: string): Q.Promise<void> {
+    onceSelected(id: string): Q.Promise<void> {
         var $suggestions = this.$getSuggestions();
         var maybeStart = this.getStart();
         var maybeEnd = this.getEnd();
@@ -402,10 +406,10 @@ class Home extends View implements IView {
 
         if($suggestions.is('.start')) {
             this.showEnd();
-            maybeStart = new opt.Some(name);
+            maybeStart = new opt.Some(id);
         } else if($suggestions.is('.end')) {
             this.showStart();
-            maybeEnd = new opt.Some(name);
+            maybeEnd = new opt.Some(id);
         }
 
         return App.Navigate.home(maybeStart, maybeEnd).then(() => {
@@ -417,17 +421,19 @@ class Home extends View implements IView {
         return $input.siblings('.reset');
     }
 
-    fillStart(start: string): void {
-        this.$getSuggestions().attr('data-start', start);
+    fillStart(startId: string): void {
+        var name = Storage.tdspGraph()[startId].name;
+        this.$getSuggestions().attr('data-start', startId);
         var $input = this.$getStart();
-        $input.val(start);
+        $input.val(name);
         this.getResetBtnFromInput($input).addClass('filled');
     }
 
-    fillEnd(end: string): void {
-        this.$getSuggestions().attr('data-end', end);
+    fillEnd(endId: string): void {
+        var name = Storage.tdspGraph()[endId].name;
+        this.$getSuggestions().attr('data-end', endId);
         var $input = this.$getEnd();
-        $input.val(end);
+        $input.val(name);
         this.getResetBtnFromInput($input).addClass('filled');
     }
 

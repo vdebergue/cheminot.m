@@ -2,12 +2,12 @@ import Cheminot = require('../Cheminot');
 
 export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<number>, max: number): Q.Promise<any> {
     var d = Q.defer<any>();
-
-    var worker = new Worker('assets/javascripts/app/workers/planner.js');
+    var config = Cheminot.config();
+    var worker = new Worker(config.workers.planner);
     worker.postMessage(JSON.stringify({
         event: 'search',
         stopTimes: stopTimes,
-        config: Cheminot.config(),
+        config: config,
         vsId: vsId,
         veId: veId,
         max: max
