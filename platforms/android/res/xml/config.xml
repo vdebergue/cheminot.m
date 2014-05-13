@@ -1,16 +1,24 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="io.cheminot.m" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>Hello Cordova</name>
+<widget id="io.cheminot.m" version="0.0.1" versionCode="1125" versionName="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <preference name="loglevel" value="DEBUG" />
     <feature name="App">
         <param name="android-package" value="org.apache.cordova.App" />
     </feature>
+    <feature name="SoftKeyboard">
+        <param name="android-package" value="org.apache.cordova.plugin.softkeyboard.SoftKeyboard" />
+    </feature>
     <name>cheminot.m</name>
-    <description>
-        A sample Apache Cordova application that responds to the deviceready event.
-    </description>
+    <description />
     <author email="sre@cheminot.io" href="http://cordova.io">sre</author>
     <content src="index.html" />
     <access origin="*" />
-    <preference name="Fullscreen" value="true" />
+    <preference name="phonegap-version" value="3.4.0" />
+    <preference name="DisallowOverscroll" value="true" />
+    <preference name="KeyboardDisplayRequiresUserAction" value="false" />
+    <feature name="StatusBar">
+        <param name="ios-package" onload="true" value="CDVStatusBar" />
+    </feature>
+    <feature name="Keyboard">
+        <param name="ios-package" onload="true" value="CDVKeyboard" />
+    </feature>
 </widget>

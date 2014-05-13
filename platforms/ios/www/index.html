@@ -1,17 +1,26 @@
 <!DOCTYPE HTML>
 <html lang="en" >
   <head>
-    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
     <link rel="stylesheet" href="assets/stylesheets/app/main.css">
     <script type="text/javascript" src="assets/javascripts/vendors/zepto.min.js"></script>
+    <script type="text/javascript" src="assets/javascripts/vendors/touch.js"></script>
     <script type="text/javascript" src="assets/javascripts/vendors/q.min.js"></script>
     <script type="text/javascript" src="assets/javascripts/vendors/templating.min.js"></script>
-    <script type="text/javascript" src="assets/javascripts/vendors/path.min.js"></script>
-    <script type="text/javascript" src="assets/javascripts/vendors/indexedDB.polyfill.js"></script>
+    <script type="text/javascript" src="assets/javascripts/vendors/abyssa-with-deps.min.js"></script>
+    <script type="text/javascript" src="assets/javascripts/vendors/underscore-min.js"></script>
+    <script type="text/javascript" src="assets/javascripts/vendors/moment.min.js"></script>
+    <script type="text/javascript" src="assets/javascripts/vendors/iscroll-lite.js"></script>
+    <script type="text/javascript" src="assets/javascripts/vendors/lz-string-1.3.3.js"></script>
+    <script type="text/javascript">window.config = {
+    //api: 'http://192.168.0.12:9000/api'
+    api: 'http://127.0.0.1:9000/api'
+};</script>
     <script data-main="assets/javascripts/app/main.js" src="assets/javascripts/vendors/require.js"></script>
   </head>
   <body>
     <!-- Javascript scripts -->
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
     <script type="text/javascript" src="assets/javascripts/vendors/zanimo-0.0.9.min.js"></script>
     <script type="text/javascript">
       require.config({

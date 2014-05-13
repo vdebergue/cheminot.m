@@ -1,36 +1,26 @@
 .DS_Store
-
+component.json
 node_modules
 tscommand.tmp.txt
-www/
 src/typescripts/app/lib/immutable/*.js
 platforms/ios/cordova/console.log
 tmp
+!.gitkeep
+tests/app
+tests/vendors
+
+www/
 
 ## ANDROID
-platforms/android/www
-platforms/android/*.apk
-platforms/android/*.ap_
-platforms/android/*.dex
-platforms/android/*.class
-platforms/android/bin/
+platforms/android/assets/www/**
 platforms/android/gen/
-platforms/android/local.properties
+platforms/android/bin/
+platforms/android/ant-build
+platforms/android/ant-gen/
+platforms/android/CordovaLib/ant-build/
+platforms/android/CordovaLib/ant-gen/
+platforms/android/CordovaLib/bin/
+platforms/android/CordovaLib/gen/
 
 ## IOS
-platforms/ios/www
-platforms/ios/build/*
-platforms/ios/*.pbxuser
-platforms/ios/!default.pbxuser
-platforms/ios/*.mode1v3
-platforms/ios/!default.mode1v3
-platforms/ios/*.mode2v3
-platforms/ios/!default.mode2v3
-platforms/ios/*.perspectivev3
-platforms/ios/!default.perspectivev3
-platforms/ios/*.xcworkspace
-platforms/ios/!default.xcworkspace
-platforms/ios/xcuserdata
-platforms/ios/profile
-platforms/ios/*.moved-aside
-component.json
+platforms/ios/www/
