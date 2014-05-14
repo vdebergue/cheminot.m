@@ -307,22 +307,26 @@ class IndexedDBStorage implements Storage.IStorage {
             return seq.List.apply(null, diff);
         })();
 
-        var results = new seq.Nil<any>();
+        var results = fromCache;
 
-        return cursor("trips", (group) => {
-            Storage.addTripsToCache(group.trips);
-            var x = toQuery.partition((id) => {
-                return group.trips[id] != null;
+        if(!toQuery.isEmpty()) {
+            return cursor("trips", (group) => {
+                Storage.addTripsToCache(group.trips);
+                var x = toQuery.partition((id) => {
+                    return group.trips[id] != null;
+                });
+                toQuery = x._2;
+                var fetched = x._1.map((id) => {
+                    return group.trips[id];
+                });
+                results = results.prepend(fetched);
+                return toQuery.length() > 0;
+            }).then(() => {
+                return results;
             });
-            toQuery = x._2;
-            var fetched = x._1.map((id) => {
-                return group.trips[id];
-            });
-            results = results.prepend(fetched);
-            return toQuery.length() > 0;
-        }).then(() => {
-            return results;
-        });
+        } else {
+            return Q(fromCache);
+        }
     }
 
     reset(): Q.Promise<void> {
