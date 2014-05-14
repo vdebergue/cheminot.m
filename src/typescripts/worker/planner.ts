@@ -66,18 +66,18 @@ function run(vsId: string, veId: string, stopTimes, max: number, config: any, de
         return deps.utils.sequencePromises(stopTimes, (st) => {
             if(limit > 0) {
                 return deps.tdsp.lookForBestTrip(tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions).then((result) => {
-                    console.log("RESULT>>", result);
-                }).fail((reason) => {
-                    console.log("ERROR>>", reason);
+                    --limit;
+                    return result;
                 });
             } else {
                 return deps.utils.Promise.DONE();
             }
         }).then((results) => {
-            --limit;
             reply({
                 event: EVENTS.end,
-                data: results
+                data: results.filter((x) => {
+                    return x != null;
+                })
             });
         }).fail((reason) => {
             reply({
