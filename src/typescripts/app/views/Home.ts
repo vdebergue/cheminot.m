@@ -427,6 +427,7 @@ class Home extends View implements IView {
         var $input = this.$getStart();
         $input.val(name);
         this.getResetBtnFromInput($input).addClass('filled');
+        this.checkRequest();
     }
 
     fillEnd(endId: string): void {
@@ -435,6 +436,7 @@ class Home extends View implements IView {
         var $input = this.$getEnd();
         $input.val(name);
         this.getResetBtnFromInput($input).addClass('filled');
+        this.checkRequest();
     }
 
     resetStart(): void {

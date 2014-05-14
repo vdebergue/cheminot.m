@@ -53,37 +53,39 @@ require(['require', '../chai', '../mocha'], function(require, chai) {
                             return st.departureTime;
                         }));
 
-                        PlannerTask.lookForBestTrip(vsId, veId, departureTimes.take(20).asArray(), 4).then(function(results) {
+                        PlannerTask.lookForBestTrip(vsId, veId, departureTimes.asArray(), 4).then(function(results) {
                             console.log(results);
+                            done();
+                        }).fail(function(reason) {
+                            console.log('ERROR', reason);
+                            done();
+                        });
+                    });
+                });
+
+
+                describe('From Chartres to Paris-Montparnasse', function() {
+                    this.timeout(1000 * 60);
+
+                    it('should find a direct trip', function(done) {
+                        var ts = moment().hours(7).minutes(57).seconds(0).toDate().getTime();
+                        var vsId = STOPS['Chartres'];
+                        var veId = STOPS['Paris-Montparnasse 1-2'];
+                        var vsTripId = 'OCESN016756F0100317032';
+                        tdsp.lookForBestTrip(Storage.tdspGraph(), vsId, veId, vsTripId, ts, Storage.exceptions()).then(function(results) {
+                            console.log(results);
+                            expect(asTimeString(results[0].gi.arrivalTime)).to.equal('07:46:00');
+                            expect(asTimeString(results[1].gi.arrivalTime)).to.equal('08:09:00');
+                            expect(asTimeString(results[2].gi.arrivalTime)).to.equal('08:16:00');
+                            expect(asTimeString(results[3].gi.arrivalTime)).to.equal('08:29:00');
+                            expect(asTimeString(results[4].gi.arrivalTime)).to.equal('08:51:00');
+                            expect(asTimeString(results[5].gi.arrivalTime)).to.equal('09:05:00');
                             done();
                         }).fail(function(reason) {
                             console.log('ERROR', reason);
                         });
                     });
                 });
-
-
-                // describe('From Chartres to Paris-Montparnasse', function() {
-                //   this.timeout(1000 * 60);
-
-                //   it('should find a direct trip', function(done) {
-
-                //     var ts = moment().hours(7).minutes(57).seconds(0).toDate().getTime();
-                //     var vsId = STOPS['Chartres'];
-                //     var veId = STOPS['Paris-Montparnasse 1-2'];
-                //     var vsTripId = 'OCESN016756F0100317032';
-                //     tdsp.lookForBestTrip(db.tdspGraph, vsId, veId, vsTripId, ts, db.exceptions).then(function(results) {
-                //       expect(asTimeString(results[0].gi.arrivalTime)).to.equal('07:46:00');
-                //       expect(asTimeString(results[1].gi.arrivalTime)).to.equal('08:09:00');
-                //       expect(asTimeString(results[2].gi.arrivalTime)).to.equal('08:16:00');
-                //       expect(asTimeString(results[3].gi.arrivalTime)).to.equal('08:29:00');
-                //       expect(asTimeString(results[4].gi.arrivalTime)).to.equal('08:51:00');
-                //       expect(asTimeString(results[5].gi.arrivalTime)).to.equal('09:05:00');
-                //       done();
-                //     });
-                //   });
-
-                // });
 
                 // describe('From Laval to Chartres', function() {
                 //   this.timeout(1000 * 60);
@@ -106,8 +108,9 @@ require(['require', '../chai', '../mocha'], function(require, chai) {
 
             });
 
+        }).fail(function(error) {
+            console.log(error);
         });
-
     });
 });
 
