@@ -6,6 +6,7 @@ import opt = require('./lib/immutable/Option');
 import seq = require('./lib/immutable/List');
 import utils = require('./utils/utils');
 import IView = require('./views/IView');
+import View = require('./views/View');
 import Timetable = require('./views/Timetable');
 import Splashscreen = require('./views/Splashscreen');
 import Home = require('./views/Home');
@@ -16,20 +17,19 @@ import Cheminot = require('./Cheminot');
 
 export function init(views: seq.IList<IView>) {
 
-    var viewsHelper = new ViewsHelper(views);
+    var cheminotViews = new CheminotViews(views);
 
     function ensureInitApp(viewName: string): Q.Promise<void> {
-        //Upgrade.checkPeriodically();
         var p: Q.Promise<void>;
         if(!Storage.isInitialized()) {
-            var splashscreenView = viewsHelper.splashscreen();
+            var splashscreenView = cheminotViews.splashscreen();
             p = splashscreenView.setup().then(() => {
                 return splashscreenView.show().then(() => {
                     return Storage.installDB(Cheminot.config(), (event, data) => {
                         if(event === 'setup:fetch') {
                             splashscreenView.progress(data);
                         } else if(event.indexOf('worker') >= 0) {
-                            ViewsHelper.onSetupProgress(event, data);
+                            CheminotViews.onSetupProgress(event, data);
                         }
                     }).then(() => {
                         return Q.delay(utils.Promise.DONE(), 1000);
@@ -42,36 +42,44 @@ export function init(views: seq.IList<IView>) {
             p = utils.Promise.DONE();
         }
         return p.then(() => {
-            viewsHelper.hideOthers(viewName);
-            return ViewsHelper.view(views, viewName).setup().then(() => {
+            if(View.currentViewName() != viewName) {
+                cheminotViews.hideOthers(viewName);
+                return CheminotViews.view(views, viewName).setup().then(() => {
+                    return utils.Promise.DONE();
+                });
+            } else {
                 return utils.Promise.DONE();
-            });
+            }
         });
     }
 
     var CheminotApp = Abyssa.Router({
         app: Abyssa.State('', {
             enter: function(params) {
-                return this.async(ensureInitApp('home').then(() => {
-                    viewsHelper.home().show();
+                var fromURL = window.location.href.match(/.*?#\/(\w+)\/.*/);
+                var viewName = 'home';
+                if(fromURL) {
+                    viewName = fromURL[1];
+                }
+                return this.async(ensureInitApp(viewName).then(() => {
+                    cheminotViews.home().show();
                 }));
             },
 
             show: Abyssa.State('', function() {
-                var homeView = viewsHelper.home();
-                homeView.reset();
+                cheminotViews.home().reset();
             }),
 
             onlyStart: Abyssa.State('start/:start', function(params) {
                 var start = params['start'];
-                var homeView = viewsHelper.home();
+                var homeView = cheminotViews.home();
                 homeView.fillStart(start);
                 homeView.resetEnd();
             }),
 
             onlyEnd: Abyssa.State('end/:end', function(params) {
                 var end = params['end'];
-                var homeView = viewsHelper.home();
+                var homeView = cheminotViews.home();
                 homeView.fillEnd(end);
                 homeView.resetStart();
             }),
@@ -79,7 +87,7 @@ export function init(views: seq.IList<IView>) {
             schedule: Abyssa.State('schedule/:start/:end', function(params) {
                 var start = params['start'];
                 var end = params['end'];
-                var homeView = viewsHelper.home();
+                var homeView = cheminotViews.home();
                 homeView.fillStart(start);
                 homeView.fillEnd(end);
             }),
@@ -91,8 +99,10 @@ export function init(views: seq.IList<IView>) {
                             return opt.Option(params['when']).flatMap((when:string) => {
                                 return opt.Option(parseInt(when, 10));
                             }).map((when:number) => {
-                                return Planner.schedulesFor(start, end, when).then((trips) => {
-                                    viewsHelper.timetable().show();
+                                return ensureInitApp('timetable').then(() => {
+                                    var timetableView = cheminotViews.timetable();
+                                    timetableView.buildWith(start, end, new Date(when));
+                                    return timetableView.show();
                                 });
                             });
                         });
@@ -144,14 +154,11 @@ export class Navigate {
     }
 
     static timetable(start: string, end: string, when: number): Q.Promise<void> {
-        return utils.Promise.DONE();
-    }
-
-    static back() {
+        return Cheminot.app().state('timetable/' + start + '/' + end + '/' + when);
     }
 }
 
-class ViewsHelper {
+class CheminotViews {
 
     views: seq.IList<IView>;
 
@@ -160,21 +167,22 @@ class ViewsHelper {
     }
 
     hideOthers = (but: string) => {
-        return ViewsHelper.viewsBut(this.views, but).foreach((view) => {
+        return CheminotViews.viewsBut(this.views, but).foreach((view) => {
+            console.log(view);
             view.hide();
         });
     }
 
     splashscreen(): Splashscreen {
-        return <Splashscreen>ViewsHelper.view(this.views, 'splashscreen');
+        return <Splashscreen>CheminotViews.view(this.views, 'splashscreen');
     }
 
     home(): Home {
-        return <Home>ViewsHelper.view(this.views, 'home');
+        return <Home>CheminotViews.view(this.views, 'home');
     }
 
     timetable(): Timetable {
-        return <Timetable>ViewsHelper.view(this.views, 'timetable');
+        return <Timetable>CheminotViews.view(this.views, 'timetable');
     }
 
     static view(views: seq.IList<IView>, name: string): IView {

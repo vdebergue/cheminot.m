@@ -38,7 +38,7 @@ function ready() {
         $('body').addClass('ios7');
     }
 
-    View.bindEvents();
+    View.globalEvents();
     var homeView = new Home('#viewport', '#home', 'home');
     var timetableView = new Timetable('#viewport', '#timetable', 'timetable');
     var tripView = new Trip('#viewport', '#trip', 'trip');

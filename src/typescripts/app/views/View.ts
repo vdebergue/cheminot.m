@@ -70,9 +70,12 @@ class View {
         }
     }
 
-    static bindEvents() {
+    static currentViewName(): string {
+        return $('.view:not(.hidden)').attr('id');
+    }
+
+    static globalEvents(): void {
         $('body').on('tap', '.back-btn', (e: Event) => {
-            App.Navigate.back();
             return true;
         });
     }

@@ -8,7 +8,6 @@ import opt = require('lib/immutable/Option');
 import IView = require('./IView');
 import View = require('./View');
 import Templating = require('./templating');
-import PlannerTask = require('../tasks/planner');
 import utils = require('../utils/utils');
 import TernaryTree = require('../utils/ternaryTree');
 
@@ -165,7 +164,7 @@ class Home extends View implements IView {
 
         return date.flatMap((d) => {
             return time.map((t) => {
-                return moment(d + ' ' + d).toDate();
+                return moment(d + ' ' + t).toDate();
             })
         });
     }
@@ -174,17 +173,10 @@ class Home extends View implements IView {
         this.getStart().map((startId) => {
             this.getEnd().map((endId) => {
                 this.getDateAndTime().map((dateAndTime) => {
-                    var vs = Storage.tdspGraph()[startId];
-                    var departureTimes = seq.List.apply(null, _.sortBy(vs.stopTimes, (st:any) => {
-                        return st.departureTime;
-                    }));
-                    PlannerTask.lookForBestTrip(startId, endId, departureTimes.asArray(), 4).then((x) => {
-                        console.log(x);
-                    });
+                    App.Navigate.timetable(startId, endId, dateAndTime.getTime());
                 });
             })
         });
-
         return true;
     }
 
