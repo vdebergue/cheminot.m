@@ -9,6 +9,7 @@ import Storage = require('../db/storage');
 import planner = require('../models/Planner');
 import utils = require('../utils/utils');
 import opt = require('../lib/immutable/Option');
+import rng = require('../lib/immutable/Range');
 import PlannerTask = require('../tasks/planner');
 
 declare var tmpl:any;
@@ -35,10 +36,22 @@ class Timetable extends View implements IView {
 
     initIScroll(): void {
         var $wrapper = this.$scope().find('#wrapper');
-        var offset = this.$scope().find('h2').offset();
-        var top = offset.top + offset.height;
+        var $header = $('header');
+        var top = $header.offset().top + $header.height();
         $wrapper.css('top', top);
-        this.myIScroll = new IScroll('#timetable #wrapper');
+        this.myIScroll = new IScroll(
+            '#timetable #wrapper', {
+                onRefresh: () => {
+                    console.log('on refresh');
+                },
+                onScrollMove: () => {
+                    console.log('on scroll move');
+                },
+                onScrollEnd:() => {
+                    console.log('on scroll end');
+                }
+            }
+        );
     }
 
     bindEvents(): void {
@@ -96,17 +109,30 @@ class Timetable extends View implements IView {
 
     buildWith(startId: string, endId: string, when: Date): Q.Promise<void> {
         var ftemplate = Templating.timetable.schedules();
-        var fschedules = (() => {
-            var vs = Storage.tdspGraph()[startId];
-            var departureTimes = _.sortBy(vs.stopTimes, (st:any) => {
-                return st.departureTime;
-            });
-            return PlannerTask.lookForBestTrip(startId, endId, departureTimes, 4);
-        })();
-        return Q.all([ftemplate, fschedules]).spread<void>((t, schedules) => {
-            console.log(schedules);
-            var dom = tmpl(t, { schedules: this.processResults(schedules) });
+        // var fschedules = (() => {
+        //     var vs = Storage.tdspGraph()[startId];
+        //     var departureTimes = _.sortBy(vs.stopTimes, (st:any) => {
+        //         return st.departureTime;
+        //     });
+        //     return PlannerTask.lookForBestTrip(startId, endId, departureTimes, 4);
+        // })();
+
+        return ftemplate.then((t) => {
+            var data = new rng.Range(1, 5).toList().map(() => {
+                return {
+                    steps: [1,2,3],
+                    duration: "02:01",
+                    start: moment().format('HH:mm'),
+                    end: moment().format('HH:mm')
+                };
+            }).asArray();
+            var dom = tmpl(t, { schedules: data });
             this.$scope().find('.schedules').html(dom);
         });
+        // return Q.all([ftemplate, fschedules]).spread<void>((t, schedules) => {
+        //     console.log(schedules);
+        //     var dom = tmpl(t, { schedules: this.processResults(schedules) });
+        //     this.$scope().find('.schedules').html(dom);
+        // });
     }
 }

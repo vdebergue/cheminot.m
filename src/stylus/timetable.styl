@@ -1,5 +1,7 @@
 @import 'colors';
+@import 'icons';
 @import 'font';
+@import 'common';
 
 #timetable {
     h2 {
@@ -27,7 +29,45 @@
             width: 100%
 
             > li {
-                text-align: center
+                padding: 2.7% 0 2.7% 0
+                border-bottom: 2px solid grey-blue
+                box-sizing: border-box
+                color: dark-blue
+
+                .value, .changements,.egg-timer, .value, .to {
+                    vertical-align: middle
+                }
+
+                .meta {
+                    position: relative
+                    font-size: 18px
+                    padding: 3% 0 3% 0
+                    margin: 0 global-margin-right 0 global-margin-right
+
+                    .changements {
+                        icon_batch('split', 16px, 16px)
+                    }
+
+                    .duration {
+                        position: absolute
+                        right: 0
+
+                        .egg-timer {
+                            icon_iconmonstr('egg-timer', 16px, 16px)
+                        }
+                    }
+                }
+
+                .start-end {
+                    text-align: center
+                    width: 100%
+                    font-size: 32px
+                    padding: 2% 0 2% 0
+                }
+
+                .to {
+                    icon_custom('right-arrow', 20px, 12px)
+                }
             }
         }
     }

@@ -168,7 +168,6 @@ class CheminotViews {
 
     hideOthers = (but: string) => {
         return CheminotViews.viewsBut(this.views, but).foreach((view) => {
-            console.log(view);
             view.hide();
         });
     }

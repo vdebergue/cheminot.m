@@ -5,7 +5,7 @@
     font-style: normal
 }
 
-icon(name, color = black) {
+icon_fontello(name, color = black) {
     &:before {
         font-family: 'Fontello'
         color: color
@@ -27,4 +27,35 @@ icon(name, color = black) {
             content: '\e803'
         }
     }
+}
+
+icon(height, width) {
+    display: inline-block
+    height: height
+    width: width
+    background-size: contain
+}
+
+icon_batch(name, height, width) {
+    if name is 'split' {
+        background: url('../../fonts/batch/split.svg') no-repeat transparent
+    }
+
+    icon(height, width)
+}
+
+icon_custom(name, height, width) {
+    if name is 'right-arrow' {
+        background: url('../../fonts/custom/arrow-right.svg') no-repeat transparent
+    }
+
+    icon(height, width)
+}
+
+icon_iconmonstr(name, height, width) {
+    if name is 'egg-timer' {
+        background: url('../../fonts/iconmonstr/egg-timer.svg') no-repeat transparent
+    }
+
+    icon(height, width)
 }
