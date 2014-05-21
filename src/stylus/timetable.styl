@@ -24,10 +24,12 @@
         overflow: hidden
         bottom: 0
 
-        ul {
+        #scroller {
             position: absolute
             width: 100%
+        }
 
+        ul {
             > li {
                 padding: 2.7% 0 2.7% 0
                 border-bottom: 2px solid grey-blue
@@ -70,5 +72,42 @@
                 }
             }
         }
+
+        .pull-up {
+            display: flex
+            align-items: center
+            justify-content: center
+            align-items: center
+            padding: 4% 0 4% 0
+
+            .indicator {
+                icon_batch('arrow-up', 18px, 18px);
+                transform: rotate(0) translateZ(0)
+            }
+
+            .label {
+                margin-left: 10px
+            }
+
+            &.flip .indicator {
+                transform: rotate(-180deg) translateZ(0)
+            }
+
+            &.loading .indicator {
+                transform: rotate(0deg) translateZ(0);
+                transition-duration: 0ms;
+                animation-name: loading;
+                animation-duration: 2s;
+                animation-iteration-count: infinite;
+            }
+
+            &.flip {
+            }
+        }
     }
+}
+
+@-webkit-keyframes loading {
+    from { transform: rotate(0deg) translateZ(0) }
+    to { transform:rotate(360deg) translateZ(0) }
 }

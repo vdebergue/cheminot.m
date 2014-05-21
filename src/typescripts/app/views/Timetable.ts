@@ -39,19 +39,40 @@ class Timetable extends View implements IView {
         var $header = $('header');
         var top = $header.offset().top + $header.height();
         $wrapper.css('top', top);
-        this.myIScroll = new IScroll(
-            '#timetable #wrapper', {
-                onRefresh: () => {
-                    console.log('on refresh');
-                },
-                onScrollMove: () => {
-                    console.log('on scroll move');
-                },
-                onScrollEnd:() => {
-                    console.log('on scroll end');
-                }
+        this.myIScroll = new IScroll('#timetable #wrapper', { probeType: 1});
+        this.initPullAndRefresh();
+    }
+
+    initPullAndRefresh() {
+        var $pullUp = this.$scope().find('.pull-up');
+        var $label = $pullUp.find('.label');
+
+        this.myIScroll.on('refresh', () => {
+            if ($pullUp.is('.loading')) {
+                $pullUp.removeClass('loading flip');
+                $label.html('Tirer pour actualiser');
             }
-        );
+        });
+
+        this.myIScroll.on('scroll', function() {
+            if(this.y < (this.maxScrollY - 5) && !$pullUp.is('.flip')) {
+                $pullUp.addClass('flip');
+                $label.html('Relacher pour actualiser...');
+                this.maxScrollY = this.maxScrollY;
+            } else if (this.y > (this.maxScrollY + 5) && $pullUp.is('.flip')) {
+                $pullUp.removeClass('flip loading');
+                $label.html('Tirer pour actualiser');
+                this.maxScrollY = $pullUp.height();
+            }
+        });
+
+        this.myIScroll.on('scrollEnd', () => {
+            if($pullUp.is('.flip')) {
+                $pullUp.addClass('loading');
+                $label.html('Chargement...');
+                this.onPullUp();
+            }
+        });
     }
 
     bindEvents(): void {
@@ -64,6 +85,13 @@ class Timetable extends View implements IView {
             super.showView();
             this.initIScroll();
         });
+    }
+
+    onPullUp() {
+        window.setTimeout(() => {
+            console.log('DONE!');
+            this.myIScroll.refresh();
+        }, 3000);
     }
 
     onScheduleSelected(e: Event): boolean {
