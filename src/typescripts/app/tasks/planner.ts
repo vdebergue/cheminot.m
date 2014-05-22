@@ -15,8 +15,6 @@ export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<num
 
     worker.onmessage = (e) => {
         var msg = JSON.parse(e.data)
-        console.log('DONE');
-        console.log(msg);
         if(msg.data) {
             d.resolve(msg.data);
         } else {

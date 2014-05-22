@@ -87,13 +87,6 @@ class Timetable extends View implements IView {
         });
     }
 
-    onPullUp() {
-        window.setTimeout(() => {
-            console.log('DONE!');
-            this.myIScroll.refresh();
-        }, 3000);
-    }
-
     onScheduleSelected(e: Event): boolean {
         var $schedule = $(e.currentTarget);
         var tripId = $schedule.data('trip');
@@ -103,8 +96,8 @@ class Timetable extends View implements IView {
 
     private processResults(results: Array<any>): Array<any> {
         return results.map((r) => {
-            var startTime = r[0].gi.arrivalTime;
-            var endTime = r[results.length - 1].gi.arrivalTime;
+            var startTime = r[0].gi.departureTime;
+            var endTime = r[r.length - 1].gi.arrivalTime;
             var duration = moment.utc(moment(endTime).diff(moment(startTime))).format('HH:mm');
             var steps = (() => {
                 function countChangements(stops: Array<any>, tripId: opt.IOption<string> = new opt.None<string>(), counter: number = 0): number {
@@ -127,40 +120,58 @@ class Timetable extends View implements IView {
             })();
 
             return {
-                startTime: moment(startTime).format('HH:mm'),
-                endTime: moment(endTime).format('HH:mm'),
+                startTime: startTime,
+                endTime: endTime,
                 duration: duration,
                 steps: steps
             };
         });
     }
 
-    buildWith(startId: string, endId: string, when: Date): Q.Promise<void> {
+    buildWith(startId: string, endId: string, when: Date, append: boolean = false): Q.Promise<void> {
         var ftemplate = Templating.timetable.schedules();
-        // var fschedules = (() => {
-        //     var vs = Storage.tdspGraph()[startId];
-        //     var departureTimes = _.sortBy(vs.stopTimes, (st:any) => {
-        //         return st.departureTime;
-        //     });
-        //     return PlannerTask.lookForBestTrip(startId, endId, departureTimes, 4);
-        // })();
+        var fschedules = (() => {
+            var vs = Storage.tdspGraph()[startId];
+            var departureTimes = _.sortBy(vs.stopTimes, (st:any) => {
+                return st.departureTime;
+            });
+            return PlannerTask.lookForBestTrip(startId, endId, departureTimes, 4);
+        })();
 
-        return ftemplate.then((t) => {
-            var data = new rng.Range(1, 5).toList().map(() => {
-                return {
-                    steps: [1,2,3],
-                    duration: "02:01",
-                    start: moment().format('HH:mm'),
-                    end: moment().format('HH:mm')
-                };
-            }).asArray();
-            var dom = tmpl(t, { schedules: data });
-            this.$scope().find('.schedules').html(dom);
+        return Q.all([ftemplate, fschedules]).spread<void>((t, schedules) => {
+            var dom = tmpl(t, { schedules: this.processResults(schedules) });
+            var $schedules = this.$scope().find('.schedules');
+            $schedules.data('startId', startId);
+            $schedules.data('endId', endId);
+            if(append) {
+                $schedules.append(dom);
+            } else {
+                $schedules.html(dom);
+            }
+            this.myIScroll.refresh();
         });
-        // return Q.all([ftemplate, fschedules]).spread<void>((t, schedules) => {
-        //     console.log(schedules);
-        //     var dom = tmpl(t, { schedules: this.processResults(schedules) });
-        //     this.$scope().find('.schedules').html(dom);
-        // });
+    }
+
+    onPullUp() {
+        var $schedules = this.$scope().find('.schedules');
+        var lastEndTime =  $schedules.find('li:last-child').data('endtime');
+        var startId = $schedules.data('startId');
+        var endId = $schedules.data('endId');
+        this.buildWith(startId, endId, lastEndTime, true).then(() => {
+            this.myIScroll.refresh();
+        });
     }
 }
+
+// return ftemplate.then((t) => {
+//     var data = new rng.Range(1, 5).toList().map(() => {
+//         return {
+//             steps: [1,2,3],
+//             duration: "02:01",
+//             start: moment().format('HH:mm'),
+//             end: moment().format('HH:mm')
+//         };
+//     }).asArray();
+//     var dom = tmpl(t, { schedules: data });
+//     this.$scope().find('.schedules').html(dom);
+// });

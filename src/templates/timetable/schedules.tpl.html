@@ -1,11 +1,11 @@
 <% schedules.forEach(function(x) { %>
-<li>
+<li data-endtime="<%= x.endTime %>">
   <div class="meta">
-    <% if(x.steps.length <= 1) { %>
+    <% if(x.steps <= 1) { %>
        <span class="steps">Direct</span>
        <% } else { %>
        <span class="steps">
-         <span class="value"><%= x.steps.length %></span>
+         <span class="value"><%= x.steps %></span>
          <span class="changements"></span>
        </span>
        <% } %>
@@ -15,9 +15,9 @@
        </span>
   </div>
   <div class="start-end">
-    <span class="start"><%= x.start %></span>
+    <span class="start"><%= moment(x.startTime).format('HH:mm') %></span>
     <span class="to"></span>
-    <span class="end"><%= x.end %></span>
+    <span class="end"><%= moment(x.endTime).format('HH:mm') %></span>
   </div>
 </li>
 <% }); %>
