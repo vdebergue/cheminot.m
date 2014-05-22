@@ -4,6 +4,7 @@ export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<num
     var d = Q.defer<any>();
     var config = Cheminot.config();
     var worker = new Worker(config.workers.planner);
+
     worker.postMessage(JSON.stringify({
         event: 'search',
         stopTimes: stopTimes,

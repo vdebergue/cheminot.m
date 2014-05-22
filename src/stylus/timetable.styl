@@ -29,6 +29,11 @@
             width: 100%
         }
 
+        .not-found {
+            padding-top: 50%
+            text-align: center
+        }
+
         ul {
             > li {
                 padding: 2.7% 0 2.7% 0
@@ -74,11 +79,15 @@
         }
 
         .pull-up {
-            display: flex
+            display: none
             align-items: center
             justify-content: center
             align-items: center
             padding: 4% 0 4% 0
+
+            .visible {
+                display: flex
+            }
 
             .indicator {
                 icon_batch('arrow-up', 18px, 18px);

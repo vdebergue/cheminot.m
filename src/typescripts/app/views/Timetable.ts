@@ -50,18 +50,18 @@ class Timetable extends View implements IView {
         this.myIScroll.on('refresh', () => {
             if ($pullUp.is('.loading')) {
                 $pullUp.removeClass('loading flip');
-                $label.html('Tirer pour actualiser');
+                $label.html($label.data('label-pullup'));
             }
         });
 
         this.myIScroll.on('scroll', function() {
             if(this.y < (this.maxScrollY - 5) && !$pullUp.is('.flip')) {
                 $pullUp.addClass('flip');
-                $label.html('Relacher pour actualiser...');
+                $label.html($label.data('label-release'));
                 this.maxScrollY = this.maxScrollY;
             } else if (this.y > (this.maxScrollY + 5) && $pullUp.is('.flip')) {
                 $pullUp.removeClass('flip loading');
-                $label.html('Tirer pour actualiser');
+                $label.html($label.data('label-pullup'));
                 this.maxScrollY = $pullUp.height();
             }
         });
@@ -69,7 +69,7 @@ class Timetable extends View implements IView {
         this.myIScroll.on('scrollEnd', () => {
             if($pullUp.is('.flip')) {
                 $pullUp.addClass('loading');
-                $label.html('Chargement...');
+                $label.html($label.data('loading'));
                 this.onPullUp();
             }
         });
@@ -129,18 +129,22 @@ class Timetable extends View implements IView {
     }
 
     buildWith(startId: string, endId: string, when: Date, append: boolean = false): Q.Promise<void> {
+        var maxResults = 5;
         var ftemplate = Templating.timetable.schedules();
         var fschedules = (() => {
             var vs = Storage.tdspGraph()[startId];
-            var departureTimes = _.sortBy(vs.stopTimes, (st:any) => {
+            var departureTimes = <number[]>_.chain(vs.stopTimes).filter((st:any) => {
+                return st.departureTime >= when.getTime();
+            }).sortBy((st:any) => {
                 return st.departureTime;
-            });
-            return PlannerTask.lookForBestTrip(startId, endId, departureTimes, 4);
+            }).value();
+            return PlannerTask.lookForBestTrip(startId, endId, departureTimes, maxResults);
         })();
 
         return Q.all([ftemplate, fschedules]).spread<void>((t, schedules) => {
             var dom = tmpl(t, { schedules: this.processResults(schedules) });
-            var $schedules = this.$scope().find('.schedules');
+            var $scope = this.$scope();
+            var $schedules = $scope.find('.schedules');
             $schedules.data('startId', startId);
             $schedules.data('endId', endId);
             if(append) {
@@ -148,7 +152,14 @@ class Timetable extends View implements IView {
             } else {
                 $schedules.html(dom);
             }
+            if($schedules.find('li').size() > maxResults) {
+                $scope.find('.pull-up').addClass('visible');
+            } else {
+                $scope.find('.pull-up').removeClass('visible');
+            }
             this.myIScroll.refresh();
+        }).fail((reason) => {
+            console.log(reason);
         });
     }
 
@@ -162,16 +173,3 @@ class Timetable extends View implements IView {
         });
     }
 }
-
-// return ftemplate.then((t) => {
-//     var data = new rng.Range(1, 5).toList().map(() => {
-//         return {
-//             steps: [1,2,3],
-//             duration: "02:01",
-//             start: moment().format('HH:mm'),
-//             end: moment().format('HH:mm')
-//         };
-//     }).asArray();
-//     var dom = tmpl(t, { schedules: data });
-//     this.$scope().find('.schedules').html(dom);
-// });

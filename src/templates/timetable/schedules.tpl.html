@@ -1,23 +1,31 @@
-<% schedules.forEach(function(x) { %>
-<li data-endtime="<%= x.endTime %>">
-  <div class="meta">
-    <% if(x.steps <= 1) { %>
-       <span class="steps">Direct</span>
-       <% } else { %>
-       <span class="steps">
-         <span class="value"><%= x.steps %></span>
-         <span class="changements"></span>
-       </span>
-       <% } %>
-       <span class="duration">
-         <span class="egg-timer"></span>
-         <span class="value"><%= x.duration %></span>
-       </span>
-  </div>
-  <div class="start-end">
-    <span class="start"><%= moment(x.startTime).format('HH:mm') %></span>
-    <span class="to"></span>
-    <span class="end"><%= moment(x.endTime).format('HH:mm') %></span>
-  </div>
-</li>
-<% }); %>
+<% if(schedules.length == 0) { %>
+<div class="not-found">
+  Aucun trajets ne correspond à votre recherche.
+</div>
+<% } else { %>
+<ul>
+  <% schedules.forEach(function(x) { %>
+  <li data-endtime="<%= x.endTime %>">
+    <div class="meta">
+      <% if(x.steps <= 1) { %>
+         <span class="steps">Direct</span>
+         <% } else { %>
+         <span class="steps">
+           <span class="value"><%= x.steps %></span>
+           <span class="changements"></span>
+         </span>
+         <% } %>
+         <span class="duration">
+           <span class="egg-timer"></span>
+           <span class="value"><%= x.duration %></span>
+         </span>
+    </div>
+    <div class="start-end">
+      <span class="start"><%= moment(x.startTime).format('HH:mm') %></span>
+      <span class="to"></span>
+      <span class="end"><%= moment(x.endTime).format('HH:mm') %></span>
+    </div>
+  </li>
+  <% }); %>
+</ul>
+<% } %>
