@@ -448,6 +448,8 @@ interface ZeptoCollection {
 	**/
 	after(content: HTMLElement[]): ZeptoCollection;
 
+    toArray(): HTMLElement[];
+
 	/**
 	* Append content to the DOM inside each individual element in the collection. The content can be an HTML string, a DOM node or an array of nodes.
 	* @param content

@@ -9,7 +9,7 @@ import Storage = require('../db/storage');
 import planner = require('../models/Planner');
 import utils = require('../utils/utils');
 import opt = require('../lib/immutable/Option');
-import rng = require('../lib/immutable/Range');
+import seq = require('../lib/immutable/List');
 import PlannerTask = require('../tasks/planner');
 
 declare var tmpl:any;
@@ -133,11 +133,16 @@ class Timetable extends View implements IView {
         var ftemplate = Templating.timetable.schedules();
         var fschedules = (() => {
             var vs = Storage.tdspGraph()[startId];
-            var departureTimes = <number[]>_.chain(vs.stopTimes).filter((st:any) => {
-                return st.departureTime >= when.getTime();
-            }).sortBy((st:any) => {
+            var sortedStopTimes = _.sortBy(vs.stopTimes, (st:any) => {
                 return st.departureTime;
-            }).value();
+            });
+            var beforeAndAfter = seq.List.apply(null, sortedStopTimes).partition((st:any) => {
+                var d1 = utils.timeFromTo(new Date(st.departureTime), when);
+                return d1.getTime() < when.getTime();
+            });
+            var before = beforeAndAfter._1;
+            var after = beforeAndAfter._2;
+            var departureTimes = after.append(before).asArray();
             return PlannerTask.lookForBestTrip(startId, endId, departureTimes, maxResults);
         })();
 
@@ -148,11 +153,12 @@ class Timetable extends View implements IView {
             $schedules.data('startId', startId);
             $schedules.data('endId', endId);
             if(append) {
-                $schedules.append(dom);
+                var list = $(dom).find('li').toArray();
+                $schedules.find('ul').append(list);
             } else {
                 $schedules.html(dom);
             }
-            if($schedules.find('li').size() > maxResults) {
+            if($schedules.find('li').size() >= maxResults) {
                 $scope.find('.pull-up').addClass('visible');
             } else {
                 $scope.find('.pull-up').removeClass('visible');
@@ -168,7 +174,7 @@ class Timetable extends View implements IView {
         var lastEndTime =  $schedules.find('li:last-child').data('endtime');
         var startId = $schedules.data('startId');
         var endId = $schedules.data('endId');
-        this.buildWith(startId, endId, lastEndTime, true).then(() => {
+        this.buildWith(startId, endId, new Date(lastEndTime), true).then(() => {
             this.myIScroll.refresh();
         });
     }

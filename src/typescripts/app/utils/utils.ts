@@ -51,6 +51,13 @@ export function sequencePromises<T>(seq: Array<T>, f: (t: T) => Q.Promise<T>): Q
     }
 }
 
+export function timeFromTo(from: Date, reference: Date): Date {
+    var h = from.getHours();
+    var m = from.getMinutes();
+    var s = from.getSeconds();
+    return moment(reference).hours(h).minutes(m).seconds(s).toDate()
+}
+
 export function oops(message: string): void {
     throw new Error(message);
 }
