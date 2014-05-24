@@ -4,43 +4,29 @@
 clear-button() {
     margin: 0
     padding: 0
-    font-size: 0
     border: none
     background: transparent
     outline: none
 }
 
-backward_button(color = blue) {
-    clear-button()
-    icon('left-arrow', white)
-}
-
-clock_button(color = blue) {
-    clear-button()
-    icon('clock', color)
-}
-
-calendar_button(color = blue) {
-    clear-button()
-    icon('calendar', color)
-}
-
 reset_button() {
     clear-button()
-    background: url('../../fonts/custom/cross.svg') no-repeat center
-    background-size: 100%
+    icon_cheminot('cross', grey-light)
+}
+
+backward_button() {
+    clear-button()
+    icon_cheminot('arrow-left', white)
 }
 
 forward_button(enabled) {
     clear-button()
 
     if enabled {
-        background: url('../../fonts/custom/arrow-right.svg') no-repeat center
+        icon_cheminot('arrow-right', blue)
     }
 
     if (!enabled) {
-        background: url('../../fonts/custom/arrow-right-disabled.svg') no-repeat center
+        icon_cheminot('arrow-right', grey-light)
     }
-
-    background-size: 100%
 }

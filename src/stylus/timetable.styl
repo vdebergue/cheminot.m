@@ -19,6 +19,7 @@
     }
 
     #wrapper {
+        background: grey-blue
         position: absolute
         width: 100%
         overflow: hidden
@@ -40,8 +41,10 @@
                 border-bottom: 2px solid grey-blue
                 box-sizing: border-box
                 color: dark-blue
+                padding: 0 global-margin-right 0 global-margin-right
+                background: #FFF
 
-                .value, .changements,.egg-timer, .value, .to {
+                .value, .changements,.egg-timer, .value, .to, .wake-up {
                     vertical-align: middle
                 }
 
@@ -49,10 +52,10 @@
                     position: relative
                     font-size: 18px
                     padding: 3% 0 3% 0
-                    margin: 0 global-margin-right 0 global-margin-right
 
                     .changements {
-                        icon_batch('split', 16px, 16px)
+                        color: grey-light
+                        icon_batch('split', grey-light)
                     }
 
                     .duration {
@@ -60,20 +63,28 @@
                         right: 0
 
                         .egg-timer {
-                            icon_iconmonstr('egg-timer', 16px, 16px)
+                            icon_monstr('egg-timer', grey-light)
                         }
                     }
                 }
 
                 .start-end {
-                    text-align: center
                     width: 100%
                     font-size: 32px
                     padding: 2% 0 2% 0
+
+                    span:not(:last-children) {
+                        margin-right: 2%
+                    }
+                }
+
+                .alarm-clock {
+                    color: grey-light
+                    icon_batch('alarm-clock', grey-light)
                 }
 
                 .to {
-                    icon_custom('right-arrow', 20px, 12px)
+                    icon_cheminot('arrow-right', blue)
                 }
             }
         }

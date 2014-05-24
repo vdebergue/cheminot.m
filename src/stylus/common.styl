@@ -29,18 +29,21 @@ global-reset()
 
 .ios7 header {
     padding-top: 18px
-    .back {
+    .back-btn {
         top: 8px
     }
 }
 
+header .back-btn {
+    display: none;
+    backward_button()
+    padding: 2%
+}
+
 .ios header {
-    .back {
-        display: none
+    .back-btn {
         position: absolute
         height: 100%
-        backward_button()
-        padding: 2%
     }
 }
 
@@ -54,6 +57,8 @@ body {
     height: 100%
     width: 100%
     position: absolute
+    -webkit-font-smoothing: antialiased
+    text-rendering: optimizeLegibility
     -webkit-font-smoothing: antialiased
     font-family-light()
 }
@@ -109,10 +114,6 @@ header {
 
     h1 {
         margin: auto
-    }
-
-    .back-btn {
-        display: none
     }
 }
 

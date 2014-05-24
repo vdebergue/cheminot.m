@@ -149,6 +149,7 @@ class Timetable extends View implements IView {
         return Q.all([ftemplate, fschedules]).spread<void>((t, schedules) => {
             var dom = tmpl(t, { schedules: this.processResults(schedules) });
             var $scope = this.$scope();
+            var $scroller = $scope.find('#scroller');
             var $schedules = $scope.find('.schedules');
             $schedules.data('startId', startId);
             $schedules.data('endId', endId);
@@ -158,7 +159,8 @@ class Timetable extends View implements IView {
             } else {
                 $schedules.html(dom);
             }
-            if($schedules.find('li').size() >= maxResults) {
+            var scrollerOffset = $scroller.offset();
+            if((scrollerOffset.top + scrollerOffset.height) > utils.viewportSize()._1) {
                 $scope.find('.pull-up').addClass('visible');
             } else {
                 $scope.find('.pull-up').removeClass('visible');

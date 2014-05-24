@@ -59,7 +59,7 @@ export function init(views: seq.IList<IView>) {
                 var fromURL = window.location.href.match(/.*?#\/(\w+)\/.*/);
                 var viewName = 'home';
                 if(fromURL) {
-                    viewName = fromURL[1];
+                    viewName = (fromURL[1] == "schedule") ? viewName : fromURL[1];
                 }
                 return this.async(ensureInitApp(viewName).then(() => {
                     cheminotViews.home().show();
@@ -101,8 +101,9 @@ export function init(views: seq.IList<IView>) {
                             }).map((when:number) => {
                                 return ensureInitApp('timetable').then(() => {
                                     var timetableView = cheminotViews.timetable();
-                                    timetableView.buildWith(start, end, new Date(when));
-                                    return timetableView.show();
+                                    timetableView.buildWith(start, end, new Date(when)).then(() => {
+                                        return timetableView.show();
+                                    });
                                 });
                             });
                         });

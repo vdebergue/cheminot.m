@@ -2,6 +2,7 @@
 component.json
 node_modules
 tscommand.tmp.txt
+src/fonts/generated/*
 src/typescripts/app/lib/immutable/*.js
 platforms/ios/cordova/console.log
 tmp

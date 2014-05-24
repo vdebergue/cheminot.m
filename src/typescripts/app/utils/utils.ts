@@ -1,5 +1,6 @@
 /// <reference path='../../dts/Q.d.ts'/>
 
+import tuple = require('lib/immutable/Tuple');
 import seq = require('lib/immutable/List');
 import opt = require('lib/immutable/Option');
 
@@ -49,6 +50,13 @@ export function sequencePromises<T>(seq: Array<T>, f: (t: T) => Q.Promise<T>): Q
             });
         });
     }
+}
+
+export function viewportSize(): tuple.Tuple2<number, number> {
+    return new tuple.Tuple2<number, number>(
+        document.documentElement.clientHeight,
+        document.documentElement.clientWidth
+    );
 }
 
 export function timeFromTo(from: Date, reference: Date): Date {

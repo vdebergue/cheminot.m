@@ -222,6 +222,14 @@ module.exports = function(grunt) {
                     }
                 }]
             }
+        },
+        webfont: {
+            icons: {
+                src: 'src/fonts/svg/batch/*.svg',
+                dest: 'src/fonts/generated',
+                options: {
+                }
+            }
         }
     });
 
@@ -233,6 +241,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-inject');
     grunt.loadNpmTasks('grunt-text-replace');
+    grunt.loadNpmTasks('grunt-webfont');
 
     // Here we  go !
     grunt.registerTask('default', ['clean:app', 'stylus:app', 'ts:dev', 'ts:worker-dev-planner', 'ts:worker-dev-setup', 'copy:dev', 'requirejs:worker-setup', 'requirejs:worker-planner', 'inject:dev', 'replace:version']);
@@ -242,4 +251,5 @@ module.exports = function(grunt) {
     grunt.registerTask('dev', ['stylus:app', 'ts:dev', 'watch']);
     grunt.registerTask('prod', ['clean:app', 'stylus:app', 'ts:prod', 'ts:worker-prod-planner', 'ts:worker-prod-setup', 'requirejs:app', 'requirejs:worker-setup', 'requirejs:worker-planner', 'copy:prod', 'inject:prod', 'replace:version']);
     grunt.registerTask('cleanAll', ['clean:app']);
+    grunt.registerTask('font', ['webfont']);
 };
