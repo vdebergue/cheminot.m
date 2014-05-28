@@ -11,7 +11,7 @@ export var checkPeriodically = _.once(() => {
                     if(versionDB && versionApi && (versionDB != versionApi)) {
                         alert('A new version is available');
                     }
-                }).fail((reason) => {
+                }).catch((reason) => {
                     utils.error('Unable to fetch /api: ' + reason)
                 });
             });

@@ -61,6 +61,8 @@ export interface IList<T> extends _tr.ITraversable<T> {
 
     reverse(): IList<T>;
 
+    fromArray(a: T[]): IList<T>;
+
     asArray(): T[];
 
     mkString(sep: string): string;
@@ -142,6 +144,8 @@ export interface IList<T> extends _tr.ITraversable<T> {
     patch(from: number, l: IList<T>, replaced: number): IList<T>;
 
     grouped(n: number): IList<IList<T>>;
+
+    sortBy<X>(f: (t: T) => X): IList<T>;
 }
 
 export function List<T>(...as: T[]): IList<T> {
@@ -266,6 +270,10 @@ export class Nil<T> implements IList<T> {
 
     reverse(): IList<T> {
         return this;
+    }
+
+    fromArray(a: T[]): IList<T> {
+        return List<T>();
     }
 
     asArray(): T[] {
@@ -436,6 +444,10 @@ export class Nil<T> implements IList<T> {
     grouped(n: number): IList<IList<T>> {
         return new Nil<IList<T>>();
     }
+
+    sortBy<X>(f: (t: T) => X): IList<T> {
+        return this;
+    }
 }
 
 export class Cons<T> implements IList<T> {
@@ -596,6 +608,10 @@ export class Cons<T> implements IList<T> {
 
     reverse(): IList<T> {
         return reverse1(this);
+    }
+
+    fromArray(a: T[]): IList<T> {
+        return List.apply(null, a);
     }
 
     asArray(): T[] {
@@ -955,7 +971,7 @@ export class Cons<T> implements IList<T> {
 
     grouped(n: number): IList<IList<T>> {
         var z = new Nil<IList<T>>();
-        return this.foldRight(z, (t, acc) => {
+        return this.foldLeft(z, (acc, t) => {
             if(acc.isEmpty()) {
                 return acc.prependOne(new Cons<T>(t, new Nil<T>()));
             } else {
@@ -963,11 +979,19 @@ export class Cons<T> implements IList<T> {
                 if(head.length() >= n) {
                     return acc.prependOne(new Cons<T>(t, new Nil<T>()));
                 } else {
-                    var updated = head.prependOne(t);
+                    var updated = head.appendOne(t);
                     return acc.tail().prependOne(updated);
                 }
             }
-        });
+        }).reverse();
+    }
+
+    sortBy<X>(f: (t: T) => X): IList<T> {
+        return List.apply(null, this.asArray().sort((a, b) => {
+            var x = <number><any>f(a);
+            var y = <number><any>f(b);
+            return x - y;
+        }));
     }
 }
 

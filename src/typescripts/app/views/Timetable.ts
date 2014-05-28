@@ -129,7 +129,7 @@ class Timetable extends View implements IView {
     }
 
     buildWith(startId: string, endId: string, when: Date, append: boolean = false): Q.Promise<void> {
-        var maxResults = 5;
+        var maxResults = 6;
         var ftemplate = Templating.timetable.schedules();
         var fschedules = (() => {
             var vs = Storage.tdspGraph()[startId];
@@ -149,7 +149,6 @@ class Timetable extends View implements IView {
         return Q.all([ftemplate, fschedules]).spread<void>((t, schedules) => {
             var dom = tmpl(t, { schedules: this.processResults(schedules) });
             var $scope = this.$scope();
-            var $scroller = $scope.find('#scroller');
             var $schedules = $scope.find('.schedules');
             $schedules.data('startId', startId);
             $schedules.data('endId', endId);
@@ -159,16 +158,22 @@ class Timetable extends View implements IView {
             } else {
                 $schedules.html(dom);
             }
-            var scrollerOffset = $scroller.offset();
-            if((scrollerOffset.top + scrollerOffset.height) > utils.viewportSize()._1) {
-                $scope.find('.pull-up').addClass('visible');
-            } else {
-                $scope.find('.pull-up').removeClass('visible');
-            }
+            this.toggleShowPullup();
             this.myIScroll.refresh();
-        }).fail((reason) => {
+        }).catch((reason) => {
             console.log(reason);
         });
+    }
+
+    toggleShowPullup() {
+        var $scope = this.$scope();
+        var $scroller = $scope.find('#scroller');
+        var scrollerOffset = $scroller.offset();
+        if((scrollerOffset.top + scrollerOffset.height) > utils.viewportSize()._1) {
+            $scope.find('.pull-up').addClass('visible');
+        } else {
+            $scope.find('.pull-up').removeClass('visible');
+        }
     }
 
     onPullUp() {

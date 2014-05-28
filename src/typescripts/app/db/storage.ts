@@ -153,7 +153,7 @@ export function installDB(config: any, progress: (string, any?) => void): Q.Prom
                     });
                 });
             });
-        }).fail((reason) => {
+        }).catch((reason) => {
             utils.error(JSON.stringify(reason));
             d.reject(reason);
         });

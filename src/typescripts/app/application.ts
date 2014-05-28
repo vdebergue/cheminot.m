@@ -35,7 +35,7 @@ export function init(views: seq.IList<IView>) {
                         return Q.delay(utils.Promise.DONE(), 1000);
                     });
                 });
-            }).fail((reason) => {
+            }).catch((reason) => {
                 utils.error(reason);
             });
         } else {
@@ -101,8 +101,8 @@ export function init(views: seq.IList<IView>) {
                             }).map((when:number) => {
                                 return ensureInitApp('timetable').then(() => {
                                     var timetableView = cheminotViews.timetable();
-                                    timetableView.buildWith(start, end, new Date(when)).then(() => {
-                                        return timetableView.show();
+                                    return timetableView.show().then(() => {
+                                        return timetableView.buildWith(start, end, new Date(when));
                                     });
                                 });
                             });
@@ -149,7 +149,7 @@ export class Navigate {
             }
         })();
 
-        return f.fail((reason) => {
+        return f.catch((reason) => {
             return utils.Promise.DONE();
         });
     }

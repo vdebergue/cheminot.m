@@ -44,10 +44,6 @@
                 padding: 0 global-margin-right 0 global-margin-right
                 background: #FFF
 
-                .value, .changements,.egg-timer, .value, .to, .wake-up {
-                    vertical-align: middle
-                }
-
                 .meta {
                     position: relative
                     font-size: 18px
@@ -63,7 +59,7 @@
                         right: 0
 
                         .egg-timer {
-                            icon_monstr('egg-timer', grey-light)
+                            icon_monstr('duration', grey-light)
                         }
                     }
                 }
@@ -81,10 +77,13 @@
                 .alarm-clock {
                     color: grey-light
                     icon_batch('alarm-clock', grey-light)
+                    font-size: 23px
                 }
 
                 .to {
                     icon_cheminot('arrow-right', blue)
+                    font-size: 23px;
+                    margin: 0 1% 0 5%
                 }
             }
         }

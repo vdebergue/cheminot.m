@@ -1,7 +1,9 @@
 import tuple = require('lib/immutable/Tuple');
 import seq = require('lib/immutable/List');
+import either = require('lib/immutable/Either');
 import opt = require('lib/immutable/Option');
 import Storage = require('db/storage');
+import utils = require('utils/utils');
 import planner = require('models/Planner');
 import tdsp = require('./tdsp');
 
@@ -26,42 +28,36 @@ function tripsAvailability(tripIds: seq.IList<string>, exceptions: any): Q.Promi
 
 export function timeRefinement(graph: any, vsId: string, veId: string, vsTripId: string, ts: number, exceptions: any): Q.Promise<any> {
     var RESULTS = {}
-
     var initializedQ = initialize(graph, vsTripId, vsId, ts);
     var indexed = initializedQ._1;
     var queue = initializedQ._2;
     var start = Date.now();
 
-    function loop(queue, RESULTS): Q.Promise<any> {
-
-        var isTimeout = tdsp.isTimeout(start);
-
+    return (function _timeRefinement(queue, RESULTS): Q.Promise<any> {
+        var isTimeout = false;//tdsp.isTimeout(start);
         if(queue.length > 0 && !isTimeout) {
-
             queue = _.sortBy(queue, (el:any) => {
                 return el.gi.arrivalTime;
             });
-
             var hvi = queue.shift();
-
             if(hvi) {
                 delete(indexed[hvi.stopId]);
-
                 RESULTS[hvi.stopId] = hvi;
-
                 if(hvi.gi.arrivalTime === INFINI || hvi.stopId === veId) {
                     if(hvi.stopId === veId) {
-                        return Q.resolve(RESULTS);
+                        return Q(<any>RESULTS);
                     } else {
                         return Q.reject("break")
                     }
                 }
-
                 return refineArrivalTimes(graph, indexed, hvi, exceptions, (hvi.stopId === vsId)).then(() => {
-                    return loop(queue, RESULTS);
+                    var d = Q.defer();
+                    setTimeout(() => {
+                        return d.resolve(_timeRefinement(queue, RESULTS));
+                    }, 1);
+                    return d.promise;
                 });
             }
-
         } else {
             if(isTimeout) {
                 return Q.reject('timeout');
@@ -69,9 +65,7 @@ export function timeRefinement(graph: any, vsId: string, veId: string, vsTripId:
                 return Q.reject('empty');
             }
         }
-    }
-
-    return loop(queue, RESULTS);
+    })(queue, RESULTS);
 }
 
 function refineArrivalTimes(graph: any, indexed: any, indexedVi: any, exceptions: any, isStart: boolean): Q.Promise<void> {

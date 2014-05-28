@@ -68,7 +68,7 @@ function run(vsId: string, veId: string, stopTimes, max: number, config: any, de
                 return deps.tdsp.lookForBestTrip(tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions).then((result) => {
                     --limit;
                     return result;
-                }).fail((reason) => {
+                }).catch((reason) => {
                     console.log(reason);
                 });
             } else {
@@ -81,7 +81,7 @@ function run(vsId: string, veId: string, stopTimes, max: number, config: any, de
                     return x != null;
                 })
             });
-        }).fail((reason) => {
+        }).catch((reason) => {
             reply({
                 event: EVENTS.end,
                 error: reason,

@@ -26,7 +26,7 @@ export function parPromises<T>(seq: Array<Q.Promise<T>>): Q.Promise<Array<T>> {
     seq.forEach((f, i) => {
         f.then((t) => {
             fullfilled[i] = t;
-        }).fail((reason) => {
+        }).catch((reason) => {
             fullfilled[i] = reason;
         }).fin(() => {
             toFullFill -= 1;
@@ -101,6 +101,10 @@ export function measureF<T>(f: () => Q.Promise<T>, id: string = ''): Q.Promise<T
     });
 }
 
+export function isError(maybeError: any): boolean {
+    return maybeError instanceof Error;
+}
+
 export function isMobile() { 
     if(navigator.userAgent.match(/Android/i) ||
        navigator.userAgent.match(/webOS/i) ||
@@ -133,6 +137,14 @@ export function isIOS7() {
 
 export function isEmulator(): boolean {
     return !window['cordova']
+}
+
+export function trampoline(fun: (...args: any[]) => any, ...args: any[]): any {
+    var result = fun.apply(fun, args);
+    while (_.isFunction(result)) {
+        result = result();
+    }
+    return result;
 }
 
 export function showKeyboard($el: ZeptoCollection) {
