@@ -71,7 +71,7 @@ export function timeRefinement(graph: any, vsId: string, veId: string, vsTripId:
 function refineArrivalTimes(graph: any, indexed: any, indexedVi: any, exceptions: any, isStart: boolean): Q.Promise<void> {
     var vi = graph[indexedVi.stopId];
 
-    var tripIds = seq.List.apply(null, vi.stopTimes.map((st) => {
+    var tripIds = seq.fromArray<string>(vi.stopTimes.map((st:any) => {
         return st.tripId;
     }));
 

@@ -136,7 +136,7 @@ class Timetable extends View implements IView {
             var sortedStopTimes = _.sortBy(vs.stopTimes, (st:any) => {
                 return st.departureTime;
             });
-            var beforeAndAfter = seq.List.apply(null, sortedStopTimes).partition((st:any) => {
+            var beforeAndAfter = seq.fromArray(sortedStopTimes).partition((st:any) => {
                 var d1 = utils.timeFromTo(new Date(st.departureTime), when);
                 return d1.getTime() < when.getTime();
             });

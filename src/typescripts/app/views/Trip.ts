@@ -51,7 +51,7 @@ class Trip extends View implements IView {
     buildWith(trip: any): Q.Promise<void> {
         return Templating.trip.details().then((t) => {
             var $scope = this.$scope();
-            var stops = seq.List.apply(null, trip.stopTimes).map((stopTime) => {
+            var stops = seq.fromArray(trip.stopTimes).map((stopTime:any) => {
                 return {
                     name: stopTime.stop.name,
                     arrival: planner.StopTime.formatTime(stopTime.arrival),

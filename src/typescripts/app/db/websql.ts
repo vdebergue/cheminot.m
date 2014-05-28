@@ -353,9 +353,9 @@ class WebSqlStorage implements Storage.IStorage {
                             var group = data.rows.item(index);
                             var trips = JSON.parse(LZString.decompressFromUTF16(group.trips));
                             Storage.addTripsToCache(trips);
-                            var found = seq.List.apply(null, toQuery).flatMap((id) => {
+                            var found = seq.fromArray(toQuery).map((id) => {
                                 return opt.Option(trips[id]);
-                            });
+                            }).flatten();
                             results = results.prepend(found);
                         });
                         results = results.prepend(tripsFromCache);

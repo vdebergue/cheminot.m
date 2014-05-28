@@ -304,7 +304,7 @@ class IndexedDBStorage implements Storage.IStorage {
 
         var toQuery = (() => {
             var diff = _.difference(ids.asArray(), fromCacheIds.asArray());
-            return seq.List.apply(null, diff);
+            return seq.fromArray(diff);
         })();
 
         var results = fromCache;

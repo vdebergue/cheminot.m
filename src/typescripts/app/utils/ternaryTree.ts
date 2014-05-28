@@ -21,7 +21,7 @@ function suggestions(maybeNode: opt.IOption<any>, limit: number): seq.IList<any>
 export function search(term: string, tree: any, limit: number): seq.IList<any> {
     function step(term: string, maybeNode: opt.IOption<any>, results: seq.IList<any>): seq.IList<any> {
         return maybeNode.map((node) => {
-            var word = seq.List.apply(null, term.split(''));
+            var word = seq.fromArray(term.split(''));
             if(!word.isEmpty()) {
                 var h = word.head();
                 var isLast = word.tail().isEmpty();
