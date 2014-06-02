@@ -34,7 +34,7 @@ export function timeRefinement(graph: any, vsId: string, veId: string, vsTripId:
     var start = Date.now();
 
     return (function _timeRefinement(queue, RESULTS): Q.Promise<any> {
-        var isTimeout = false;//tdsp.isTimeout(start);
+        var isTimeout = tdsp.isTimeout(start);
         if(queue.length > 0 && !isTimeout) {
             queue = _.sortBy(queue, (el:any) => {
                 return el.gi.arrivalTime;

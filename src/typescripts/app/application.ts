@@ -57,9 +57,12 @@ export function init(views: seq.IList<IView>) {
         app: Abyssa.State('', {
             enter: function(params) {
                 var fromURL = window.location.href.match(/.*?#\/(\w+)\/.*/);
-                var viewName = 'home';
+                var viewName = null;
+                var isHome = (name: string) => {
+                    return name == 'home' || name == "schedule" || name == "start" || name == "end";
+                }
                 if(fromURL) {
-                    viewName = (fromURL[1] == "schedule") ? viewName : fromURL[1];
+                    viewName = isHome(fromURL[1]) ? 'home' : fromURL[1];
                 }
                 return this.async(ensureInitApp(viewName).then(() => {
                     cheminotViews.home().show();

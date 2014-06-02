@@ -252,7 +252,9 @@ class Home extends View implements IView {
             this.clearSuggestions();
         } else {
             $reset.addClass('filled');
-            var founds = TernaryTree.search(term.toLowerCase(), Storage.stops(), 20);
+            var founds = TernaryTree.search(term.toLowerCase(), Storage.stops(), 20).sortBy((s) => {
+                return s.name.toLowerCase();
+            });
             this.suggest(term, founds);
         }
 
