@@ -1,4 +1,5 @@
 import Cheminot = require('../Cheminot');
+import utils = require('../utils/utils');
 
 export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<number>, max: number): Q.Promise<any> {
     var d = Q.defer<any>();
@@ -16,12 +17,16 @@ export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<num
 
     worker.onmessage = (e) => {
         var msg = JSON.parse(e.data)
-        if(msg.data) {
-            d.resolve(msg.data);
+        if(msg.event == 'debug') {
+            utils.log(msg.data);
         } else {
-            d.reject("not found")
+            if(msg.data) {
+                d.resolve(msg.data);
+            } else {
+                d.reject("not found")
+            }
+            worker.terminate();
         }
-        worker.terminate();
     }
 
     worker.onerror = (e) => {

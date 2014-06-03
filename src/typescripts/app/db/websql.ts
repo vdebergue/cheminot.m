@@ -329,6 +329,7 @@ class WebSqlStorage implements Storage.IStorage {
 
     tripsByIds(ids: seq.IList<string>): Q.Promise<seq.IList<any>> {
         var d = Q.defer<seq.IList<any>>();
+
         var tripsFromCache = Storage.TRIPS.map((trips) => {
             return ids.map((id) => {
                 return opt.Option(trips[id]);
@@ -336,10 +337,13 @@ class WebSqlStorage implements Storage.IStorage {
         }).getOrElse(() => {
             return new seq.Nil();
         });
+
         var tripIdsFromCache = tripsFromCache.map((t:any) => {
             return t.id;
         });
-        var toQuery = _.difference(tripIdsFromCache.asArray(), ids.asArray())
+
+        var toQuery = _.difference(ids.asArray(), tripIdsFromCache.asArray());
+
         if(toQuery.length > 0) {
             db().then((DB) => {
                 DB.readTransaction((t) => {

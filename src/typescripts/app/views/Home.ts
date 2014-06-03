@@ -232,13 +232,13 @@ class Home extends View implements IView {
         var $end = this.$getEnd();
         $start.blur();
         $end.blur();
-        $start.attr('readonly', 'true');
-        $end.attr('readonly', 'true');
+        $start.attr('disabled', 'true');
+        $end.attr('disabled', 'true');
     }
 
     enableInputsStation() {
-        this.$getStart().removeAttr('readonly');
-        this.$getEnd().removeAttr('readonly');
+        this.$getStart().removeAttr('disabled');
+        this.$getEnd().removeAttr('disabled');
     }
 
     onStationKeyUp(e: Event): boolean {
@@ -330,6 +330,7 @@ class Home extends View implements IView {
                 StatusBar.hide();
                 utils.showKeyboard($input);
                 this.enableInputsStation();
+                $input.focus();
             });
         });
 
@@ -365,9 +366,9 @@ class Home extends View implements IView {
         var $suggestion = $(e.currentTarget);
         var id = $suggestion.attr('data-id');
         utils.hideKeyboard();
-        this.disableInputsStation();
         this.onceSelected(id).then(() => {
             this.checkRequest();
+            this.disableInputsStation();
         });
         return true;
     }

@@ -9,7 +9,8 @@ var stash = [];
 
 var EVENTS = {
     search: "search",
-    end: "end"
+    end: "end",
+    debug: "debug"
 };
 
 var CONFIG = null;
@@ -45,10 +46,17 @@ function reply(data: any) {
     (<any>self).postMessage(JSON.stringify(data));
 }
 
+function debug(message: string) {
+    (<any>self).postMessage(JSON.stringify({
+        event: EVENTS.debug,
+        data: message
+    }));
+}
+
 function receive(msg: any, deps: any) {
     switch(msg.event) {
     case EVENTS.search: {
-        console.log("Let's starting !");
+        debug("Let's starting !");
         run(msg.vsId, msg.veId, msg.stopTimes, msg.max, msg.config, deps);
         break;
     }
@@ -65,11 +73,11 @@ function run(vsId: string, veId: string, stopTimes, max: number, config: any, de
 
         return deps.utils.sequencePromises(stopTimes, (st) => {
             if(limit > 0) {
-                return deps.tdsp.lookForBestTrip(tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions).then((result) => {
+                return deps.tdsp.lookForBestTrip(tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions, debug).then((result) => {
                     --limit;
                     return result;
                 }).catch((reason) => {
-                    console.log(reason);
+                    debug(reason);
                 });
             } else {
                 return deps.utils.Promise.DONE();

@@ -26,7 +26,7 @@ function tripsAvailability(tripIds: seq.IList<string>, exceptions: any): Q.Promi
     });
 }
 
-export function timeRefinement(graph: any, vsId: string, veId: string, vsTripId: string, ts: number, exceptions: any): Q.Promise<any> {
+export function timeRefinement(graph: any, vsId: string, veId: string, vsTripId: string, ts: number, exceptions: any, debug: (msg: string) => void): Q.Promise<any> {
     var RESULTS = {}
     var initializedQ = initialize(graph, vsTripId, vsId, ts);
     var indexed = initializedQ._1;
@@ -50,7 +50,7 @@ export function timeRefinement(graph: any, vsId: string, veId: string, vsTripId:
                         return Q.reject("break")
                     }
                 }
-                return refineArrivalTimes(graph, indexed, hvi, exceptions, (hvi.stopId === vsId)).then(() => {
+                return refineArrivalTimes(graph, indexed, hvi, exceptions, (hvi.stopId === vsId), debug).then(() => {
                     var d = Q.defer();
                     setTimeout(() => {
                         return d.resolve(_timeRefinement(queue, RESULTS));
@@ -68,7 +68,7 @@ export function timeRefinement(graph: any, vsId: string, veId: string, vsTripId:
     })(queue, RESULTS);
 }
 
-function refineArrivalTimes(graph: any, indexed: any, indexedVi: any, exceptions: any, isStart: boolean): Q.Promise<void> {
+function refineArrivalTimes(graph: any, indexed: any, indexedVi: any, exceptions: any, isStart: boolean, debug: (msg: string) => void): Q.Promise<void> {
     var vi = graph[indexedVi.stopId];
 
     var tripIds = seq.fromArray<string>(vi.stopTimes.map((st:any) => {

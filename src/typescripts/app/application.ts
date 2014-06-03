@@ -57,7 +57,7 @@ export function init(views: seq.IList<IView>) {
         app: Abyssa.State('', {
             enter: function(params) {
                 var fromURL = window.location.href.match(/.*?#\/(\w+)\/.*/);
-                var viewName = null;
+                var viewName = 'home';
                 var isHome = (name: string) => {
                     return name == 'home' || name == "schedule" || name == "start" || name == "end";
                 }

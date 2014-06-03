@@ -135,7 +135,7 @@ export function isIOS7() {
     return isAppleMobile() && navigator.userAgent.match(/OS 7/);
 }
 
-export function isEmulator(): boolean {
+export function isChromeEmulator(): boolean {
     return !window['cordova']
 }
 
@@ -148,14 +148,14 @@ export function trampoline(fun: (...args: any[]) => any, ...args: any[]): any {
 }
 
 export function showKeyboard($el: ZeptoCollection) {
-    if(isAndroid() && !isEmulator()) {
+    if(isAndroid() && !isChromeEmulator()) {
         cordova.plugins.SoftKeyboard.show();
     }
     $el.focus();
 }
 
 export function hideKeyboard() {
-    if(isAndroid() && !isEmulator()) {
+    if(isAndroid() && !isChromeEmulator()) {
         cordova.plugins.SoftKeyboard.hide();
     }
 }
