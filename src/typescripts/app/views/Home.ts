@@ -236,11 +236,6 @@ class Home extends View implements IView {
         $end.attr('disabled', 'true');
     }
 
-    enableInputsStation() {
-        this.$getStart().removeAttr('disabled');
-        this.$getEnd().removeAttr('disabled');
-    }
-
     onStationKeyUp(e: Event): boolean {
         var $input = $(e.currentTarget);
         var $reset = this.getResetBtnFromInput($input);
@@ -295,13 +290,14 @@ class Home extends View implements IView {
 
         var $input = $(e.currentTarget);
         var $suggestions = this.$getSuggestions();
+        var isEndHidden = this.$getEnd().parent().is('.animating');
 
         this.hideRequestPanel();
         this.getResetBtnFromInput($input).addClass('filled');
 
         var fpannel = () => {
             if(this.isStartInput($input)) {
-                if(this.isResetDisplayed($input)) {
+                if(this.isResetDisplayed($input) && !isEndHidden) {
                     $suggestions.removeClass('end').addClass('start');
                     return App.Navigate.home(new opt.None<string>(), this.getEnd());
                 } else {
@@ -318,10 +314,14 @@ class Home extends View implements IView {
         };
 
         var finput = () => {
-            if(this.isStartInput($input)) {
-                return this.hideEnd();
-            } else if(this.isEndInput($input)) {
-                return this.hideStart();
+            if(!isEndHidden) {
+                if(this.isStartInput($input)) {
+                    return this.hideEnd();
+                } else if(this.isEndInput($input)) {
+                    return this.hideStart();
+                } else {
+                    return utils.Promise.DONE();
+                }
             }
         };
 
@@ -329,7 +329,7 @@ class Home extends View implements IView {
             return Q.delay(400).then(() => {
                 StatusBar.hide();
                 utils.showKeyboard($input);
-                this.enableInputsStation();
+                $input.removeAttr('disabled');
                 $input.focus();
             });
         });
