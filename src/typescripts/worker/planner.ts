@@ -70,7 +70,6 @@ function run(vsId: string, veId: string, stopTimes, max: number, config: any, de
         var tdspGraph = deps.Storage.tdspGraph();
         var exceptions = deps.Storage.exceptions();
         var limit = max;
-
         return deps.utils.sequencePromises(stopTimes, (st) => {
             if(limit > 0) {
                 return deps.tdsp.lookForBestTrip(tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions, debug).then((result) => {

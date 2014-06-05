@@ -72,7 +72,7 @@ export function oops(message: string): void {
 
 export function error<A>(message: A) {
     if(DEBUG) {
-        if(isMobile() && self.alert) {
+        if(isMobile() && self.alert && !isChromeEmulator()) {
             alert('ERROR ' + message);
         } else if(self.console) {
             console.error(message);
@@ -82,7 +82,7 @@ export function error<A>(message: A) {
 
 export function log<A>(message: A) {
     if(DEBUG) {
-        if(isMobile() && self.alert) {
+        if(isMobile() && self.alert && !isChromeEmulator()) {
             alert('INFO : ' + message);
         } else if(self.console) {
             console.log(message);
@@ -136,7 +136,7 @@ export function isIOS7() {
 }
 
 export function isChromeEmulator(): boolean {
-    return !window['cordova']
+    return window['cordova'] == undefined;
 }
 
 export function trampoline(fun: (...args: any[]) => any, ...args: any[]): any {
