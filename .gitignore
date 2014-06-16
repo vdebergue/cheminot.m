@@ -11,6 +11,7 @@ tests/app
 tests/vendors
 
 www/
+*.db
 
 ## ANDROID
 platforms/android/assets/www/**
