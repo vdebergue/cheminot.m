@@ -44,6 +44,9 @@
 - (id)init
 {
     self = [super init];
+
+    [self initDatabase];
+
     if (self) {
         // Uncomment to override the CDVCommandDelegateImpl used
         // _commandDelegate = [[MainCommandDelegate alloc] initWithViewController:self];
@@ -51,6 +54,22 @@
         // _commandQueue = [[MainCommandQueue alloc] initWithViewController:self];
     }
     return self;
+}
+
+- (void)initDatabase
+{
+    NSString *dbFileName = @"cheminot";
+    NSString *dbFileExt = @"db";
+    NSString *dbFile = [[dbFileName stringByAppendingString: @"."] stringByAppendingString:dbFileExt];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSError *error;
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *databasePath = [documentsDirectory stringByAppendingPathComponent:dbFile];
+    if ([fileManager fileExistsAtPath:databasePath] == NO) {
+        NSString *resourcePath = [[NSBundle mainBundle] pathForResource:dbFileName ofType:dbFileExt];
+        [fileManager copyItemAtPath:resourcePath toPath:databasePath error:&error];
+    }
 }
 
 - (void)didReceiveMemoryWarning

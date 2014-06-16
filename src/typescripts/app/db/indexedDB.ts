@@ -225,40 +225,13 @@ class IndexedDBStorage implements Storage.IStorage {
         return utils.sequencePromises<any>(trips.data, (group) => {
             cursor += 1;
             return add('trips', group).then(() => {
-                this.progress().then((maybe) => {
-                    var groupIndex = maybe.map((g) => {
-                        return g + 1;
-                    }).getOrElse(() => {
-                        return 1;
-                    });
-                    return this.putProgress(groupIndex).then(() => {
-                        progress('setup:trip', {
-                            total: groupsSize,
-                            value: cursor
-                        });
-                    });
+                progress('setup:trip', {
+                    total: trips.data.length,
+                    value: cursor
                 });
             });
         }).then(() => {
-            return this.clearProgress();
-        }).then(() => {
-            return null;
-        });
-    }
-
-    putProgress(groupIndex: number): Q.Promise<void> {
-        return put('cache', { key: 'progress', value: groupIndex });
-    }
-
-    clearProgress(): Q.Promise<void> {
-        return remove('cache', 'progress');
-    }
-
-    progress(): Q.Promise<opt.IOption<number>> {
-        return get('cache', 'by_key', 'progress').then((maybe) => {
-            return maybe.map((d) => {
-                return d.value;
-            });
+            return utils.Promise.DONE();
         });
     }
 

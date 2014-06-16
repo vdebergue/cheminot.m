@@ -6,6 +6,7 @@ import opt = require('../lib/immutable/Option');
 import utils = require('../utils/utils');
 import Api = require('../ws/api');
 import IndexedDB = require('./indexedDB');
+import NativeDB = require('./native');
 import WebSql = require('./websql');
 import Setup = require('../tasks/setup');
 import Cheminot = require('../Cheminot');
@@ -23,14 +24,13 @@ export interface IStorage {
     version(): Q.Promise<opt.IOption<string>>;
     tripById(id: string): Q.Promise<opt.IOption<any>>;
     tripsByIds(ids: seq.IList<string>): Q.Promise<seq.IList<any>>;
-    putProgress(groupIndex: number): Q.Promise<void>;
-    clearProgress(): Q.Promise<void>;
-    progress(): Q.Promise<opt.IOption<any>>;
 }
 
 export function impl(): IStorage {
     var s:any = self;
-    if(s.indexedDB) {
+    if(!utils.isChromeEmulator()) {
+        return NativeDB.impl();
+    } else if(s.indexedDB) {
         return IndexedDB.impl();
     } else if(s.openDatabase) {
         return WebSql.impl();
@@ -79,34 +79,23 @@ export function isInitialized(): boolean {
 }
 
 export function forceInstallDB(config: any, STORAGE: IStorage, progress: (string, any?) => void): Q.Promise<void> {
-    return STORAGE.progress().then((maybeProgress) => {
-        return maybeProgress.map((last) => {
-            utils.log('Resuming setup from: ' + last);
-            return Api.db(config, progress, new opt.Some(last)).then((db) => {
-                return STORAGE.insertTrips(db.trips, progress).then(() => {
-                    return STORAGE.putVersion(db.version);
-                });
-            });
-        }).getOrElse(() => {
-            utils.log('Installing from scratch DB');
-            return utils.measureF(() => Api.db(config, progress), 'fetchApi').then((db) => {
-                return STORAGE.reset().then(() => {
-                    return utils.measureF(() => STORAGE.insertStopsTree(db.treeStops), 'persistStops');
-                }).then(() => {
-                    return utils.measureF(() => STORAGE.insertDateExceptions(db.exceptions), 'persistExceptions');
-                    progress('setup:exceptions');
-                }).then(() => {
-                    progress('setup:stops');
-                    return utils.measureF(() => STORAGE.insertTrips(db.trips, progress), 'persistTrips');
-                }).then(() => {
-                    return utils.measureF(() => STORAGE.insertTdspGraph(db.tdspGraph), 'persistTdspGraph');
-                    progress('setup:tdspgraph');
-                }).then(() => {
-                    return STORAGE.putVersion(db.version);
-                }).then(() => {
-                    progress('setup:done');
-                });
-            });
+    utils.log('Installing from scratch DB');
+    return utils.measureF(() => Api.db(config, progress), 'fetchApi').then((db) => {
+        return STORAGE.reset().then(() => {
+            return utils.measureF(() => STORAGE.insertStopsTree(db.treeStops), 'persistStops');
+        }).then(() => {
+            return utils.measureF(() => STORAGE.insertDateExceptions(db.exceptions), 'persistExceptions');
+            progress('setup:exceptions');
+        }).then(() => {
+            progress('setup:stops');
+            return utils.measureF(() => STORAGE.insertTrips(db.trips, progress), 'persistTrips');
+        }).then(() => {
+            return utils.measureF(() => STORAGE.insertTdspGraph(db.tdspGraph), 'persistTdspGraph');
+            progress('setup:tdspgraph');
+        }).then(() => {
+            return STORAGE.putVersion(db.version);
+        }).then(() => {
+            progress('setup:done');
         });
     });
 }

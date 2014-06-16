@@ -172,7 +172,6 @@ class WebSqlStorage implements Storage.IStorage {
 
     insertTrips(trips: any, progress: (string, any?) => void): Q.Promise<void> {
         return db().then((DB) => {
-            var groupsSize = trips.data.length;
             var cursor = 0;
             return utils.sequencePromises(trips.data, (group:any) => {
                 var d = Q.defer<void>();
@@ -188,56 +187,15 @@ class WebSqlStorage implements Storage.IStorage {
                     });
                 });
                 return d.promise.then(() => {
-                    return this.progress().then((maybe) => {
-                        var groupIndex = maybe.map((g) => {
-                            return g + 1;
-                        }).getOrElse(() => {
-                            return 1;
-                        });
-                        return this.putProgress(groupIndex).then(() => {
-                            progress('setup:trip', {
-                                total: groupsSize,
-                                value: cursor
-                            });
-                        });
+                    progress('setup:trip', {
+                        total: trips.data.length,
+                        value: cursor
                     });
                 });
             }).then(() => {
-                return this.clearProgress();
-            }).then(() => {
-                return null;
+                return utils.Promise.DONE();
             });
         });
-    }
-
-    putProgress(groupIndex: number): Q.Promise<void> {
-        var d = Q.defer<void>();
-        db().then((DB) => {
-            DB.transaction((t) => {
-                t.executeSql('REPLACE INTO cache (key, value) VALUES (?, ?)', ['progress', groupIndex], () => {
-                    d.resolve(null);
-                }, (t, error) => {
-                    utils.error(error);
-                    d.reject(error);
-                });
-            });
-        });
-        return d.promise;
-    }
-
-    clearProgress(): Q.Promise<void> {
-        var d = Q.defer<void>();
-        db().then((DB) => {
-            DB.transaction((t) => {
-                t.executeSql("DELETE FROM cache WHERE key='progress'", [], () => {
-                    d.resolve(null);
-                }, (t, error) => {
-                    utils.error(error);
-                    d.reject(error);
-                });
-            });
-        });
-        return d.promise;
     }
 
     putVersion(version: string): Q.Promise<void> {
@@ -246,27 +204,6 @@ class WebSqlStorage implements Storage.IStorage {
             DB.transaction((t) => {
                 t.executeSql('REPLACE INTO cache (key, value) VALUES (?, ?)', ['version', version], () => {
                     d.resolve(null);
-                }, (t, error) => {
-                    utils.error(error);
-                    d.reject(error);
-                });
-            });
-        });
-        return d.promise;
-    }
-
-    progress(): Q.Promise<opt.IOption<any>> {
-        var d = Q.defer<any>();
-        db().then((DB) => {
-            DB.readTransaction((t) => {
-                t.executeSql("SELECT value FROM cache WHERE key='progress'", [], (t, data) => {
-                    var maybeVersion = opt.Option(data.rows).filter((rows:any) => {
-                        return rows.length > 0;
-                    }).map((rows:any) => {
-                        var r = rows.item(0);
-                        return r.value;
-                    });
-                    d.resolve(maybeVersion);
                 }, (t, error) => {
                     utils.error(error);
                     d.reject(error);

@@ -9,26 +9,6 @@ import TernaryTree = require('../utils/ternaryTree');
 import utils = require('../utils/utils');
 import PlannerTask = require('tasks/planner');
 
-export function schedulesFor(startName: string, endName: string, startTime: number): Q.Promise<opt.IOption<any>> {
-    var graph = Storage.tdspGraph();
-    var start = graph[startName];
-    var end = graph[endName];
-
-    var stopTimes = (function() {
-        var filtered = _.filter(start.stopTimes, (st:any) => {
-            return st.departureTime < startTime;
-        });
-
-        return _.sortBy(filtered, (st:any) => {
-            return st.departureTime;
-        });
-    })();
-
-    var max = 4;
-
-    return PlannerTask.lookForBestTrip(startName, endName, stopTimes, max);
-}
-
 export class Trip {
     private static isInPeriod(startDate: Date, endDate: Date, when: Date): boolean {
         var start = moment(startDate);
@@ -72,21 +52,22 @@ export class Trip {
     }
 
     public static isValidOn(trip: any, when: Date, exceptions: any): boolean {
-        if(trip.service) {
-            var startDate = new Date(trip.service.startDate);
-            var endDate = new Date(trip.service.endDate);
-            var serviceId = trip.service.serviceId;
+        return true;
+        // if(trip.service) {
+        //     var startDate = new Date(trip.service.startDate);
+        //     var endDate = new Date(trip.service.endDate);
+        //     var serviceId = trip.service.serviceId;
 
-            if(!Trip.hasRemoved(when, serviceId, exceptions) &&
-               ((Trip.isInPeriod(startDate, endDate, when) && Trip.weekAvailability(trip.service, when))
-                || Trip.hasAdded(when, serviceId, exceptions))) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
+        //     if(!Trip.hasRemoved(when, serviceId, exceptions) &&
+        //        ((Trip.isInPeriod(startDate, endDate, when) && Trip.weekAvailability(trip.service, when))
+        //         || Trip.hasAdded(when, serviceId, exceptions))) {
+        //         return true;
+        //     } else {
+        //         return false;
+        //     }
+        // } else {
+        //     return false;
+        // }
     }
 }
 
