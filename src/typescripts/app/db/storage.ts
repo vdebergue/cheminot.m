@@ -27,12 +27,11 @@ export interface IStorage {
 }
 
 export function impl(): IStorage {
-    var s:any = self;
-    if(!utils.isChromeEmulator()) {
+    if(utils.isCordovaApp()) {
         return NativeDB.impl();
-    } else if(s.indexedDB) {
+    } else if(self['indexedDB']) {
         return IndexedDB.impl();
-    } else if(s.openDatabase) {
+    } else if(self['openDatabase']) {
         return WebSql.impl();
     } else {
         utils.oops('You need a more recent device !');

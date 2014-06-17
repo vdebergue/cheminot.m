@@ -56,7 +56,7 @@ export function init(views: seq.IList<IView>) {
     var CheminotApp = Abyssa.Router({
         app: Abyssa.State('', {
             enter: function(params) {
-                var fromURL = window.location.href.match(/.*?#\/(\w+)\/.*/);
+                var fromURL = window.location.href.match(/.*?#\/(\w+)\/?.*/);
                 var viewName = 'home';
                 var isHome = (name: string) => {
                     return name == 'home' || name == "schedule" || name == "start" || name == "end";
@@ -114,6 +114,13 @@ export function init(views: seq.IList<IView>) {
                         return utils.Promise.DONE();
                     })
                 );
+            }),
+
+            trip: Abyssa.State('trip/', function(params) {
+                ensureInitApp('trip').then(() => {
+                    var tripView = cheminotViews.trip();
+                    return tripView.show()
+                });
             })
         })
     });
@@ -186,6 +193,10 @@ class CheminotViews {
 
     timetable(): Timetable {
         return <Timetable>CheminotViews.view(this.views, 'timetable');
+    }
+
+    trip(): Timetable {
+        return <Timetable>CheminotViews.view(this.views, 'trip');
     }
 
     static view(views: seq.IList<IView>, name: string): IView {

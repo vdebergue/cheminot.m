@@ -1,7 +1,7 @@
 import utils = require('./utils/utils');
 
 export function initApp(app) {
-    if(!utils.isChromeEmulator()) {
+    if(utils.isCordovaApp()) {
         app.configure({urlSync: false});
     } else {
         app.configure({urlSync: 'hash'});

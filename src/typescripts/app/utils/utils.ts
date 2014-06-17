@@ -72,7 +72,7 @@ export function oops(message: string): void {
 
 export function error<A>(message: A) {
     if(DEBUG) {
-        if(isMobile() && self.alert && !isChromeEmulator()) {
+        if(isMobile() && self.alert && isCordovaApp()) {
             alert('ERROR ' + message);
         } else if(self.console) {
             console.error(message);
@@ -82,7 +82,7 @@ export function error<A>(message: A) {
 
 export function log<A>(message: A) {
     if(DEBUG) {
-        if(isMobile() && self.alert && !isChromeEmulator()) {
+        if(isMobile() && self.alert && isCordovaApp()) {
             alert('INFO : ' + message);
         } else if(self.console) {
             console.log(message);
@@ -127,16 +127,12 @@ export function isAndroid() {
     return navigator.userAgent.match(/Android/i);
 }
 
-export function cssValue(value: string): number {
-    return parseInt(value.replace(/[^-\d\.]/g, ''), 10);
-}
-
 export function isIOS7() {
     return isAppleMobile() && navigator.userAgent.match(/OS 7/);
 }
 
-export function isChromeEmulator(): boolean {
-    return window['cordova'] == undefined;
+export function isCordovaApp() {
+    return self['cordova'];
 }
 
 export function trampoline(fun: (...args: any[]) => any, ...args: any[]): any {
@@ -148,14 +144,14 @@ export function trampoline(fun: (...args: any[]) => any, ...args: any[]): any {
 }
 
 export function showKeyboard($el: ZeptoCollection) {
-    if(isAndroid() && !isChromeEmulator()) {
+    if(isAndroid() && isCordovaApp()) {
         cordova.plugins.SoftKeyboard.show();
     }
     $el.focus();
 }
 
 export function hideKeyboard() {
-    if(isAndroid() && !isChromeEmulator()) {
+    if(isAndroid() && isCordovaApp()) {
         cordova.plugins.SoftKeyboard.hide();
     }
 }

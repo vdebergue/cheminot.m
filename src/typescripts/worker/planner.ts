@@ -66,7 +66,6 @@ function receive(msg: any, deps: any) {
 
 function run(vsId: string, veId: string, stopTimes, max: number, config: any, deps): Q.Promise<any> {
     return deps.Storage.installDB(config, () => {}).then(() => {
-
         var tdspGraph = deps.Storage.tdspGraph();
         var exceptions = deps.Storage.exceptions();
         var limit = max;
