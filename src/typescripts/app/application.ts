@@ -116,10 +116,25 @@ export function init(views: seq.IList<IView>) {
                 );
             }),
 
-            trip: Abyssa.State('trip/', function(params) {
+            trip: Abyssa.State('trip/:start/:end/:when/:ts', function(params) {
+                var maybeTrip = opt.Option(this.router.flashData);
                 ensureInitApp('trip').then(() => {
-                    var tripView = cheminotViews.trip();
-                    return tripView.show()
+                    return opt.Option(params['start']).flatMap((start:string) => {
+                        return opt.Option(params['end']).flatMap((end:string) => {
+                            return opt.Option(params['when']).flatMap((when:string) => {
+                                return opt.Option(parseInt(when, 10));
+                            }).flatMap((when:number) => {
+                                return opt.Option(params['ts']).flatMap((ts:string) => {
+                                    return opt.Option(parseInt(ts, 10));
+                                }).map((ts:number) => {
+                                    console.log(start, end, when, ts, maybeTrip);
+                                    var tripView = cheminotViews.trip();
+                                    return tripView.show()
+                                });
+                            });
+                        });
+                    }).getOrElse(() => {
+                    });
                 });
             })
         })
@@ -166,6 +181,11 @@ export class Navigate {
 
     static timetable(start: string, end: string, when: number): Q.Promise<void> {
         return Cheminot.app().state('timetable/' + start + '/' + end + '/' + when);
+    }
+
+    static trip(start: string, end: string, when: number, ts: number, data): Q.Promise<void> {
+        var ressource = ['trip', start, end, when, ts].join('/');
+        return Cheminot.app().state(ressource, data);
     }
 }
 

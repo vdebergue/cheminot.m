@@ -76,7 +76,7 @@ class Timetable extends View implements IView {
     }
 
     bindEvents(): void {
-        super.bindEvent('tap', '.schedules > li', this.onScheduleSelected);
+        super.bindEvent('tap', '.schedules li', this.onScheduleSelected);
     }
 
     show(): Q.Promise<void> {
@@ -89,8 +89,15 @@ class Timetable extends View implements IView {
 
     onScheduleSelected(e: Event): boolean {
         var $schedule = $(e.currentTarget);
-        var tripId = $schedule.data('trip');
-        //App.navigateToTrip(tripId);
+        var schedule = {};
+        var ts = $schedule.data('starttime');
+
+        var $schedules = this.$scope().find('.schedules');
+        var startId = $schedules.data('start-id');
+        var endId = $schedules.data('end-id');
+        var when = $schedules.data('when');
+
+        App.Navigate.trip(startId, endId, when, ts, schedule);
         return false;
     }
 
@@ -129,7 +136,7 @@ class Timetable extends View implements IView {
     }
 
     buildWith(startId: string, endId: string, when: Date, append: boolean = false): Q.Promise<void> {
-        var maxResults = 6;
+        var maxResults = 1;
         var ftemplate = Templating.timetable.schedules();
         var fschedules = (() => {
             var vs = Storage.tdspGraph()[startId];
@@ -152,6 +159,7 @@ class Timetable extends View implements IView {
             var $schedules = $scope.find('.schedules');
             $schedules.data('startId', startId);
             $schedules.data('endId', endId);
+            $schedules.data('when', when.getTime());
             if(append) {
                 var list = $(dom).find('li').toArray();
                 $schedules.find('ul').append(list);

@@ -2,17 +2,18 @@
 @import 'font';
 
 #trip {
-    h2 {
-        padding-top: 13px
-        padding-bottom: 13px
-        box-sizing: border-box
-        margin: 0 auto
-        color: blue
-        border-bottom: 1px solid grey-light
-        text-align: center
-        background: #FFF
-        z-index: 2
-        position: relative
+
+    .title {
+
+        > span {
+            display: inline-block
+            height: 100%
+            line-height: 4
+        }
+
+        .to {
+            icon_cheminot('arrow-right', blue)
+        }
     }
 
     #wrapper {
@@ -20,13 +21,66 @@
         bottom: 0
         width: 100%
         overflow: hidden
+    }
 
-        ul {
-            position: absolute
-            width: 100%
+    .stops {
+        padding-left: 10%
+        position: absolute
+        width: 100%
 
-            > li {
-                text-align: center
+        > li {
+            height: 66px
+            display: flex
+            align-items: center
+
+            .stop, .at {
+                display: inline-block
+                height: 100%
+                line-height: 4
+            }
+
+            .at {
+                color: grey-dark
+                icon_batch('alarm-clock', grey-dark)
+            }
+
+            .stop {
+                padding-left: 20px
+                margin-left: 20px
+                border-left: 4px solid dark-blue
+                position: relative
+
+                &:before {
+                    content: ''
+                    position: absolute
+                    left: -12px
+                    top: 36%
+                    display: inline-block
+                    border-radius: 50%
+                    height: 20px
+                    width: 20px
+                    background: blue
+                }
+
+                &:after {
+                    content: ''
+                    position: absolute
+                    left: -7px
+                    top: 44%
+                    display: inline-block
+                    border-radius: 50%
+                    height: 10px
+                    width: 10px
+                    background: white
+                }
+
+                .name {
+                    color: grey-dark
+                }
+
+                .waiting {
+                    color: grey-light
+                }
             }
         }
     }

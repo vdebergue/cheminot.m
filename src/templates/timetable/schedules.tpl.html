@@ -5,7 +5,7 @@
 <% } else { %>
 <ul>
   <% schedules.forEach(function(x) { %>
-  <li data-endtime="<%= x.endTime %>">
+  <li data-starttime="<%= x.startTime %>" data-endtime="<%= x.endTime %>">
     <div class="meta">
       <% if(x.steps <= 1) { %>
          <span class="steps">Direct</span>

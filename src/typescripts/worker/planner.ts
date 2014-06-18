@@ -73,6 +73,7 @@ function run(vsId: string, veId: string, stopTimes, max: number, config: any, de
             if(limit > 0) {
                 return deps.tdsp.lookForBestTrip(tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions, debug).then((result) => {
                     --limit;
+                    debug(limit.toString());
                     return result;
                 }).catch((reason) => {
                     debug(reason);
