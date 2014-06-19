@@ -6,7 +6,6 @@ import IView = require('./IView');
 import View = require('./View');
 import Templating = require('./templating')
 import Storage = require('../db/storage');
-import planner = require('../models/Planner');
 import utils = require('../utils/utils');
 import opt = require('../lib/immutable/Option');
 import seq = require('../lib/immutable/List');
@@ -89,7 +88,7 @@ class Timetable extends View implements IView {
 
     onScheduleSelected(e: Event): boolean {
         var $schedule = $(e.currentTarget);
-        var schedule = {};
+        var schedule = $schedule.data('schedule');
         var ts = $schedule.data('starttime');
 
         var $schedules = this.$scope().find('.schedules');
@@ -101,73 +100,73 @@ class Timetable extends View implements IView {
         return false;
     }
 
-    private processResults(results: Array<any>): Array<any> {
-        return results.map((r) => {
-            var startTime = r[0].gi.departureTime;
-            var endTime = r[r.length - 1].gi.arrivalTime;
-            var duration = moment.utc(moment(endTime).diff(moment(startTime))).format('HH:mm');
-            var steps = (() => {
-                function countChangements(stops: Array<any>, tripId: opt.IOption<string> = new opt.None<string>(), counter: number = 0): number {
-                    var h = stops[0];
-                    if(h) {
-                        var t = stops.slice(1);
-                        var isSameTrip = !tripId.isDefined() || tripId.filter((id) => {
-                            return id == h.gi.tripId;
-                        }).isDefined();
-                        if(isSameTrip) {
-                            return countChangements(t, new opt.Some(h.gi.tripId), counter);
-                        } else {
-                            return countChangements(t, new opt.Some(h.gi.tripId), counter + 1);
-                        }
+    private processResult(result: any): any {
+        var startTime = result[0].gi.departureTime;
+        var endTime = result[result.length - 1].gi.arrivalTime;
+        var duration = moment.utc(moment(endTime).diff(moment(startTime))).format('HH:mm');
+        var steps = (() => {
+            function countChangements(stops: Array<any>, tripId: opt.IOption<string> = new opt.None<string>(), counter: number = 0): number {
+                var h = stops[0];
+                if(h) {
+                    var t = stops.slice(1);
+                    var isSameTrip = !tripId.isDefined() || tripId.filter((id) => {
+                        return id == h.gi.tripId;
+                    }).isDefined();
+                    if(isSameTrip) {
+                        return countChangements(t, new opt.Some(h.gi.tripId), counter);
                     } else {
-                        return counter;
+                        return countChangements(t, new opt.Some(h.gi.tripId), counter + 1);
                     }
+                } else {
+                    return counter;
                 }
-                return countChangements(r);
-            })();
+            }
+            return countChangements(result);
+        })();
 
-            return {
-                startTime: startTime,
-                endTime: endTime,
-                duration: duration,
-                steps: steps
-            };
-        });
+        return {
+            startTime: startTime,
+            endTime: endTime,
+            duration: duration,
+            steps: steps
+        };
     }
 
-    buildWith(startId: string, endId: string, when: Date, append: boolean = false): Q.Promise<void> {
+    buildWith(startId: string, endId: string, when: Date): Q.Promise<void> {
         var maxResults = 1;
-        var ftemplate = Templating.timetable.schedules();
+        var ftemplate = Templating.timetable.schedule();
         var fschedules = (() => {
             var vs = Storage.tdspGraph()[startId];
             var sortedStopTimes = _.sortBy(vs.stopTimes, (st:any) => {
                 return st.departureTime;
             });
             var beforeAndAfter = seq.fromArray(sortedStopTimes).partition((st:any) => {
-                var d1 = utils.timeFromTo(new Date(st.departureTime), when);
+                var d1 = utils.setSameTime(new Date(st.departureTime), when);
                 return d1.getTime() < when.getTime();
             });
             var before = beforeAndAfter._1;
             var after = beforeAndAfter._2;
             var departureTimes = after.append(before).asArray();
-            return PlannerTask.lookForBestTrip(startId, endId, departureTimes, maxResults);
+
+            return ftemplate.then((t) => {
+                return PlannerTask.lookForBestTrip(startId, endId, departureTimes, maxResults, (schedule) => {
+                    var dom = tmpl(t, { schedule: this.processResult(schedule) });
+                    var $scope = this.$scope();
+                    var $schedules = $scope.find('.schedules');
+                    $schedules.data('startId', startId);
+                    $schedules.data('endId', endId);
+                    $schedules.data('when', when.getTime());
+                    var $list = $schedules.find('ul');
+                    $list.append(dom);
+                    $list.find('li:last-child').data('schedule', JSON.stringify(schedule));
+                    this.toggleShowPullup();
+                    this.myIScroll.refresh();
+                });
+            });
         })();
 
-        return Q.all([ftemplate, fschedules]).spread<void>((t, schedules) => {
-            var dom = tmpl(t, { schedules: this.processResults(schedules) });
-            var $scope = this.$scope();
-            var $schedules = $scope.find('.schedules');
-            $schedules.data('startId', startId);
-            $schedules.data('endId', endId);
-            $schedules.data('when', when.getTime());
-            if(append) {
-                var list = $(dom).find('li').toArray();
-                $schedules.find('ul').append(list);
-            } else {
-                $schedules.html(dom);
-            }
-            this.toggleShowPullup();
-            this.myIScroll.refresh();
+        return fschedules.then(() => {
+            return utils.Promise.DONE();
         }).catch((reason) => {
             console.log(reason);
         });
@@ -189,7 +188,7 @@ class Timetable extends View implements IView {
         var lastEndTime =  $schedules.find('li:last-child').data('endtime');
         var startId = $schedules.data('startId');
         var endId = $schedules.data('endId');
-        this.buildWith(startId, endId, new Date(lastEndTime), true).then(() => {
+        this.buildWith(startId, endId, new Date(lastEndTime)).then(() => {
             this.myIScroll.refresh();
         });
     }

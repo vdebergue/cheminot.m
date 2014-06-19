@@ -121,7 +121,7 @@ export function initialize(graph: any, vsTripId: string, vsId: string, ts: numbe
         return moment(stopTime.departureTime).format('HH:mm:ss') === tsString && stopTime.tripId === vsTripId;
     });
 
-    var gs = new ArrivalTime(vs.id, stopTimeTs.arrivalTime, stopTimeTs.tripId, stopTimeTs.direction, stopTimeTs.departureTime);
+    var gs = new ArrivalTime(vs, stopTimeTs.arrivalTime, stopTimeTs.tripId, stopTimeTs.direction, stopTimeTs.departureTime);
 
     var indexed = {};
     var queue = [];
@@ -135,7 +135,7 @@ export function initialize(graph: any, vsTripId: string, vsId: string, ts: numbe
     Object.keys(graph).map((viId) => {
         var vi = graph[viId];
         if(vi.id != vsId) {
-            var gi = new ArrivalTime(vi.id, INFINI, null, null, null);
+            var gi = new ArrivalTime(vi, INFINI, null, null, null);
             var xi = {
                 stopId: vi.id,
                 gi: gi
@@ -151,12 +151,12 @@ export function initialize(graph: any, vsTripId: string, vsId: string, ts: numbe
 export class ArrivalTime {
     arrivalTime: number;
     tripId: string;
-    stopId: string;
+    stop: any;
     direction: string;
     departureTime: number;
 
-    constructor(stopId: string, arrivalTime: number, tripId: string, direction, departureTime: number) {
-        this.stopId = stopId;
+    constructor(stop: any,arrivalTime: number, tripId: string, direction, departureTime: number) {
+        this.stop = stop;
         this.arrivalTime = arrivalTime;
         this.tripId = tripId;
         this.direction = direction;

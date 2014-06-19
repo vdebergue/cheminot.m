@@ -70,10 +70,3 @@ export class Trip {
         // }
     }
 }
-
-export class StopTime {
-    public static formatTime(dateAsString: string): string {
-        var date = moment(dateAsString);
-        return date.format('HH:mm:ss')
-    }
-}

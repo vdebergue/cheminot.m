@@ -1,7 +1,9 @@
-<% trip.stops.foreach(function(stop) { %>
+<% stops.forEach(function(stop) { %>
 <li>
-  <%= stop.name %>
-  <%= stop.arrival %>
-  <%= stop.departure %>
+  <span class="at"><%= moment(stop.departureTime).format('HH:mm') %></span>
+  <div class="stop">
+    <span class="name"><%= stop.name %></span>
+    <span class="waiting"><%= stop.waiting %> min</span>
+  </div>
 </li>
 <% }); %>

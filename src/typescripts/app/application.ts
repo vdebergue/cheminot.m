@@ -8,6 +8,7 @@ import utils = require('./utils/utils');
 import IView = require('./views/IView');
 import View = require('./views/View');
 import Timetable = require('./views/Timetable');
+import Trip = require('./views/Trip');
 import Splashscreen = require('./views/Splashscreen');
 import Home = require('./views/Home');
 import Storage = require('./db/storage');
@@ -117,7 +118,11 @@ export function init(views: seq.IList<IView>) {
             }),
 
             trip: Abyssa.State('trip/:start/:end/:when/:ts', function(params) {
-                var maybeTrip = opt.Option(this.router.flashData);
+                var maybeTrip = opt.Option<any>(this.router.flashData).filter((f) => {
+                    return Object.keys(f).length > 0;
+                }).map((f) => {
+                    return f.trip;
+                });
                 ensureInitApp('trip').then(() => {
                     return opt.Option(params['start']).flatMap((start:string) => {
                         return opt.Option(params['end']).flatMap((end:string) => {
@@ -127,8 +132,8 @@ export function init(views: seq.IList<IView>) {
                                 return opt.Option(params['ts']).flatMap((ts:string) => {
                                     return opt.Option(parseInt(ts, 10));
                                 }).map((ts:number) => {
-                                    console.log(start, end, when, ts, maybeTrip);
                                     var tripView = cheminotViews.trip();
+                                    tripView.buildWith(start, end, new Date(when), ts, maybeTrip);
                                     return tripView.show()
                                 });
                             });
@@ -183,9 +188,9 @@ export class Navigate {
         return Cheminot.app().state('timetable/' + start + '/' + end + '/' + when);
     }
 
-    static trip(start: string, end: string, when: number, ts: number, data): Q.Promise<void> {
+    static trip(start: string, end: string, when: number, ts: number, trip): Q.Promise<void> {
         var ressource = ['trip', start, end, when, ts].join('/');
-        return Cheminot.app().state(ressource, data);
+        return Cheminot.app().state(ressource, { trip: trip });
     }
 }
 
@@ -215,8 +220,8 @@ class CheminotViews {
         return <Timetable>CheminotViews.view(this.views, 'timetable');
     }
 
-    trip(): Timetable {
-        return <Timetable>CheminotViews.view(this.views, 'trip');
+    trip(): Trip {
+        return <Trip>CheminotViews.view(this.views, 'trip');
     }
 
     static view(views: seq.IList<IView>, name: string): IView {

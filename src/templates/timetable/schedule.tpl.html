@@ -1,0 +1,22 @@
+<li data-starttime="<%= schedule.startTime %>" data-endtime="<%= schedule.endTime %>">
+  <div class="meta">
+    <% if(schedule.steps <= 1) { %>
+       <span class="steps">Direct</span>
+       <% } else { %>
+       <span class="steps">
+         <span class="value"><%= schedule.steps %></span>
+         <span class="changements"></span>
+       </span>
+       <% } %>
+       <span class="duration">
+         <span class="egg-timer"></span>
+         <span class="value"><%= schedule.duration %></span>
+       </span>
+  </div>
+  <div class="start-end">
+    <span class="alarm-clock"></span>
+    <span class="start"><%= moment(schedule.startTime).format('HH:mm') %></span>
+    <span class="to"></span>
+    <span class="end"><%= moment(schedule.endTime).format('HH:mm') %></span>
+  </div>
+</li>

@@ -59,7 +59,7 @@ export function viewportSize(): tuple.Tuple2<number, number> {
     );
 }
 
-export function timeFromTo(from: Date, reference: Date): Date {
+export function setSameTime(from: Date, reference: Date): Date {
     var h = from.getHours();
     var m = from.getMinutes();
     var s = from.getSeconds();

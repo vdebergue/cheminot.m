@@ -6,6 +6,10 @@ import View = require('./View');
 import Templating = require('./templating')
 import planner = require('../models/Planner');
 import seq = require('lib/immutable/List');
+import opt = require('../lib/immutable/Option');
+import utils = require('../utils/utils');
+import PlannerTask = require('../tasks/planner');
+import Storage = require('../db/storage');
 
 declare var tmpl:any;
 declare var IScroll:any;
@@ -48,24 +52,62 @@ class Trip extends View implements IView {
         });
     }
 
-    buildWith(trip: any): Q.Promise<void> {
-        return Templating.trip.details().then((t) => {
-            var $scope = this.$scope();
-            var stops = seq.fromArray(trip.stopTimes).map((stopTime:any) => {
-                return {
-                    name: stopTime.stop.name,
-                    arrival: planner.StopTime.formatTime(stopTime.arrival),
-                    departure: planner.StopTime.formatTime(stopTime.departure)
-                };
+    private processResult(result: any[]): any[] {
+        return result.map((next) => {
+            var waiting = Math.round(((next.gi.departureTime - next.gi.arrivalTime) / 1000) / 60);
+            return {
+                departureTime: next.gi.departureTime,
+                waiting: waiting,
+                name: next.gi.stop.name
+            }
+        });
+    }
+
+    buildWith(startId: string, endId: string, when: Date, ts: number, maybeTrip: opt.IOption<any>): Q.Promise<void> {
+        var ftemplate = Templating.trip.details();
+
+        return maybeTrip.map((trip) => {
+            return ftemplate.then((t) => {
+                var dom = tmpl(t, { stops: this.processResult(trip) });
+                var $stops = this.$scope().find('.stops');
+                $stops.html(dom);
             });
-            var dom = tmpl(t, {
-                trip: {
-                    id: trip.id,
-                    stops: stops
-                }
+        }).getOrElse(() => {
+            var fschedules = (() => {
+                var maxResults = 1;
+                var vs = Storage.tdspGraph()[startId];
+                var sortedStopTimes = _.sortBy(vs.stopTimes, (st:any) => {
+                    return st.departureTime;
+                });
+                var beforeAndAfter = seq.fromArray(sortedStopTimes).partition((st:any) => {
+                    var d1 = utils.setSameTime(new Date(st.departureTime), when);
+                    return d1.getTime() < when.getTime();
+                });
+                var before = beforeAndAfter._1;
+                var after = beforeAndAfter._2;
+                var departureTimes = after.append(before).asArray();
+
+                return ftemplate.then((t) => {
+                    return PlannerTask.lookForBestTrip(startId, endId, departureTimes, maxResults, (trip) => {
+                        if(trip[0].gi.departureTime == ts) {
+                            console.log(this.processResult(trip));
+                            var dom = tmpl(t, { stops: this.processResult(trip) });
+                            var $stops = this.$scope().find('.stops');
+                            $stops.html(dom);
+                        }
+                    });
+                });
+            })();
+            return fschedules.then(() => {
+                return utils.Promise.DONE();
             });
-            $scope.find('.stops').html(dom);
-            this.myIScroll.refresh();
         });
     }
 }
+
+// var dom = tmpl(t, { schedule: this.processResult(schedule) });
+// var $list = $schedules.find('ul');
+// $list.append(dom);
+// $list.find('li:last-child').data('schedule', JSON.stringify(schedule));
+// this.toggleShowPullup();
+// this.myIScroll.refresh();

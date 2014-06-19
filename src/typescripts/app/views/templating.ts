@@ -15,7 +15,7 @@ var paths = {
     timetable: {
         layout: 'layout.tpl.html',
         header: 'header.tpl.html',
-        schedules: 'schedules.tpl.html'
+        schedule: 'schedule.tpl.html'
     },
     trip: {
         layout: 'layout.tpl.html',
@@ -72,8 +72,8 @@ export var timetable = {
     header(): Q.Promise<string> {
         return getTemplate('header', opt.Option<string>('timetable'));
     },
-    schedules(): Q.Promise<string> {
-        return getTemplate('schedules', opt.Option<string>('timetable'));
+    schedule(): Q.Promise<string> {
+        return getTemplate('schedule', opt.Option<string>('timetable'));
     }
 }
 

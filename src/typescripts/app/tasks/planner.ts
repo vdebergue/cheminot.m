@@ -1,7 +1,7 @@
 import Cheminot = require('../Cheminot');
 import utils = require('../utils/utils');
 
-export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<number>, max: number): Q.Promise<any> {
+export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<number>, max: number, progress: (data: any) => void): Q.Promise<any> {
     var d = Q.defer<any>();
     var config = Cheminot.config();
     var worker = new Worker(config.workers.planner);
@@ -19,6 +19,8 @@ export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<num
         var msg = JSON.parse(e.data)
         if(msg.event == 'debug') {
             utils.log(msg.data);
+        } else if(msg.event == 'part') {
+            progress(msg.data);
         } else {
             if(msg.data) {
                 d.resolve(msg.data);
