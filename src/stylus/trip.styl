@@ -4,15 +4,20 @@
 #trip {
 
     .title {
+        display: flex
+        align-items: center
 
-        > span {
+        > div {
+            margin: 0 auto
             display: inline-block
-            height: 100%
-            line-height: 4
-        }
 
-        .to {
-            icon_cheminot('arrow-right', blue)
+            > span {
+                display: inline-block
+            }
+
+            .to {
+                icon_cheminot('arrow-right', blue)
+            }
         }
     }
 
@@ -35,20 +40,32 @@
 
             .stop, .at {
                 display: inline-block
-                height: 100%
-                line-height: 4
+            }
+
+            .waiting {
+                margin-top: 4px
+                display: block
             }
 
             .at {
+                position: relative
+                width: 15%
                 color: grey-dark
+                text-align: right
                 icon_batch('alarm-clock', grey-dark)
+
+                &:before {
+                    position: absolute
+                    left: -3px
+                }
             }
 
-            .stop {
+            .lign {
+                height: 100%
+                position: relative
                 padding-left: 20px
                 margin-left: 20px
                 border-left: 4px solid dark-blue
-                position: relative
 
                 &:before {
                     content: ''
@@ -73,7 +90,9 @@
                     width: 10px
                     background: white
                 }
+            }
 
+            .stop {
                 .name {
                     color: grey-dark
                 }
