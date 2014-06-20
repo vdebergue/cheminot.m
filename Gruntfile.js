@@ -225,7 +225,7 @@ module.exports = function(grunt) {
         },
         webfont: {
             icons: {
-                src: 'src/fonts/svg/batch/*.svg',
+                src: 'src/fonts/svg/cheminot/*.svg',
                 dest: 'src/fonts/generated',
                 options: {
                 }

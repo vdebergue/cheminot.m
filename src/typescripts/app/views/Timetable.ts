@@ -133,7 +133,6 @@ class Timetable extends View implements IView {
     }
 
     buildWith(startId: string, endId: string, when: Date): Q.Promise<void> {
-        var maxResults = 1;
         var ftemplate = Templating.timetable.schedule();
         var fschedules = (() => {
             var vs = Storage.tdspGraph()[startId];
@@ -149,7 +148,7 @@ class Timetable extends View implements IView {
             var departureTimes = after.append(before).asArray();
 
             return ftemplate.then((t) => {
-                return PlannerTask.lookForBestTrip(startId, endId, departureTimes, maxResults, (schedule) => {
+                return PlannerTask.lookForBestTrip(startId, endId, departureTimes, 1, (schedule) => {
                     var dom = tmpl(t, { schedule: this.processResult(schedule) });
                     var $scope = this.$scope();
                     var $schedules = $scope.find('.schedules');

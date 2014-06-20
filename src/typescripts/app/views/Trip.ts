@@ -35,7 +35,7 @@ class Trip extends View implements IView {
 
     initIScroll(): void {
         var $wrapper = this.$scope().find('#wrapper');
-        var offset = this.$scope().find('h2').offset();
+        var offset = this.$scope().find('.title').offset();
         var top = offset.top + offset.height;
         $wrapper.css('top', top);
         this.myIScroll = new IScroll('#trip #wrapper');
@@ -98,6 +98,7 @@ class Trip extends View implements IView {
                 });
             })();
             return fschedules.then(() => {
+                this.myIScroll.refresh();
                 return utils.Promise.DONE();
             });
         });

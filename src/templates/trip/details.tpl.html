@@ -1,6 +1,9 @@
 <% stops.forEach(function(stop) { %>
 <li>
-  <span class="at"><%= moment(stop.departureTime).format('HH:mm') %></span>
+  <div class="time">
+    <span class="alarm-clock"></span>
+    <span class="at"><%= moment(stop.departureTime).format('HH:mm') %></span>
+  </div>
   <span class="lign"></span>
   <div class="stop">
     <span class="name"><%= stop.name %></span>

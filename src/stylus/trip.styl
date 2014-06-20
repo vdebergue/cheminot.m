@@ -29,12 +29,11 @@
     }
 
     .stops {
-        padding-left: 10%
         position: absolute
         width: 100%
+        padding: 0 10% 
 
         > li {
-            height: 66px
             display: flex
             align-items: center
 
@@ -47,16 +46,17 @@
                 display: block
             }
 
-            .at {
-                position: relative
-                width: 15%
-                color: grey-dark
+            .time {
                 text-align: right
-                icon_batch('alarm-clock', grey-dark)
 
-                &:before {
-                    position: absolute
-                    left: -3px
+                .alarm-clock {
+                    icon_batch('alarm-clock', grey-dark)
+                }
+
+                .at {
+                    position: relative
+                    color: grey-dark
+                    text-align: right
                 }
             }
 
@@ -65,30 +65,14 @@
                 position: relative
                 padding-left: 20px
                 margin-left: 20px
-                border-left: 4px solid dark-blue
+
+                icon_cheminot('circle', blue)
 
                 &:before {
-                    content: ''
                     position: absolute
-                    left: -12px
-                    top: 36%
-                    display: inline-block
-                    border-radius: 50%
-                    height: 20px
-                    width: 20px
-                    background: blue
-                }
-
-                &:after {
-                    content: ''
-                    position: absolute
-                    left: -7px
-                    top: 44%
-                    display: inline-block
-                    border-radius: 50%
-                    height: 10px
-                    width: 10px
-                    background: white
+                    left: -0.63em
+                    background: #FFF
+                    top: 1.6em
                 }
             }
 
