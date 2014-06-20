@@ -55,7 +55,7 @@ export function init(views: seq.IList<IView>) {
     }
 
     var CheminotApp = Abyssa.Router({
-        app: Abyssa.State('', {
+        home: Abyssa.State('', {
             enter: function(params) {
                 var fromURL = window.location.href.match(/.*?#\/(\w+)\/?.*/);
                 var viewName = 'home';
@@ -95,53 +95,53 @@ export function init(views: seq.IList<IView>) {
                 homeView.fillStart(start);
                 homeView.fillEnd(end);
             }),
+        }),
 
-            timetable: Abyssa.State('timetable/:start/:end/:when', function(params) {
-                return this.async(
-                    opt.Option(params['start']).flatMap((start:string) => {
-                        return opt.Option(params['end']).flatMap((end:string) => {
-                            return opt.Option(params['when']).flatMap((when:string) => {
-                                return opt.Option(parseInt(when, 10));
-                            }).map((when:number) => {
-                                return ensureInitApp('timetable').then(() => {
-                                    var timetableView = cheminotViews.timetable();
-                                    return timetableView.show().then(() => {
-                                        return timetableView.buildWith(start, end, new Date(when));
-                                    });
+        timetable: Abyssa.State('timetable/:start/:end/:when', function(params) {
+            return this.async(
+                opt.Option(params['start']).flatMap((start:string) => {
+                    return opt.Option(params['end']).flatMap((end:string) => {
+                        return opt.Option(params['when']).flatMap((when:string) => {
+                            return opt.Option(parseInt(when, 10));
+                        }).map((when:number) => {
+                            return ensureInitApp('timetable').then(() => {
+                                var timetableView = cheminotViews.timetable();
+                                return timetableView.show().then(() => {
+                                    return timetableView.buildWith(start, end, new Date(when));
                                 });
                             });
                         });
-                    }).getOrElse(() => {
-                        return utils.Promise.DONE();
-                    })
-                );
-            }),
-
-            trip: Abyssa.State('trip/:start/:end/:when/:ts', function(params) {
-                var maybeTrip = opt.Option<any>(this.router.flashData).filter((f) => {
-                    return Object.keys(f).length > 0;
-                }).map((f) => {
-                    return f.trip;
-                });
-                ensureInitApp('trip').then(() => {
-                    return opt.Option(params['start']).flatMap((start:string) => {
-                        return opt.Option(params['end']).flatMap((end:string) => {
-                            return opt.Option(params['when']).flatMap((when:string) => {
-                                return opt.Option(parseInt(when, 10));
-                            }).flatMap((when:number) => {
-                                return opt.Option(params['ts']).flatMap((ts:string) => {
-                                    return opt.Option(parseInt(ts, 10));
-                                }).map((ts:number) => {
-                                    var tripView = cheminotViews.trip();
-                                    tripView.buildWith(start, end, new Date(when), ts, maybeTrip);
-                                    return tripView.show()
-                                });
-                            });
-                        });
-                    }).getOrElse(() => {
                     });
+                }).getOrElse(() => {
+                    return utils.Promise.DONE();
+                })
+            );
+        }),
+
+        trip: Abyssa.State('trip/:start/:end/:when/:ts', function(params) {
+            var maybeTrip = opt.Option<any>(this.router.flashData).filter((f) => {
+                return Object.keys(f).length > 0;
+            }).map((f) => {
+                return f.trip;
+            });
+            ensureInitApp('trip').then(() => {
+                return opt.Option(params['start']).flatMap((start:string) => {
+                    return opt.Option(params['end']).flatMap((end:string) => {
+                        return opt.Option(params['when']).flatMap((when:string) => {
+                            return opt.Option(parseInt(when, 10));
+                        }).flatMap((when:number) => {
+                            return opt.Option(params['ts']).flatMap((ts:string) => {
+                                return opt.Option(parseInt(ts, 10));
+                            }).map((ts:number) => {
+                                var tripView = cheminotViews.trip();
+                                tripView.buildWith(start, end, new Date(when), ts, maybeTrip);
+                                return tripView.show()
+                            });
+                        });
+                    });
+                }).getOrElse(() => {
                 });
-            })
+            });
         })
     });
 
