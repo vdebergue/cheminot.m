@@ -34,28 +34,23 @@ public class cheminotm extends CordovaActivity
         super.onCreate(savedInstanceState);
         super.init();
         try {
-            this.initDatabase();
+            this.copyDbFile("cheminot.db");
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
         }
         // Set by <content src="index.html" /> in config.xml
         super.loadUrl(Config.getStartUrl());
         //super.loadUrl("file:///android_asset/www/index.html")
     }
 
-    private void initDatabase() throws java.io.IOException
-    {
-        this.copyDbFile("cheminot.db", "db/", "");
-    }
-
-    private void copyDbFile(String dbFileName, String sourceDir, String outputDir) throws java.io.IOException
+    private void copyDbFile(String dbFileName) throws java.io.IOException
     {
         File dbFile = getDatabasePath(dbFileName);
         if(!dbFile.exists()){
             File dbDirectory = new File(dbFile.getParent());
             dbDirectory.mkdirs();
-            InputStream in = this.getApplicationContext().getAssets().open(sourceDir + dbFileName);
-            OutputStream out = new FileOutputStream(new File(dbDirectory.getAbsolutePath() + "/" + outputDir + dbFileName));
+            InputStream in = this.getApplicationContext().getAssets().open(dbFileName);
+            OutputStream out = new FileOutputStream(dbFile);
             byte[] buf = new byte[1024];
             int len;
             while ((len = in.read(buf)) > 0) {

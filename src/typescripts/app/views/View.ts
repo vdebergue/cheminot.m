@@ -75,9 +75,11 @@ class View {
     }
 
     static globalEvents(): void {
-        $('body').on('tap', '.back-btn', (e: Event) => {
+        var onBackButton = (e: Event) => {
             window.history.back();
             return true;
-        });
+        };
+        document.addEventListener("backbutton", onBackButton, false);
+        $('body').on('tap', '.back-btn', onBackButton);
     }
 }

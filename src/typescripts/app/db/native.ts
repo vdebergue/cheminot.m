@@ -11,7 +11,8 @@ declare var sqlitePlugin: any;
 var DB_NAME = 'cheminot';
 
 var db = _.once(() => {
-    return sqlitePlugin.openDatabase({name: "cheminot.db"});
+    var dbName = utils.isAppleMobile() ? "cheminot.db" : "cheminot";
+    return sqlitePlugin.openDatabase({name: dbName});
 });
 
 class NativeStorage implements Storage.IStorage {
