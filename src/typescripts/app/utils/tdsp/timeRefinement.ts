@@ -2,16 +2,15 @@ import tuple = require('lib/immutable/Tuple');
 import seq = require('lib/immutable/List');
 import either = require('lib/immutable/Either');
 import opt = require('lib/immutable/Option');
-import Storage = require('db/storage');
 import utils = require('utils/utils');
 import planner = require('models/Planner');
 import tdsp = require('./tdsp');
 
 export var INFINI = 9999999999999;
 
-function tripsAvailability(tripIds: seq.IList<string>, exceptions: any): Q.Promise<any> {
+function tripsAvailability(Storage: any, tripIds: seq.IList<string>, exceptions: any): Q.Promise<any> {
     var today = new Date();
-    return Storage.impl().tripsByIds(tripIds).then((trips) => {
+    return Storage.tripsByIds(tripIds).then((trips) => {
         return tripIds.foldLeft({}, function(acc, id) {
             return trips.find((trip) => {
                 return trip.id === id;
@@ -26,7 +25,7 @@ function tripsAvailability(tripIds: seq.IList<string>, exceptions: any): Q.Promi
     });
 }
 
-export function timeRefinement(graph: any, vsId: string, veId: string, vsTripId: string, ts: number, exceptions: any, debug: (msg: string) => void): Q.Promise<any> {
+export function timeRefinement(Storage: any, graph: any, vsId: string, veId: string, vsTripId: string, ts: number, exceptions: any, debug: (msg: string) => void): Q.Promise<any> {
     var RESULTS = {}
     var initializedQ = initialize(graph, vsTripId, vsId, ts);
     var indexed = initializedQ._1;
@@ -50,7 +49,7 @@ export function timeRefinement(graph: any, vsId: string, veId: string, vsTripId:
                         return Q.reject("break")
                     }
                 }
-                return refineArrivalTimes(graph, indexed, hvi, exceptions, (hvi.stopId === vsId), debug).then(() => {
+                return refineArrivalTimes(Storage, graph, indexed, hvi, exceptions, (hvi.stopId === vsId), debug).then(() => {
                     var d = Q.defer();
                     setTimeout(() => {
                         return d.resolve(_timeRefinement(queue, RESULTS));
@@ -68,14 +67,14 @@ export function timeRefinement(graph: any, vsId: string, veId: string, vsTripId:
     })(queue, RESULTS);
 }
 
-function refineArrivalTimes(graph: any, indexed: any, indexedVi: any, exceptions: any, isStart: boolean, debug: (msg: string) => void): Q.Promise<void> {
+function refineArrivalTimes(Storage: any, graph: any, indexed: any, indexedVi: any, exceptions: any, isStart: boolean, debug: (msg: string) => void): Q.Promise<void> {
     var vi = graph[indexedVi.stopId];
 
     var tripIds = seq.fromArray<string>(vi.stopTimes.map((st:any) => {
         return st.tripId;
     }));
 
-    return tripsAvailability(tripIds, exceptions).then((availabities) => {
+    return tripsAvailability(Storage, tripIds, exceptions).then((availabities) => {
         return vi.stopTimes.filter((st) => {
             return availabities[st.tripId] && (st.arrivalTime >= indexedVi.gi.arrivalTime);
         }).sort((a, b) => {

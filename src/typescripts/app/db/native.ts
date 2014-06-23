@@ -70,12 +70,21 @@ class NativeStorage implements Storage.IStorage {
     getTdspGraph(): Q.Promise<opt.IOption<any>> {
         var d = Q.defer<any>();
         db().transaction((t) => {
-            t.executeSql("SELECT value FROM cache WHERE key='tdsp_graph'", [], (t, data) => {
+            t.executeSql("SELECT * FROM tdsp", [], (t, data) => {
                 var maybeTdspGraph = opt.Option(data.rows).filter((rows:any) => {
                     return rows.length > 0;
                 }).map((rows:any) => {
-                    var r = rows.item(0);
-                    return JSON.parse(r.value);
+                    var result = {};
+                    for(var i=0; i<rows.length; i++) {
+                        var r = rows.item(i);
+                        result[r.id] = {
+                            id: r.id,
+                            name: r.name,
+                            edges: JSON.parse(r.edges),
+                            stopTimes: JSON.parse(r.stopTimes)
+                        };
+                    }
+                    return result;
                 });
                 d.resolve(maybeTdspGraph);
             }, (t, error) => {

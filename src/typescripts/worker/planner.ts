@@ -6,21 +6,78 @@ declare var require;
 var ready = Q.defer<boolean>();
 var readyPromise = ready.promise;
 var stash = [];
+var pendings = {};
 
 var EVENTS = {
     search: "search",
     end: "end",
-    part: "part",
+    progress: "progress",
+    query: "query",
     debug: "debug"
+};
+
+var Protocol = {
+    reply: function (id: string, data: any): Q.Promise<any> {
+        var d = Q.defer<any>();
+        var value = JSON.stringify(data);
+        (<any>self).postMessage(value);
+        pendings[id] = value;
+        return d.promise.fin(() => {
+            delete pendings[id];
+        });
+    },
+    debug: function (message: string): void {
+        return this.reply(EVENTS.debug, {
+            event: EVENTS.debug,
+            data: message
+        });
+    },
+    query: function (name, params: any[] = []): Q.Promise<any> {
+        return this.reply(EVENTS.query, {
+            event: EVENTS.query,
+            data: {
+                name: name,
+                params: params
+            }
+        });
+    },
+    progress: function(result: any): Q.Promise<any> {
+        return this.reply(EVENTS.progress, {
+            event: EVENTS.progress,
+            data: result
+        });
+    },
+    end: function(results: any): Q.Promise<any> {
+        return this.reply(EVENTS.end, {
+            event: EVENTS.end,
+            data: results.filter((x) => {
+                return x != null;
+            })
+        });
+    }
 };
 
 var CONFIG = null;
 
-require(["db/storage", "utils/tdsp/tdsp", "utils/utils"], function(Storage, tdsp, utils) {
+var STORAGE = {
+    installDB: function(config: any, progress: (string, any?) => void): Q.Promise<void> {
+        return Protocol.query('installDB', [config, progress]);
+    },
+    tripsByIds: function(ids: string[]): Q.Promise<string[]> {
+        return Protocol.query('tripsByIds');
+    },
+    tdspGraph: function(): any {
+        return Protocol.query('tdspGraph');
+    },
+    exceptions: function(): any {
+        return Protocol.query('exceptions');
+    }
+};
+
+require(["utils/tdsp/tdsp", "utils/utils"], function(tdsp, utils) {
     ready.resolve(true);
     stash.forEach((msg) => {
         receive(msg, {
-            Storage: Storage,
             tdsp: tdsp,
             utils: utils
         });
@@ -29,7 +86,6 @@ require(["db/storage", "utils/tdsp/tdsp", "utils/utils"], function(Storage, tdsp
     ready.resolve(true);
     self.addEventListener('message', function(e) {
         receive(JSON.parse(e.data), {
-            Storage: Storage,
             tdsp: tdsp,
             utils: utils
         });
@@ -43,58 +99,41 @@ self.addEventListener('message', function(e) {
     }
 }, false);
 
-function reply(data: any) {
-    (<any>self).postMessage(JSON.stringify(data));
-}
-
-function debug(message: string) {
-    (<any>self).postMessage(JSON.stringify({
-        event: EVENTS.debug,
-        data: message
-    }));
-}
-
 function receive(msg: any, deps: any) {
     switch(msg.event) {
     case EVENTS.search: {
-        debug("Let's starting !");
+        Protocol.debug("Let's starting !");
         run(msg.vsId, msg.veId, msg.stopTimes, msg.max, msg.config, deps);
         break;
+    }
+    case EVENTS.query: {
+        pendings[msg.name].resolve(msg.data);
     }
     default: break;
     }
 }
 
 function run(vsId: string, veId: string, stopTimes, max: number, config: any, deps): Q.Promise<any> {
-    return deps.Storage.installDB(config, () => {}).then(() => {
-        var tdspGraph = deps.Storage.tdspGraph();
-        var exceptions = deps.Storage.exceptions();
+    return STORAGE.installDB(config, () => {}).then(() => {
+        var tdspGraph = STORAGE.tdspGraph();
+        var exceptions = STORAGE.exceptions();
         var limit = max;
         return deps.utils.sequencePromises(stopTimes, (st) => {
             if(limit > 0) {
-                return deps.tdsp.lookForBestTrip(tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions, debug).then((result) => {
+                return deps.tdsp.lookForBestTrip(tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions, Protocol.debug).then((result) => {
                     --limit;
-                    reply({
-                        event: EVENTS.part,
-                        data: result
-                    });
-                    debug(limit.toString());
+                    Protocol.progress(result);
                     return result;
                 }).catch((reason) => {
-                    debug(reason);
+                    Protocol.debug(reason);
                 });
             } else {
                 return deps.utils.Promise.DONE();
             }
         }).then((results) => {
-            reply({
-                event: EVENTS.end,
-                data: results.filter((x) => {
-                    return x != null;
-                })
-            });
+            Protocol.end(results);
         }).catch((reason) => {
-            reply({
+            Protocol.end({
                 event: EVENTS.end,
                 error: reason,
                 data: null
