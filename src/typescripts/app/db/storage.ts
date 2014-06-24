@@ -23,7 +23,7 @@ export interface IStorage {
     putVersion(version: string): Q.Promise<void>;
     version(): Q.Promise<opt.IOption<string>>;
     tripById(id: string): Q.Promise<opt.IOption<any>>;
-    tripsByIds(ids: seq.IList<string>): Q.Promise<seq.IList<any>>;
+    tripsByIds(ids: string[]): Q.Promise<any[]>;
 }
 
 export function impl(): IStorage {

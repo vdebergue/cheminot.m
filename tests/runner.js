@@ -41,27 +41,28 @@ require(['require', '../chai', '../mocha'], function(require, chai) {
 
             describe('Time dependent graph', function() {
 
-                describe('From Chartres to Paris Montparnasse at any valid start time', function() {
-                    this.timeout(1000 * 60 * 2);
 
-                    it('should return valid trips for one day at different starting time', function(done) {
-                        var vsId = STOPS['Chartres'];
-                        var veId = STOPS['Paris-Montparnasse 1-2'];
-                        var vs = Storage.tdspGraph()[vsId];
+                // describe('From Chartres to Paris Montparnasse at any valid start time', function() {
+                //     this.timeout(1000 * 60 * 2);
 
-                        var departureTimes = seq.List.apply(null, _.sortBy(vs.stopTimes, function(st) {
-                            return st.departureTime;
-                        }));
+                //     it('should return valid trips for one day at different starting time', function(done) {
+                //         var vsId = STOPS['Chartres'];
+                //         var veId = STOPS['Paris-Montparnasse 1-2'];
+                //         var vs = Storage.tdspGraph()[vsId];
 
-                        PlannerTask.lookForBestTrip(vsId, veId, departureTimes.asArray(), 4).then(function(results) {
-                            console.log(results);
-                            done();
-                        }).fail(function(reason) {
-                            console.log('ERROR', reason);
-                            done();
-                        });
-                    });
-                });
+                //         var departureTimes = _.sortBy(vs.stopTimes, function(st) {
+                //             return st.departureTime;
+                //         });
+
+                //         PlannerTask.lookForBestTrip(vsId, veId, departureTimes, 4).then(function(results) {
+                //             console.log(results);
+                //             done();
+                //         }).fail(function(reason) {
+                //             console.log('ERROR', reason);
+                //             done();
+                //         });
+                //     });
+                // });
 
 
                 describe('From Chartres to Paris-Montparnasse', function() {
@@ -71,17 +72,35 @@ require(['require', '../chai', '../mocha'], function(require, chai) {
                         var ts = moment().hours(7).minutes(57).seconds(0).toDate().getTime();
                         var vsId = STOPS['Chartres'];
                         var veId = STOPS['Paris-Montparnasse 1-2'];
-                        var vsTripId = 'OCESN016756F0100317032';
-                        tdsp.lookForBestTrip(Storage.tdspGraph(), vsId, veId, vsTripId, ts, Storage.exceptions()).then(function(results) {
+                        var vsTripId = 'OCESN016756F0100230254';
+                        var debug = function() {};
+
+                        var STORAGE = {
+                            installDB: function() {
+                                Storage.installDB(window.config, function() {});
+                            },
+                            tripsByIds: function(ids) {
+                                return Storage.impl().tripsByIds(ids);
+                            },
+                            tdspGraph: function() {
+                                return utils.Promise.pure(Storage.tdspGraph());
+                            },
+                            exceptions: function() {
+                                return utils.Promise.pure(Storage.exceptions());
+                            }
+                        };
+
+                        tdsp.lookForBestTrip(STORAGE, Storage.tdspGraph(), vsId, veId, vsTripId, ts, Storage.exceptions(), debug).then(function(results) {
                             console.log(results);
-                            expect(asTimeString(results[0].gi.arrivalTime)).to.equal('07:46:00');
+                            expect(asTimeString(results[0].gi.arrivalTime)).to.equal('07:48:00');
                             expect(asTimeString(results[1].gi.arrivalTime)).to.equal('08:09:00');
                             expect(asTimeString(results[2].gi.arrivalTime)).to.equal('08:16:00');
                             expect(asTimeString(results[3].gi.arrivalTime)).to.equal('08:29:00');
                             expect(asTimeString(results[4].gi.arrivalTime)).to.equal('08:51:00');
                             expect(asTimeString(results[5].gi.arrivalTime)).to.equal('09:05:00');
+                            expect(results.length).to.equal(6);
                             done();
-                        }).fail(function(reason) {
+                        }).catch(function(reason) {
                             console.log('ERROR', reason);
                         });
                     });
@@ -108,7 +127,7 @@ require(['require', '../chai', '../mocha'], function(require, chai) {
 
             });
 
-        }).fail(function(error) {
+        }).catch(function(error) {
             console.log(error);
         });
     });

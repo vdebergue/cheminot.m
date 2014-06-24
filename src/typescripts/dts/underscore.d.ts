@@ -95,6 +95,11 @@ interface UnderscoreStatic {
 		iterator: _.ListIterator<T, void>,
 		context?: any): void;
 
+    partition<T>(
+        list: _.List<T>,
+        predicate: _.ListIterator<T, boolean>
+    )
+
 	/**
 	* @see _.each
 	* @param object Iterators over this object's properties.

@@ -17,38 +17,46 @@ var EVENTS = {
 };
 
 var Protocol = {
-    reply: function (id: string, data: any): Q.Promise<any> {
+    ask: function (id: string, data: any): Q.Promise<any> {
         var d = Q.defer<any>();
         var value = JSON.stringify(data);
+        pendings[id] = d;
         (<any>self).postMessage(value);
-        pendings[id] = value;
-        return d.promise.fin(() => {
+        return Q.timeout(d.promise, 6000).finally(() => {
             delete pendings[id];
         });
     },
-    debug: function (message: string): void {
-        return this.reply(EVENTS.debug, {
+    tell: function (data: any): void {
+        var d = Q.defer<any>();
+        var value = JSON.stringify(data);
+        (<any>self).postMessage(value);
+    },
+    debug: function (message: any): void {
+        return this.tell({
             event: EVENTS.debug,
             data: message
         });
     },
     query: function (name, params: any[] = []): Q.Promise<any> {
-        return this.reply(EVENTS.query, {
+        return this.ask(name, {
             event: EVENTS.query,
             data: {
                 name: name,
                 params: params
             }
+        }).then((x) => {
+            this.debug(x);
+            return x
         });
     },
-    progress: function(result: any): Q.Promise<any> {
-        return this.reply(EVENTS.progress, {
+    progress: function(result: any): void {
+        this.tell({
             event: EVENTS.progress,
             data: result
         });
     },
-    end: function(results: any): Q.Promise<any> {
-        return this.reply(EVENTS.end, {
+    end: function(results: any): void {
+        this.tell({
             event: EVENTS.end,
             data: results.filter((x) => {
                 return x != null;
@@ -64,31 +72,32 @@ var STORAGE = {
         return Protocol.query('installDB', [config, progress]);
     },
     tripsByIds: function(ids: string[]): Q.Promise<string[]> {
-        return Protocol.query('tripsByIds');
+        return Protocol.query('tripsByIds', [ids]);
     },
-    tdspGraph: function(): any {
+    tdspGraph: function(): Q.Promise<any> {
         return Protocol.query('tdspGraph');
     },
-    exceptions: function(): any {
+    exceptions: function(): Q.Promise<any> {
         return Protocol.query('exceptions');
     }
 };
 
 require(["utils/tdsp/tdsp", "utils/utils"], function(tdsp, utils) {
+    var deps = {
+        tdsp: tdsp,
+        utils: utils
+    }
+
     ready.resolve(true);
+
     stash.forEach((msg) => {
-        receive(msg, {
-            tdsp: tdsp,
-            utils: utils
-        });
+        receive(msg, deps);
     });
+
     stash = [];
-    ready.resolve(true);
+
     self.addEventListener('message', function(e) {
-        receive(JSON.parse(e.data), {
-            tdsp: tdsp,
-            utils: utils
-        });
+        receive(JSON.parse(e.data), deps);
     });
 });
 
@@ -114,26 +123,40 @@ function receive(msg: any, deps: any) {
 }
 
 function run(vsId: string, veId: string, stopTimes, max: number, config: any, deps): Q.Promise<any> {
+    Protocol.debug("Install DB !");
     return STORAGE.installDB(config, () => {}).then(() => {
-        var tdspGraph = STORAGE.tdspGraph();
-        var exceptions = STORAGE.exceptions();
-        var limit = max;
-        return deps.utils.sequencePromises(stopTimes, (st) => {
-            if(limit > 0) {
-                return deps.tdsp.lookForBestTrip(tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions, Protocol.debug).then((result) => {
-                    --limit;
-                    Protocol.progress(result);
-                    return result;
-                }).catch((reason) => {
-                    Protocol.debug(reason);
+        return Q.spread<any>([STORAGE.tdspGraph(), STORAGE.exceptions()], (tdspGraph, exceptions) => {
+            var limit = max;
+            Protocol.debug("Running !");
+            return deps.utils.sequencePromises(stopTimes, (st) => {
+                Protocol.debug(st);
+                if(limit > 0) {
+                    Protocol.debug('lookForBestTrip');
+                    Protocol.debug(deps.tdsp.lookForBestTrip.toString());
+                    return deps.tdsp.lookForBestTrip(STORAGE, tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions, Protocol.debug).then((result) => {
+                        --limit;
+                        Protocol.debug("progress...");
+                        Protocol.progress(result);
+                        return result;
+                    }).catch((reason) => {
+                        Protocol.debug(reason);
+                    });
+                } else {
+                    return deps.utils.Promise.DONE();
+                }
+            }).then((results) => {
+                Protocol.end(results);
+            }).catch((reason) => {
+                Protocol.debug(reason);
+                Protocol.tell({
+                    event: EVENTS.end,
+                    error: reason,
+                    data: null
                 });
-            } else {
-                return deps.utils.Promise.DONE();
-            }
-        }).then((results) => {
-            Protocol.end(results);
-        }).catch((reason) => {
-            Protocol.end({
+            });
+        }, (reason) => {
+            Protocol.debug(reason);
+            Protocol.tell({
                 event: EVENTS.end,
                 error: reason,
                 data: null

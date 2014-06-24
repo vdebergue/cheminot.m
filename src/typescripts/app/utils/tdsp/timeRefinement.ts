@@ -8,24 +8,24 @@ import tdsp = require('./tdsp');
 
 export var INFINI = 9999999999999;
 
-function tripsAvailability(Storage: any, tripIds: seq.IList<string>, exceptions: any): Q.Promise<any> {
+function tripsAvailability(Storage: any, tripIds: string[], exceptions: any, debug: (msg: any) => void): Q.Promise<any> {
     var today = new Date();
     return Storage.tripsByIds(tripIds).then((trips) => {
-        return tripIds.foldLeft({}, function(acc, id) {
-            return trips.find((trip) => {
+        return tripIds.reduce((acc, id) => {
+            return opt.Option(trips.filter((trip) => {
                 return trip.id === id;
-            }).map((trip) => {
+            })[0]).map((trip) => {
                 acc[id] = planner.Trip.isValidOn(trip, today, exceptions);
                 return acc;
             }).getOrElse(() => {
                 acc[id] = false;
                 return acc;
             });
-        });
+        }, {});
     });
 }
 
-export function timeRefinement(Storage: any, graph: any, vsId: string, veId: string, vsTripId: string, ts: number, exceptions: any, debug: (msg: string) => void): Q.Promise<any> {
+export function timeRefinement(Storage: any, graph: any, vsId: string, veId: string, vsTripId: string, ts: number, exceptions: any, debug: (msg: any) => void): Q.Promise<any> {
     var RESULTS = {}
     var initializedQ = initialize(graph, vsTripId, vsId, ts);
     var indexed = initializedQ._1;
@@ -67,14 +67,14 @@ export function timeRefinement(Storage: any, graph: any, vsId: string, veId: str
     })(queue, RESULTS);
 }
 
-function refineArrivalTimes(Storage: any, graph: any, indexed: any, indexedVi: any, exceptions: any, isStart: boolean, debug: (msg: string) => void): Q.Promise<void> {
+function refineArrivalTimes(Storage: any, graph: any, indexed: any, indexedVi: any, exceptions: any, isStart: boolean, debug: (msg: any) => void): Q.Promise<void> {
     var vi = graph[indexedVi.stopId];
 
-    var tripIds = seq.fromArray<string>(vi.stopTimes.map((st:any) => {
+    var tripIds =vi.stopTimes.map((st:any) => {
         return st.tripId;
-    }));
+    });
 
-    return tripsAvailability(Storage, tripIds, exceptions).then((availabities) => {
+    return tripsAvailability(Storage, tripIds, exceptions, debug).then((availabities) => {
         return vi.stopTimes.filter((st) => {
             return availabities[st.tripId] && (st.arrivalTime >= indexedVi.gi.arrivalTime);
         }).sort((a, b) => {

@@ -45,7 +45,8 @@ export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<num
 function giveBackQueryResult(worker: any, name: string, data: any) {
     worker.postMessage(JSON.stringify({
         event: 'query',
-        data: data
+        data: data,
+        name: name
     }));
 }
 

@@ -162,22 +162,26 @@ class NativeStorage implements Storage.IStorage {
         });
     }
 
-    tripsByIds(ids: seq.IList<string>): Q.Promise<seq.IList<any>> {
-        var d = Q.defer<seq.IList<any>>();
+    tripsByIds(ids: string[]): Q.Promise<any[]> {
+        var d = Q.defer<any[]>();
 
-        var tripsFromCache = Storage.TRIPS.map((trips) => {
+        var fromCache = Storage.TRIPS.map((trips) => {
             return ids.map((id) => {
                 return opt.Option(trips[id]);
-            }).flatten();
+            }).filter((maybeTrip) => {
+                return maybeTrip.isDefined();
+            }).map((trip) => {
+                return trip.get();
+            });
         }).getOrElse(() => {
-            return new seq.Nil();
+            return [];
         });
 
-        var tripIdsFromCache = tripsFromCache.map((t:any) => {
+        var fromCacheIds = fromCache.map((t:any) => {
             return t.id;
         });
 
-        var toQuery = _.difference(ids.asArray(), tripIdsFromCache.asArray());
+        var toQuery = _.difference(ids, fromCacheIds);
 
         if(toQuery.length > 0) {
             db().transaction((t) => {
@@ -186,7 +190,7 @@ class NativeStorage implements Storage.IStorage {
                 }).join(' OR ');
                 var sql = 'SELECT * FROM trips WHERE ' + like;
                 t.executeSql(sql, [], (t, data) => {
-                    var results = new seq.Nil<any>();
+                    var results = new Array<any>();
                     var trips = new range.Range(0, data.rows.length - 1).toList().map((index) => {
                         var group = data.rows.item(index);
                         var trips = JSON.parse(group.trips);
@@ -194,9 +198,9 @@ class NativeStorage implements Storage.IStorage {
                         var found = seq.fromArray(toQuery).map((id) => {
                             return opt.Option(trips[id]);
                         }).flatten();
-                        results = results.prepend(found);
+                        results = results.concat(found.asArray());
                     });
-                    results = results.prepend(tripsFromCache);
+                    results = results.concat(fromCache);
                     d.resolve(results);
                 }, (t, error) => {
                     utils.error(error);
@@ -204,7 +208,7 @@ class NativeStorage implements Storage.IStorage {
                 });
             });
         } else {
-            d.resolve(tripsFromCache);
+            d.resolve(fromCache);
         }
         return d.promise;
     }

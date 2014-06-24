@@ -262,38 +262,39 @@ class IndexedDBStorage implements Storage.IStorage {
         });
     }
 
-    tripsByIds(ids: seq.IList<string>): Q.Promise<seq.IList<any>> {
+    tripsByIds(ids: string[]): Q.Promise<any[]> {
         var fromCache = Storage.TRIPS.map((trips) => {
             return ids.map((id) => {
                 return opt.Option<any>(trips[id]);
-            }).flatten();
+            }).filter((maybeTrip) => {
+                return maybeTrip.isDefined();
+            }).map((trip) => {
+                return trip.get();
+            });
         }).getOrElse(() => {
-            return new seq.Nil<any>();
+            return [];
         });
 
         var fromCacheIds = fromCache.map((trip:any) => {
             return trip.id;
         });
 
-        var toQuery = (() => {
-            var diff = _.difference(ids.asArray(), fromCacheIds.asArray());
-            return seq.fromArray(diff);
-        })();
+        var toQuery = _.difference(ids, fromCacheIds);
 
         var results = fromCache;
 
-        if(!toQuery.isEmpty()) {
+        if(toQuery.length > 0) {
             return cursor("trips", (group) => {
                 Storage.addTripsToCache(group.trips);
-                var x = toQuery.partition((id) => {
+                var x = _.partition(toQuery, (id) => {
                     return group.trips[id] != null;
                 });
-                toQuery = x._2;
-                var fetched = x._1.map((id) => {
+                toQuery = x[1];
+                var fetched = x[0].map((id) => {
                     return group.trips[id];
                 });
-                results = results.prepend(fetched);
-                return toQuery.length() > 0;
+                results = results.concat(fetched);
+                return toQuery.length > 0;
             }).then(() => {
                 return results;
             });
