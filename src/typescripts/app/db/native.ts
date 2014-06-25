@@ -142,7 +142,7 @@ class NativeStorage implements Storage.IStorage {
         }).getOrElse(() => {
             var d = Q.defer<any>();
             db().transaction((t) => {
-                t.executeSql("SELECT * FROM trips WHERE ids LIKE '%" + id + "%'", [], (t, data) => {
+                t.executeSql("SELECT * FROM trips WHERE id =  ?", [id], (t, data) => {
                     d.resolve(
                         opt.Option<any>(data.rows).filter((rows) => {
                             return rows.length > 0;
@@ -185,23 +185,21 @@ class NativeStorage implements Storage.IStorage {
 
         if(toQuery.length > 0) {
             db().transaction((t) => {
-                var like = toQuery.map((id) => {
-                    return "ids LIKE '%" + id + "%'";
+                var byIds = toQuery.map((id) => {
+                    return 'id = "?"'.replace('?', id);
                 }).join(' OR ');
-                var sql = 'SELECT * FROM trips WHERE ' + like;
+                var sql = 'SELECT * FROM trips WHERE ' + byIds;
                 t.executeSql(sql, [], (t, data) => {
-                    var results = new Array<any>();
-                    var trips = new range.Range(0, data.rows.length - 1).toList().map((index) => {
-                        var group = data.rows.item(index);
-                        var trips = JSON.parse(group.trips);
-                        Storage.addTripsToCache(trips);
-                        var found = seq.fromArray(toQuery).map((id) => {
-                            return opt.Option(trips[id]);
-                        }).flatten();
-                        results = results.concat(found.asArray());
-                    });
-                    results = results.concat(fromCache);
-                    d.resolve(results);
+                    var trips = new Array<any>();
+                    for(var i=0; i<data.rows.length; i++) {
+                        trips.push(data.rows.item(i));
+                    }
+                    var tripsToCache = trips.reduce((acc, trip) => {
+                        acc[trip.id] = trip;
+                        return acc;
+                    }, {});
+                    Storage.addTripsToCache(tripsToCache);
+                    d.resolve(fromCache.concat(trips));
                 }, (t, error) => {
                     utils.error(error);
                     d.reject(error);

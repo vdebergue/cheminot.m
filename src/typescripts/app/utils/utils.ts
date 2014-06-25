@@ -72,20 +72,20 @@ export function oops(message: string): void {
 
 export function error<A>(message: A) {
     if(DEBUG) {
-        if(isMobile() && self.alert && isCordovaApp()) {
-            alert('ERROR ' + message);
-        } else if(self.console) {
+        if(self.console) {
             console.error(message);
+        } else if(self.alert) {
+            alert(message);
         }
     }
 }
 
 export function log<A>(message: A) {
     if(DEBUG) {
-        if(isMobile() && self.alert && isCordovaApp()) {
-            alert('INFO : ' + message);
-        } else if(self.console) {
+        if(self.console) {
             console.log(message);
+        } else if(self.alert) {
+            alert('INFO : ' + message);
         }
     }
 }

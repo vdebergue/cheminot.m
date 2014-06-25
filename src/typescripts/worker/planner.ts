@@ -23,6 +23,7 @@ var Protocol = {
         pendings[id] = d;
         (<any>self).postMessage(value);
         return Q.timeout(d.promise, 6000).finally(() => {
+            this.debug('deleting ' + id);
             delete pendings[id];
         });
     },
@@ -44,9 +45,6 @@ var Protocol = {
                 name: name,
                 params: params
             }
-        }).then((x) => {
-            this.debug(x);
-            return x
         });
     },
     progress: function(result: any): void {
@@ -72,6 +70,7 @@ var STORAGE = {
         return Protocol.query('installDB', [config, progress]);
     },
     tripsByIds: function(ids: string[]): Q.Promise<string[]> {
+        Protocol.debug('tripsByIds');
         return Protocol.query('tripsByIds', [ids]);
     },
     tdspGraph: function(): Q.Promise<any> {
@@ -116,26 +115,26 @@ function receive(msg: any, deps: any) {
         break;
     }
     case EVENTS.query: {
-        pendings[msg.name].resolve(msg.data);
+        if(pendings[msg.name]) {
+            pendings[msg.name].resolve(msg.data);
+        } else {
+            Protocol.debug('No pending promise for ' + msg.name);
+        }
     }
     default: break;
     }
 }
 
 function run(vsId: string, veId: string, stopTimes, max: number, config: any, deps): Q.Promise<any> {
-    Protocol.debug("Install DB !");
     return STORAGE.installDB(config, () => {}).then(() => {
         return Q.spread<any>([STORAGE.tdspGraph(), STORAGE.exceptions()], (tdspGraph, exceptions) => {
             var limit = max;
-            Protocol.debug("Running !");
             return deps.utils.sequencePromises(stopTimes, (st) => {
-                Protocol.debug(st);
                 if(limit > 0) {
                     Protocol.debug('lookForBestTrip');
-                    Protocol.debug(deps.tdsp.lookForBestTrip.toString());
                     return deps.tdsp.lookForBestTrip(STORAGE, tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions, Protocol.debug).then((result) => {
                         --limit;
-                        Protocol.debug("progress...");
+                        Protocol.debug('progress');
                         Protocol.progress(result);
                         return result;
                     }).catch((reason) => {
