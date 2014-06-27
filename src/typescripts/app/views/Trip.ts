@@ -38,7 +38,7 @@ class Trip extends View implements IView {
         var offset = this.$scope().find('.title').offset();
         var top = offset.top + offset.height;
         $wrapper.css('top', top);
-        this.myIScroll = new IScroll('#trip #wrapper');
+        this.myIScroll = new IScroll('#trip #wrapper', {'bounce': false});
     }
 
     bindEvents(): void {

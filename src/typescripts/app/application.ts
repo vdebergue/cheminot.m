@@ -119,7 +119,7 @@ export function init(views: seq.IList<IView>) {
         }),
 
         trip: Abyssa.State('trip/:start/:end/:when/:ts', function(params) {
-            var maybeTrip = opt.Option<any>(this.router.flashData).filter((f) => {
+            var maybeTrip = opt.Option<any>(this.router.flash).filter((f) => {
                 return Object.keys(f).length > 0;
             }).map((f) => {
                 return f.trip;

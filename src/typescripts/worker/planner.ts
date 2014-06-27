@@ -23,7 +23,6 @@ var Protocol = {
         pendings[id] = d;
         (<any>self).postMessage(value);
         return Q.timeout(d.promise, 6000).finally(() => {
-            this.debug('deleting ' + id);
             delete pendings[id];
         });
     },
@@ -70,7 +69,6 @@ var STORAGE = {
         return Protocol.query('installDB', [config, progress]);
     },
     tripsByIds: function(ids: string[]): Q.Promise<string[]> {
-        Protocol.debug('tripsByIds');
         return Protocol.query('tripsByIds', [ids]);
     },
     tdspGraph: function(): Q.Promise<any> {
@@ -131,10 +129,8 @@ function run(vsId: string, veId: string, stopTimes, max: number, config: any, de
             var limit = max;
             return deps.utils.sequencePromises(stopTimes, (st) => {
                 if(limit > 0) {
-                    Protocol.debug('lookForBestTrip');
                     return deps.tdsp.lookForBestTrip(STORAGE, tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions, Protocol.debug).then((result) => {
                         --limit;
-                        Protocol.debug('progress');
                         Protocol.progress(result);
                         return result;
                     }).catch((reason) => {
