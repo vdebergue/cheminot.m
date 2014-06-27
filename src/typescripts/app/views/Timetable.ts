@@ -100,6 +100,15 @@ class Timetable extends View implements IView {
         return false;
     }
 
+    isAlreadyComputed(start, end, when): boolean {
+        var $scope = this.$scope();
+        var $schedules = $scope.find('.schedules');
+        var currentStart = $schedules.data('startId');
+        var currentEnd = $schedules.data('endId');
+        var currentWhen = $schedules.data('when');
+        return start == currentStart && currentEnd == end && when == currentWhen;
+    }
+
     private processResult(result: any): any {
         var startTime = result[0].gi.departureTime;
         var endTime = result[result.length - 1].gi.arrivalTime;

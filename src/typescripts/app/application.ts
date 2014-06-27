@@ -104,12 +104,17 @@ export function init(views: seq.IList<IView>) {
                         return opt.Option(params['when']).flatMap((when:string) => {
                             return opt.Option(parseInt(when, 10));
                         }).map((when:number) => {
-                            return ensureInitApp('timetable').then(() => {
-                                var timetableView = cheminotViews.timetable();
-                                return timetableView.show().then(() => {
-                                    return timetableView.buildWith(start, end, new Date(when));
+                            var timetableView = cheminotViews.timetable();
+                            if(timetableView.isAlreadyComputed(start, end, when)) {
+                                cheminotViews.hideOthers('timetable');
+                                return timetableView.show();
+                            } else {
+                                return ensureInitApp('timetable').then(() => {
+                                    return timetableView.show().then(() => {
+                                        return timetableView.buildWith(start, end, new Date(when));
+                                    });
                                 });
-                            });
+                            }
                         });
                     });
                 }).getOrElse(() => {
