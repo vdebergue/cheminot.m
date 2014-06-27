@@ -63,9 +63,18 @@ class Trip extends View implements IView {
         });
     }
 
+    updateTitle(startId: string, endId: string) {
+        var tdsp = Storage.tdspGraph();
+        var vs = tdsp[startId];
+        var ve = tdsp[endId];
+        var $scope = this.$scope();
+        $scope.find('.start').text(vs.name);
+        $scope.find('.end').text(ve.name);
+    }
+
     buildWith(startId: string, endId: string, when: Date, ts: number, maybeTrip: opt.IOption<any>): Q.Promise<void> {
         var ftemplate = Templating.trip.details();
-
+        this.updateTitle(startId, endId);
         return maybeTrip.map((trip) => {
             return ftemplate.then((t) => {
                 var dom = tmpl(t, { stops: this.processResult(trip) });

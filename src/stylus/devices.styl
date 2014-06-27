@@ -20,7 +20,7 @@ timetable_meta_size=18px
 
 trip_span_size=16px
 trip_item_height=66px
-trip_lign_width=4px
+trip_line_width=4px
 trip_time_width=80px
 
 device(min_width, max_width, factor) {
@@ -76,8 +76,8 @@ device(min_width, max_width, factor) {
                 width: scale(trip_time_width, factor)
             }
 
-            .lign {
-                border-left: scale(trip_lign_width, factor) solid dark-blue
+            .line {
+                border-left: scale(trip_line_width, factor) solid dark-blue
             }
         }
     }
@@ -136,8 +136,8 @@ device(min_width, max_width, factor) {
             width: trip_time_width
         }
 
-        .lign {
-            border-left: trip_lign_width solid dark-blue
+        .line {
+            border-left: trip_line_width solid dark-blue
         }
     }
 }
