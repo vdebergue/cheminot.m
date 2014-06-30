@@ -88,20 +88,21 @@ class Trip extends View implements IView {
                 var sortedStopTimes = _.sortBy(vs.stopTimes, (st:any) => {
                     return st.departureTime;
                 });
-                var beforeAndAfter = seq.fromArray(sortedStopTimes).partition((st:any) => {
+                var partitionned = _.partition(sortedStopTimes, (st:any) => {
                     var d1 = utils.setSameTime(new Date(st.departureTime), when);
                     return d1.getTime() < when.getTime();
                 });
-                var before = beforeAndAfter._1;
-                var after = beforeAndAfter._2;
-                var departureTimes = after.append(before).asArray();
+                var departureTimes = partitionned[1].concat(partitionned[0]);
 
                 return ftemplate.then((t) => {
-                    return PlannerTask.lookForBestTrip(startId, endId, departureTimes, maxResults, (trip) => {
+                    return PlannerTask.lookForBestTrip(startId, endId, departureTimes, (trip) => {
                         if(trip[0].gi.departureTime == ts) {
                             var dom = tmpl(t, { stops: this.processResult(trip) });
                             var $stops = this.$scope().find('.stops');
                             $stops.html(dom);
+                            return true;
+                        } else {
+                            return false;
                         }
                     });
                 });

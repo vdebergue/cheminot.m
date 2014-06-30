@@ -2,7 +2,7 @@ import Cheminot = require('../Cheminot');
 import Storage = require('../db/storage');
 import utils = require('../utils/utils');
 
-export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<number>, max: number, progress: (data: any) => void): Q.Promise<any> {
+export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<number>, progress: (data: any) => boolean): Q.Promise<any> {
     var d = Q.defer<any>();
     var config = Cheminot.config();
     var worker = new Worker(config.workers.planner);
@@ -12,8 +12,7 @@ export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<num
         stopTimes: stopTimes,
         config: config,
         vsId: vsId,
-        veId: veId,
-        max: max
+        veId: veId
     }));
 
     worker.onmessage = (e) => {
@@ -21,7 +20,8 @@ export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<num
         if(msg.event == 'debug') {
             utils.log(msg.data);
         } else if(msg.event == 'progress') {
-            progress(msg.data);
+            var toContinue = progress(msg.data);
+            giveBackResult(worker, 'progress', 'lookForBestTrip', toContinue);
         } else if(msg.event == 'query') {
             performQuery(worker, msg.data);
         } else {
@@ -42,9 +42,9 @@ export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<num
     return d.promise;
 }
 
-function giveBackQueryResult(worker: any, name: string, data: any) {
+function giveBackResult(worker: any, event: string, name: string, data: any) {
     worker.postMessage(JSON.stringify({
-        event: 'query',
+        event: event,
         data: data,
         name: name
     }));
@@ -54,15 +54,15 @@ function performQuery(worker: any, q: any): void {
     var params = q.params;
     if(q.name == 'installDB') {
         Storage.installDB.apply(null, params).then(() => {
-            giveBackQueryResult(worker, 'installDB', null);
+            giveBackResult(worker, 'query', 'installDB', null);
         });
     } else if(q.name == 'tripsByIds') {
         Storage.impl().tripsByIds.apply(null, params).then((data) => {
-            giveBackQueryResult(worker, 'tripsByIds', data);
+            giveBackResult(worker, 'query', 'tripsByIds', data);
         });
     } else if(q.name == 'tdspGraph') {
-        giveBackQueryResult(worker, 'tdspGraph', Storage.tdspGraph());
+        giveBackResult(worker, 'query', 'tdspGraph', Storage.tdspGraph());
     } else if(q.name == 'exceptions') {
-        giveBackQueryResult(worker, 'exceptions', Storage.exceptions());
+        giveBackResult(worker, 'query', 'exceptions', Storage.exceptions());
     }
 }

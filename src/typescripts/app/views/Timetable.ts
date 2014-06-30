@@ -148,16 +148,14 @@ class Timetable extends View implements IView {
             var sortedStopTimes = _.sortBy(vs.stopTimes, (st:any) => {
                 return st.departureTime;
             });
-            var beforeAndAfter = seq.fromArray(sortedStopTimes).partition((st:any) => {
+            var partitionned = _.partition(sortedStopTimes, (st:any) => {
                 var d1 = utils.setSameTime(new Date(st.departureTime), when);
                 return d1.getTime() < when.getTime();
             });
-            var before = beforeAndAfter._1;
-            var after = beforeAndAfter._2;
-            var departureTimes = after.append(before).asArray();
+            var departureTimes = partitionned[1].concat(partitionned[0]);
 
             return ftemplate.then((t) => {
-                return PlannerTask.lookForBestTrip(startId, endId, departureTimes, 1, (schedule) => {
+                return PlannerTask.lookForBestTrip(startId, endId, departureTimes, (schedule) => {
                     var dom = tmpl(t, { schedule: this.processResult(schedule) });
                     var $scope = this.$scope();
                     var $schedules = $scope.find('.schedules');
@@ -167,8 +165,9 @@ class Timetable extends View implements IView {
                     var $list = $schedules.find('ul');
                     $list.append(dom);
                     $list.find('li:last-child').data('schedule', JSON.stringify(schedule));
-                    this.toggleShowPullup();
+                    var toContinue = this.toggleShowPullup();
                     this.myIScroll.refresh();
+                    return toContinue;
                 });
             });
         })();
@@ -180,14 +179,16 @@ class Timetable extends View implements IView {
         });
     }
 
-    toggleShowPullup() {
+    toggleShowPullup(): boolean {
         var $scope = this.$scope();
         var $scroller = $scope.find('#scroller');
         var scrollerOffset = $scroller.offset();
         if((scrollerOffset.top + scrollerOffset.height) > utils.viewportSize()._1) {
             $scope.find('.pull-up').addClass('visible');
+            return false;
         } else {
             $scope.find('.pull-up').removeClass('visible');
+            return true;
         }
     }
 

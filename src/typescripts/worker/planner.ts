@@ -37,7 +37,7 @@ var Protocol = {
             data: message
         });
     },
-    query: function (name, params: any[] = []): Q.Promise<any> {
+    query: function (name: string, params: any[] = []): Q.Promise<any> {
         return this.ask(name, {
             event: EVENTS.query,
             data: {
@@ -46,8 +46,8 @@ var Protocol = {
             }
         });
     },
-    progress: function(result: any): void {
-        this.tell({
+    progress: function(name: string, result: any): Q.Promise<any> {
+        return this.ask(name, {
             event: EVENTS.progress,
             data: result
         });
@@ -109,10 +109,17 @@ function receive(msg: any, deps: any) {
     switch(msg.event) {
     case EVENTS.search: {
         Protocol.debug("Let's starting !");
-        run(msg.vsId, msg.veId, msg.stopTimes, msg.max, msg.config, deps);
+        run(msg.vsId, msg.veId, msg.stopTimes, msg.config, deps);
         break;
     }
     case EVENTS.query: {
+        if(pendings[msg.name]) {
+            pendings[msg.name].resolve(msg.data);
+        } else {
+            Protocol.debug('No pending promise for ' + msg.name);
+        }
+    }
+    case EVENTS.progress: {
         if(pendings[msg.name]) {
             pendings[msg.name].resolve(msg.data);
         } else {
@@ -123,16 +130,17 @@ function receive(msg: any, deps: any) {
     }
 }
 
-function run(vsId: string, veId: string, stopTimes, max: number, config: any, deps): Q.Promise<any> {
+function run(vsId: string, veId: string, stopTimes, config: any, deps): Q.Promise<any> {
     return STORAGE.installDB(config, () => {}).then(() => {
         return Q.spread<any>([STORAGE.tdspGraph(), STORAGE.exceptions()], (tdspGraph, exceptions) => {
-            var limit = max;
+            var next = true;
             return deps.utils.sequencePromises(stopTimes, (st) => {
-                if(limit > 0) {
+                if(next) {
                     return deps.tdsp.lookForBestTrip(STORAGE, tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions, Protocol.debug).then((result) => {
-                        --limit;
-                        Protocol.progress(result);
-                        return result;
+                        return Protocol.progress('lookForBestTrip', result).then((onContinue) => {
+                            next = onContinue;
+                            return result;
+                        });
                     }).catch((reason) => {
                         Protocol.debug(reason);
                     });

@@ -52,21 +52,20 @@ export class Trip {
     }
 
     public static isValidOn(trip: any, when: Date, exceptions: any): boolean {
-        return true;
-        // if(trip.service) {
-        //     var startDate = new Date(trip.service.startDate);
-        //     var endDate = new Date(trip.service.endDate);
-        //     var serviceId = trip.service.serviceId;
+        if(trip.service) {
+            var startDate = new Date(trip.service.startDate);
+            var endDate = new Date(trip.service.endDate);
+            var serviceId = trip.service.serviceId;
 
-        //     if(!Trip.hasRemoved(when, serviceId, exceptions) &&
-        //        ((Trip.isInPeriod(startDate, endDate, when) && Trip.weekAvailability(trip.service, when))
-        //         || Trip.hasAdded(when, serviceId, exceptions))) {
-        //         return true;
-        //     } else {
-        //         return false;
-        //     }
-        // } else {
-        //     return false;
-        // }
+            if(!Trip.hasRemoved(when, serviceId, exceptions) &&
+               ((Trip.isInPeriod(startDate, endDate, when) && Trip.weekAvailability(trip.service, when))
+                || Trip.hasAdded(when, serviceId, exceptions))) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }
