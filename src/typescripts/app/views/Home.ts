@@ -340,6 +340,7 @@ class Home extends View implements IView {
     onScrollingStops(e: Event): boolean {
         this.$getStart().blur();
         this.$getEnd().blur();
+        utils.hideKeyboard();
         return true;
     }
 
