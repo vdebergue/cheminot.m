@@ -14,6 +14,18 @@ import PlannerTask = require('../tasks/planner');
 declare var tmpl:any;
 declare var IScroll:any;
 
+var cache = {}
+
+function getTripFromCache(startId: string, endId: string, when: number): any {
+    var id = [startId, endId, when].join('_');
+    return cache[id];
+}
+
+function addTripToCache(startId: string, endId: string, when: number, data: any): void {
+    var id = [startId, endId, when].join('_');
+    cache[id] = data;
+}
+
 export = Timetable;
 
 class Timetable extends View implements IView {
@@ -88,13 +100,13 @@ class Timetable extends View implements IView {
 
     onScheduleSelected(e: Event): boolean {
         var $schedule = $(e.currentTarget);
-        var schedule = $schedule.data('schedule');
         var ts = $schedule.data('starttime');
 
         var $schedules = this.$scope().find('.schedules');
         var startId = $schedules.data('start-id');
         var endId = $schedules.data('end-id');
         var when = $schedules.data('when');
+        var schedule = getTripFromCache(startId, endId, when);
 
         App.Navigate.trip(startId, endId, when, ts, schedule);
         return false;
@@ -164,7 +176,7 @@ class Timetable extends View implements IView {
                     $schedules.data('when', when.getTime());
                     var $list = $schedules.find('ul');
                     $list.append(dom);
-                    $list.find('li:last-child').data('schedule', JSON.stringify(schedule));
+                    addTripToCache(startId, endId, when.getTime(), schedule);
                     var toContinue = this.toggleShowPullup();
                     this.myIScroll.refresh();
                     return toContinue;
