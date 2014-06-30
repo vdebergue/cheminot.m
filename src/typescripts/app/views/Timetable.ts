@@ -205,12 +205,18 @@ class Timetable extends View implements IView {
     }
 
     onPullUp() {
-        var $schedules = this.$scope().find('.schedules');
+        var $scope = this.$scope();
+        var $schedules = $scope.find('.schedules');
         var lastEndTime =  $schedules.find('li:last-child').data('endtime');
         var startId = $schedules.data('startId');
         var endId = $schedules.data('endId');
-        this.buildWith(startId, endId, new Date(lastEndTime)).then(() => {
-            this.myIScroll.refresh();
-        });
+        var $pullUp = $scope.find('.pull-up');
+        if(!$pullUp.is('.locked')) {
+            $pullUp.addClass('locked');
+            this.buildWith(startId, endId, new Date(lastEndTime)).then(() => {
+                this.myIScroll.refresh();
+                $pullUp.removeClass('locked');
+            });
+        }
     }
 }
