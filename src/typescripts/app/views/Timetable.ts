@@ -59,7 +59,7 @@ class Timetable extends View implements IView {
         var $label = $pullUp.find('.label');
 
         this.myIScroll.on('refresh', () => {
-            if ($pullUp.is('.loading')) {
+            if ($pullUp.is('.loading') && !$pullUp.is('.locked')) {
                 $pullUp.removeClass('loading flip');
                 $label.html($label.data('label-pullup'));
             }
@@ -167,7 +167,9 @@ class Timetable extends View implements IView {
             var departureTimes = partitionned[1].concat(partitionned[0]);
 
             return ftemplate.then((t) => {
+                var min = 3;
                 return PlannerTask.lookForBestTrip(startId, endId, departureTimes, (schedule) => {
+                    min -= 1;
                     var dom = tmpl(t, { schedule: this.processResult(schedule) });
                     var $scope = this.$scope();
                     var $schedules = $scope.find('.schedules');
@@ -177,9 +179,12 @@ class Timetable extends View implements IView {
                     var $list = $schedules.find('ul');
                     $list.append(dom);
                     addTripToCache(startId, endId, when.getTime(), schedule);
-                    var toContinue = this.toggleShowPullup();
                     this.myIScroll.refresh();
-                    return toContinue;
+                    if(this.toggleShowPullup() || min > 0) {
+                        return true;
+                    } else if(min <= 0) {
+                        return false;
+                    }
                 });
             });
         })();
@@ -195,6 +200,8 @@ class Timetable extends View implements IView {
         var $scope = this.$scope();
         var $scroller = $scope.find('#scroller');
         var scrollerOffset = $scroller.offset();
+        var $pullUp = $scope.find('.pull-up');
+
         if((scrollerOffset.top + scrollerOffset.height) > utils.viewportSize()._1) {
             $scope.find('.pull-up').addClass('visible');
             return false;
@@ -214,8 +221,8 @@ class Timetable extends View implements IView {
         if(!$pullUp.is('.locked')) {
             $pullUp.addClass('locked');
             this.buildWith(startId, endId, new Date(lastEndTime)).then(() => {
-                this.myIScroll.refresh();
                 $pullUp.removeClass('locked');
+                this.myIScroll.refresh();
             });
         }
     }

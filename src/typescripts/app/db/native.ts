@@ -134,34 +134,6 @@ class NativeStorage implements Storage.IStorage {
         return d.promise;
     }
 
-    tripById(id: string): Q.Promise<opt.IOption<any>> {
-        return Storage.TRIPS.flatMap((trips) => {
-            return opt.Option(trips[id]);
-        }).map((trip) => {
-            return Q(new opt.Some(trip));
-        }).getOrElse(() => {
-            var d = Q.defer<any>();
-            db().transaction((t) => {
-                t.executeSql("SELECT * FROM trips WHERE id =  ?", [id], (t, data) => {
-                    d.resolve(
-                        opt.Option<any>(data.rows).filter((rows) => {
-                            return rows.length > 0;
-                        }).map((rows) => {
-                            var group = rows.item(0);
-                            var trips = JSON.parse(group.trips);
-                            Storage.addTripsToCache(trips);
-                            return trips[id];
-                        })
-                    );
-                }, (t, error) => {
-                    utils.error(error);
-                    d.reject(error);
-                });
-            });
-            return d.promise;
-        });
-    }
-
     tripsByIds(ids: string[]): Q.Promise<any[]> {
         var d = Q.defer<any[]>();
 
@@ -195,6 +167,8 @@ class NativeStorage implements Storage.IStorage {
                         trips.push(data.rows.item(i));
                     }
                     var tripsToCache = trips.reduce((acc, trip) => {
+                        trip.service = JSON.parse(trip.service);
+                        trip.stopTimes = JSON.parse(trip.stopTimes);
                         acc[trip.id] = trip;
                         return acc;
                     }, {});

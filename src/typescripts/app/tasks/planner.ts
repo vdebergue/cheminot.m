@@ -7,16 +7,16 @@ export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<num
     var config = Cheminot.config();
     var worker = new Worker(config.workers.planner);
 
-    worker.postMessage(JSON.stringify({
+    worker.postMessage({
         event: 'search',
         stopTimes: stopTimes,
         config: config,
         vsId: vsId,
         veId: veId
-    }));
+    });
 
     worker.onmessage = (e) => {
-        var msg = JSON.parse(e.data)
+        var msg = e.data;
         if(msg.event == 'debug') {
             utils.log(msg.data);
         } else if(msg.event == 'progress') {
@@ -43,11 +43,11 @@ export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<num
 }
 
 function giveBackResult(worker: any, event: string, name: string, data: any) {
-    worker.postMessage(JSON.stringify({
+    worker.postMessage({
         event: event,
         data: data,
         name: name
-    }));
+    });
 }
 
 function performQuery(worker: any, q: any): void {

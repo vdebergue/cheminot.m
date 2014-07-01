@@ -22,7 +22,6 @@ export interface IStorage {
     insertTrips(trips: Array<any>, progress: (string, any) => void): Q.Promise<void>;
     putVersion(version: string): Q.Promise<void>;
     version(): Q.Promise<opt.IOption<string>>;
-    tripById(id: string): Q.Promise<opt.IOption<any>>;
     tripsByIds(ids: string[]): Q.Promise<any[]>;
 }
 

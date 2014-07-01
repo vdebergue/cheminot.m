@@ -30,7 +30,7 @@ export class Trip {
         return service[day] === "1";
     }
 
-    private static tripException(when: Date, serviceId: string, exceptions: any, isRemoved: boolean): boolean {
+    private static tripException(when: Date, serviceId: string, exceptions: any, isRemoved: boolean, debug: (msg: any) => void): boolean {
         var mwhen = moment(when);
         return opt.Option(exceptions[serviceId]).exists((exception:any) => {
             if(mwhen.isSame(when, 'day')) {
@@ -43,23 +43,22 @@ export class Trip {
         });
     }
 
-    private static hasRemoved(when: Date, serviceId: string, exceptions: any): boolean {
-        return Trip.tripException(when, serviceId, exceptions, true);
+    private static hasRemoved(when: Date, serviceId: string, exceptions: any, debug: (msg: any) => void): boolean {
+        return Trip.tripException(when, serviceId, exceptions, true, debug);
     }
 
-    private static hasAdded(when: Date, serviceId: string, exceptions: any): boolean {
-        return Trip.tripException(when, serviceId, exceptions, false);
+    private static hasAdded(when: Date, serviceId: string, exceptions: any, debug: (msg: any) => void): boolean {
+        return Trip.tripException(when, serviceId, exceptions, false, debug);
     }
 
-    public static isValidOn(trip: any, when: Date, exceptions: any): boolean {
+    public static isValidOn(trip: any, when: Date, exceptions: any, debug: (msg: any) => void): boolean {
         if(trip.service) {
             var startDate = new Date(trip.service.startDate);
             var endDate = new Date(trip.service.endDate);
             var serviceId = trip.service.serviceId;
-
-            if(!Trip.hasRemoved(when, serviceId, exceptions) &&
+            if(!Trip.hasRemoved(when, serviceId, exceptions, debug) &&
                ((Trip.isInPeriod(startDate, endDate, when) && Trip.weekAvailability(trip.service, when))
-                || Trip.hasAdded(when, serviceId, exceptions))) {
+                || Trip.hasAdded(when, serviceId, exceptions, debug))) {
                 return true;
             } else {
                 return false;

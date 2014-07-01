@@ -15,7 +15,7 @@ function tripsAvailability(Storage: any, tripIds: string[], exceptions: any, deb
             return opt.Option(trips.filter((trip) => {
                 return trip.id === id;
             })[0]).map((trip) => {
-                acc[id] = planner.Trip.isValidOn(trip, today, exceptions);
+                acc[id] = planner.Trip.isValidOn(trip, today, exceptions, debug);
                 return acc;
             }).getOrElse(() => {
                 acc[id] = false;
@@ -82,7 +82,6 @@ function refineArrivalTimes(Storage: any, graph: any, indexed: any, indexedVi: a
         });
 
     }).then((departureTimes) => {
-
         vi.edges.forEach((vjId) => {
             var vj = graph[vjId];
             var indexedVj = indexed[vjId];

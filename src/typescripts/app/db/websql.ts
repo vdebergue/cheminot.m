@@ -234,36 +234,6 @@ class WebSqlStorage implements Storage.IStorage {
         return d.promise;
     }
 
-    tripById(id: string): Q.Promise<opt.IOption<any>> {
-        return Storage.TRIPS.flatMap((trips) => {
-            return opt.Option(trips[id]);
-        }).map((trip) => {
-            return Q(new opt.Some(trip));
-        }).getOrElse(() => {
-            var d = Q.defer<any>();
-            db().then((DB) => {
-                DB.readTransaction((t) => {
-                    t.executeSql("SELECT * FROM trips WHERE ids LIKE '%" + id + "%'", [], (t, data) => {
-                        d.resolve(
-                            opt.Option<any>(data.rows).filter((rows) => {
-                                return rows.length > 0;
-                            }).map((rows) => {
-                                var group = rows.item(0);
-                                var trips = JSON.parse(LZString.decompressFromUTF16(group.trips));
-                                Storage.addTripsToCache(trips);
-                                return trips[id];
-                            })
-                        );
-                    }, (t, error) => {
-                        utils.error(error);
-                        d.reject(error);
-                    });
-                });
-            });
-            return d.promise;
-        });
-    }
-
     tripsByIds(ids: string[]): Q.Promise<any[]> {
         var d = Q.defer<any[]>();
 

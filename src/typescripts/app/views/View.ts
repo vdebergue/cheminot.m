@@ -4,6 +4,7 @@ export = View
 
 import Layout = require('./Layout')
 import App = require('../application')
+import Storage = require('../db/storage');
 
 class View {
 
@@ -76,11 +77,36 @@ class View {
 
     static globalEvents(): void {
         var $body = $('body');
-        var onBackButton = (e: Event) => {
-            window.history.back();
-            return true;
-        };
-        document.addEventListener("backbutton", onBackButton, false);
-        $body.on('tap', '.back-btn', onBackButton);
+
+        (() => {
+            var onBackButton = (e: Event) => {
+                window.history.back();
+                return true;
+            };
+            document.addEventListener("backbutton", onBackButton, false);
+            $body.on('tap', '.back-btn', onBackButton);
+        })();
+
+        (() => {
+            var acc = 0;
+            var limit = 10;
+            $body.on('tap', 'header', () => {
+                acc += 1;
+                if(acc >= limit) {
+                    acc = 0;
+                    Storage.impl().version().then((version) => {
+                        alert(version.getOrElse(() => {
+                            return "unknown version";
+                        }));
+                    });
+                }
+                if(acc == 0) {
+                    window.setTimeout(() => {
+                        acc = 0;
+                    }, 5000);
+                }
+                return true;
+            });
+        })();
     }
 }

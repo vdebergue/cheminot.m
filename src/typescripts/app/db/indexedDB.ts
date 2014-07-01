@@ -247,21 +247,6 @@ class IndexedDBStorage implements Storage.IStorage {
         });
     }
 
-    tripById(id: string): Q.Promise<opt.IOption<any>> {
-        return Storage.TRIPS.flatMap((trips) => {
-            return opt.Option(trips[id]);
-        }).map((trip) => {
-            return Q(new opt.Some(trip));
-        }).getOrElse(() => {
-            return get('trips', 'ids', id).then((maybeGroup) => {
-                return maybeGroup.map((group) => {
-                    Storage.addTripsToCache(group.trips);
-                    return group.trips[id];
-                });
-            });
-        });
-    }
-
     tripsByIds(ids: string[]): Q.Promise<any[]> {
         var fromCache = Storage.TRIPS.map((trips) => {
             return ids.map((id) => {

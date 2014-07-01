@@ -16,24 +16,24 @@ var EVENTS = {
     debug: "debug"
 };
 
+
+var cache = {};
+
 var Protocol = {
     ask: function (id: string, data: any): Q.Promise<any> {
         var d = Q.defer<any>();
-        var value = JSON.stringify(data);
         pendings[id] = d;
-        (<any>self).postMessage(value);
-        return Q.timeout(d.promise, 6000).finally(() => {
+        (<any>self).postMessage(data);
+        return Q.timeout(d.promise, 10000).finally(() => {
             delete pendings[id];
         });
     },
     tell: function (data: any): void {
-        var d = Q.defer<any>();
-        var value = JSON.stringify(data);
-        (<any>self).postMessage(value);
+        (<any>self).postMessage(data);
     },
     debug: function (message: any): void {
-        return this.tell({
-            event: EVENTS.debug,
+        (<any>self).postMessage({
+            event: 'debug',
             data: message
         });
     },
@@ -66,10 +66,23 @@ var CONFIG = null;
 
 var STORAGE = {
     installDB: function(config: any, progress: (string, any?) => void): Q.Promise<void> {
-        return Protocol.query('installDB', [config, progress]);
+        return Protocol.query('installDB', [config, null]);
     },
-    tripsByIds: function(ids: string[]): Q.Promise<string[]> {
-        return Protocol.query('tripsByIds', [ids]);
+    tripsByIds: function(ids: string[]): Q.Promise<any[]> {
+        var tripCacheKey = (id: string) => {
+            return 'trip_' + id;
+        };
+        var toQuery = ids.filter((id) => {
+            return !cache[tripCacheKey(id)];
+        });
+        return Protocol.query('tripsByIds', [toQuery]).then((trips) => {
+            trips.forEach((trip) => {
+                cache[tripCacheKey(trip.id)] = trip;
+            });
+            return ids.map((id) => {
+                return cache[tripCacheKey(id)];
+            });
+        });
     },
     tdspGraph: function(): Q.Promise<any> {
         return Protocol.query('tdspGraph');
@@ -94,12 +107,12 @@ require(["utils/tdsp/tdsp", "utils/utils"], function(tdsp, utils) {
     stash = [];
 
     self.addEventListener('message', function(e) {
-        receive(JSON.parse(e.data), deps);
+        receive(e.data, deps);
     });
 });
 
 self.addEventListener('message', function(e) {
-    stash.push(JSON.parse(e.data));
+    stash.push(e.data);
     if(readyPromise.isFulfilled()) {
         self.removeEventListener('message', this, false);
     }
@@ -133,9 +146,11 @@ function receive(msg: any, deps: any) {
 function run(vsId: string, veId: string, stopTimes, config: any, deps): Q.Promise<any> {
     return STORAGE.installDB(config, () => {}).then(() => {
         return Q.spread<any>([STORAGE.tdspGraph(), STORAGE.exceptions()], (tdspGraph, exceptions) => {
+            Protocol.debug('sequencePromises');
             var next = true;
             return deps.utils.sequencePromises(stopTimes, (st) => {
                 if(next) {
+                    Protocol.debug('lookForBestTrip');
                     return deps.tdsp.lookForBestTrip(STORAGE, tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions, Protocol.debug).then((result) => {
                         return Protocol.progress('lookForBestTrip', result).then((onContinue) => {
                             next = onContinue;
