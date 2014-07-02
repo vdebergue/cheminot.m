@@ -1,6 +1,3 @@
-/// <reference path='../../dts/Q.d.ts'/>
-/// <reference path='../../dts/zepto.d.ts'/>
-
 import IView = require('./IView');
 import Templating = require('./templating')
 

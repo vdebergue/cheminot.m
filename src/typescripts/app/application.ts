@@ -1,5 +1,3 @@
-/// <reference path='../dts/Q.d.ts'/>
-
 declare var Abyssa: any;
 
 import opt = require('./lib/immutable/Option');

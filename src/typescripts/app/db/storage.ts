@@ -1,6 +1,3 @@
-/// <reference path='../../dts/Q.d.ts'/>
-/// <reference path='../../dts/underscore.d.ts'/>
-
 import seq = require('../lib/immutable/List');
 import opt = require('../lib/immutable/Option');
 import utils = require('../utils/utils');

@@ -3,7 +3,7 @@
 // Definitions by: Jed Hunsaker <https://github.com/jedhunsaker/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
-declare module 'chai' {
+declare module chai {
 
     function expect(target: any, message?: string): Expect;
 

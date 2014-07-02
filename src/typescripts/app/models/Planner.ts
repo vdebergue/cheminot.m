@@ -1,7 +1,3 @@
-/// <reference path='../../dts/Q.d.ts'/>
-/// <reference path='../../dts/moment.d.ts'/>
-/// <reference path='../../dts/underscore.d.ts'/>
-
 import opt = require('lib/immutable/Option');
 import seq = require('lib/immutable/List');
 import Storage = require('../db/storage');

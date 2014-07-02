@@ -1,5 +1,3 @@
-/// <reference path='../../dts/Q.d.ts'/>
-
 import tuple = require('lib/immutable/Tuple');
 import seq = require('lib/immutable/List');
 import opt = require('lib/immutable/Option');

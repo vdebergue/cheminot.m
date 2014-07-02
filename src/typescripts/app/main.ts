@@ -1,4 +1,10 @@
+/// <reference path='../dts/Q.d.ts'/>
 /// <reference path='../dts/zepto.d.ts'/>
+/// <reference path='../dts/Q.d.ts'/>
+/// <reference path='../dts/underscore.d.ts'/>
+/// <reference path='../dts/moment.d.ts'/>
+/// <reference path="../dts/mocha.d.ts" />
+/// <reference path="../dts/chai.d.ts" />
 
 import seq = require('./lib/immutable/List');
 import IView = require('./views/IView');

@@ -1,5 +1,3 @@
-/// <reference path='../../dts/Q.d.ts'/>
-
 export = View
 
 import Layout = require('./Layout')

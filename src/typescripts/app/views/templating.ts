@@ -1,6 +1,3 @@
-/// <reference path='../../dts/Q.d.ts'/>
-/// <reference path='../../dts/zepto.d.ts'/>
-
 import opt = require('../lib/immutable/Option');
 
 declare var tmpl:any;

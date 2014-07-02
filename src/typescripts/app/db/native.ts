@@ -1,5 +1,3 @@
-/// <reference path='../../dts/Q.d.ts'/>
-
 import seq = require('../lib/immutable/List');
 import opt = require('../lib/immutable/Option');
 import range = require('../lib/immutable/Range');

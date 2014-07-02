@@ -1,5 +1,3 @@
-/// <reference path='../../dts/Q.d.ts'/>
-
 export = IView;
 
 interface IView {
