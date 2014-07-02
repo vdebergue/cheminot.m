@@ -115,9 +115,15 @@ module.exports = function(grunt) {
             dev: {
                 files: [
                     {
-                        cwd: 'src/vendors',
+                        cwd: 'src/vendors/javascripts',
                         src: ['**'],
                         dest: 'www/assets/javascripts/vendors',
+                        expand: true
+                    },
+                    {
+                        cwd: 'src/vendors/stylesheets',
+                        src: ['**'],
+                        dest: 'www/assets/stylesheets/vendors',
                         expand: true
                     },
                     {
@@ -143,9 +149,15 @@ module.exports = function(grunt) {
                         dest: 'www/index.html'
                     },
                     {
-                        cwd: 'src/vendors',
+                        cwd: 'src/vendors/javascripts',
                         src: ['**'],
                         dest: 'www/assets/javascripts/vendors',
+                        expand: true
+                    },
+                    {
+                        cwd: 'src/vendors/stylesheets',
+                        src: ['**'],
+                        dest: 'www/assets/stylesheets/vendors',
                         expand: true
                     }
                 ]

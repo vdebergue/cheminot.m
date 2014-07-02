@@ -7,6 +7,7 @@ import seq = require('./lib/immutable/List');
 import utils = require('./utils/utils');
 import IView = require('./views/IView');
 import View = require('./views/View');
+import Tests = require('./views/Tests');
 import Timetable = require('./views/Timetable');
 import Trip = require('./views/Trip');
 import Splashscreen = require('./views/Splashscreen');
@@ -147,6 +148,15 @@ export function init(views: seq.IList<IView>) {
                 }).getOrElse(() => {
                 });
             });
+        }),
+
+        test: Abyssa.State('tests', function() {
+            return ensureInitApp('tests').then(() => {
+                var testsView = cheminotViews.tests();
+                return testsView.show().then(() => {
+                    testsView.run();
+                });
+            });
         })
     });
 
@@ -227,6 +237,10 @@ class CheminotViews {
 
     trip(): Trip {
         return <Trip>CheminotViews.view(this.views, 'trip');
+    }
+
+    tests(): Tests {
+        return <Tests>CheminotViews.view(this.views, 'tests');
     }
 
     static view(views: seq.IList<IView>, name: string): IView {

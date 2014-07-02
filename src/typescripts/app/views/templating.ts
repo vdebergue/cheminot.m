@@ -24,6 +24,10 @@ var paths = {
     },
     splashscreen: {
         layout: 'layout.tpl.html'
+    },
+    tests: {
+        layout: 'layout.tpl.html',
+        header: 'header.tpl.html'
     }
 };
 
@@ -92,5 +96,14 @@ export var trip = {
 export var splashscreen = {
     layout(): Q.Promise<string> {
         return getTemplate('layout', opt.Option<string>('splashscreen'));
+    }
+}
+
+export var tests = {
+    layout(): Q.Promise<string> {
+        return getTemplate('layout', opt.Option<string>('tests'));
+    },
+    header(): Q.Promise<string> {
+        return getTemplate('header', opt.Option<string>('tests'));
     }
 }
