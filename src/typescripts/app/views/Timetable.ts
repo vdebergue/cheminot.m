@@ -15,11 +15,13 @@ var cache = {}
 
 function getTripFromCache(startId: string, endId: string, when: number): any {
     var id = [startId, endId, when].join('_');
+    console.log(id);
     return cache[id];
 }
 
 function addTripToCache(startId: string, endId: string, when: number, data: any): void {
     var id = [startId, endId, when].join('_');
+    console.log(id, data);
     cache[id] = data;
 }
 
@@ -98,9 +100,8 @@ class Timetable extends View implements IView {
         var $schedules = this.$scope().find('.schedules');
         var startId = $schedules.data('start-id');
         var endId = $schedules.data('end-id');
-        var when = $schedules.data('starttime');
+        var when = $schedules.data('when');
         var schedule = getTripFromCache(startId, endId, when);
-
         App.Navigate.trip(startId, endId, ts, ts, schedule);
         return false;
     }

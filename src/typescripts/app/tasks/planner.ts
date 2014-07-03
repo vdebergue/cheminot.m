@@ -4,23 +4,26 @@ import utils = require('../utils/utils');
 import opt = require('../lib/immutable/Option');
 
 var WORKER = new opt.None<Worker>();
+var config = Cheminot.config();
+
+export function init(): Worker {
+    return WORKER.getOrElse(() => {
+        var worker = new Worker(config.workers.planner);
+        WORKER = new opt.Some(worker);
+        worker.postMessage({
+            event: 'init',
+            data: {
+                tdspGraph: Storage.tdspGraph(),
+                exceptions: Storage.exceptions()
+            }
+        });
+        return worker;
+    });
+}
 
 export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<number>, progress: (data: any) => boolean): Q.Promise<any> {
     var d = Q.defer<any>();
-    var config = Cheminot.config();
-    var worker = WORKER.getOrElse(() => {
-        var w = new Worker(config.workers.planner);
-        WORKER = new opt.Some(w);
-        return w;
-    });
-
-    worker.postMessage({
-        event: 'init',
-        data: {
-            tdspGraph: Storage.tdspGraph(),
-            exceptions: Storage.exceptions()
-        }
-    });
+    var worker = init();
 
     worker.postMessage({
         event: 'search',

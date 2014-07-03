@@ -14,6 +14,7 @@ import Storage = require('./db/storage');
 import Planner = require('./models/Planner');
 import Upgrade = require('./tasks/upgrade');
 import Cheminot = require('./Cheminot');
+import PlannerTask = require('./tasks/planner');
 
 export function init(views: seq.IList<IView>) {
 
@@ -32,6 +33,7 @@ export function init(views: seq.IList<IView>) {
                             CheminotViews.onSetupProgress(event, data);
                         }
                     }).then(() => {
+                        PlannerTask.init();
                         return Q.delay(utils.Promise.DONE(), 1000);
                     });
                 });
