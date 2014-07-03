@@ -1,11 +1,18 @@
 import Cheminot = require('../Cheminot');
 import Storage = require('../db/storage');
 import utils = require('../utils/utils');
+import opt = require('../lib/immutable/Option');
+
+var WORKER = new opt.None<Worker>();
 
 export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<number>, progress: (data: any) => boolean): Q.Promise<any> {
     var d = Q.defer<any>();
     var config = Cheminot.config();
-    var worker = new Worker(config.workers.planner);
+    var worker = WORKER.getOrElse(() => {
+        var w = new Worker(config.workers.planner);
+        WORKER = new opt.Some(w);
+        return w;
+    });
 
     worker.postMessage({
         event: 'search',
@@ -30,13 +37,11 @@ export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<num
             } else {
                 d.reject("not found")
             }
-            worker.terminate();
         }
     }
 
     worker.onerror = (e) => {
         d.reject(e);
-        worker.terminate();
     };
 
     return d.promise;

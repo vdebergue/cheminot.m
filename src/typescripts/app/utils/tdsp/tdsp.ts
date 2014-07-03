@@ -2,7 +2,7 @@ import tr = require('./timeRefinement');
 import ps = require('./pathSelection');
 
 export function isTimeout(start: number): boolean {
-    return (Date.now() - start) >= 6000;
+    return (Date.now() - start) >= 10000;
 }
 
 export function lookForBestTrip(Storage: any, graph: any, vsId: string, veId: string, vsTripId: string, ts: number, exceptions: any, debug: (msg: any) => void): Q.Promise<any> {

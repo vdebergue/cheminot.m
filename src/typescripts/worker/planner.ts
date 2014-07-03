@@ -19,6 +19,10 @@ var EVENTS = {
 
 var cache = {};
 
+var tripCacheKey = (id: string) => {
+    return 'trip_' + id;
+};
+
 var Protocol = {
     ask: function (id: string, data: any): Q.Promise<any> {
         var d = Q.defer<any>();
@@ -69,9 +73,6 @@ var STORAGE = {
         return Protocol.query('installDB', [config, null]);
     },
     tripsByIds: function(ids: string[]): Q.Promise<any[]> {
-        var tripCacheKey = (id: string) => {
-            return 'trip_' + id;
-        };
         var toQuery = ids.filter((id) => {
             return !cache[tripCacheKey(id)];
         });
@@ -97,6 +98,10 @@ require(["utils/tdsp/tdsp", "utils/utils"], function(tdsp, utils) {
         tdsp: tdsp,
         utils: utils
     }
+
+    readyPromise.then(() => {
+        Protocol.debug('Worker ready!');
+    });
 
     ready.resolve(true);
 

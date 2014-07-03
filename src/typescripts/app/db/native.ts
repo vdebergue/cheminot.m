@@ -10,7 +10,7 @@ var DB_NAME = 'cheminot';
 
 var db = _.once(() => {
     var dbName = utils.isAppleMobile() ? "cheminot.db" : "cheminot";
-    return sqlitePlugin.openDatabase({name: dbName});
+    return sqlitePlugin.openDatabase({name: dbName, bgType: 1});
 });
 
 class NativeStorage implements Storage.IStorage {

@@ -63,14 +63,10 @@ class Timetable extends View implements IView {
         });
 
         this.myIScroll.on('scroll', function() {
-            if(this.y < (this.maxScrollY - 5) && !$pullUp.is('.flip')) {
+            if(this.y < (this.maxScrollY) && !$pullUp.is('.flip')) {
                 $pullUp.addClass('flip');
                 $label.html($label.data('label-release'));
                 this.maxScrollY = this.maxScrollY;
-            } else if (this.y > (this.maxScrollY + 5) && $pullUp.is('.flip')) {
-                $pullUp.removeClass('flip loading');
-                $label.html($label.data('label-pullup'));
-                this.maxScrollY = $pullUp.height();
             }
         });
 
@@ -178,12 +174,17 @@ class Timetable extends View implements IView {
                         $list.append(dom);
                         addTripToCache(startId, endId, when.getTime(), schedule);
                         this.myIScroll.refresh();
+                        this.myIScroll.scrollToElement('li:last-child', 200);
                         if(this.toggleShowPullup() || min > 0) {
                             return true;
                         } else if(min <= 0) {
                             return false;
                         }
                     } else return true;
+                }).then(() => {
+                    utils.log('DONE');
+                    this.myIScroll.refresh();
+                    this.myIScroll.scrollToElement('li:last-child', 200);
                 });
             });
         })();

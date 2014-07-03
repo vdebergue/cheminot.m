@@ -17,6 +17,7 @@ timetable_clock_size=23px
 timetable_startend_size=32px
 timetable_to_size=21px
 timetable_meta_size=18px
+timetable_pullup_size=18px
 
 trip_span_size=16px
 trip_item_height=66px
@@ -65,6 +66,9 @@ device(min_width, max_width, factor) {
             }
             .to {
                 font-size: scale(timetable_to_size, factor)
+            }
+            .pull-up {
+                font-size: scale(timetable_pullup_size, factor)
             }
         }
 
@@ -125,6 +129,9 @@ device(min_width, max_width, factor) {
         }
         .to {
             font-size: timetable_to_size
+        }
+        .pull-up {
+            font-size: timetable_pullup_size
         }
     }
 
