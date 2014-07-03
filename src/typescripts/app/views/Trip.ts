@@ -93,7 +93,7 @@ class Trip extends View implements IView {
 
                 return ftemplate.then((t) => {
                     return PlannerTask.lookForBestTrip(startId, endId, departureTimes, (trip) => {
-                        if(trip[0].gi.departureTime == ts) {
+                        if(trip && trip[0].gi.departureTime == ts) {
                             var dom = tmpl(t, { stops: this.processResult(trip) });
                             var $stops = this.$scope().find('.stops');
                             $stops.html(dom);

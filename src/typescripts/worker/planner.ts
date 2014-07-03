@@ -24,7 +24,7 @@ var Protocol = {
         var d = Q.defer<any>();
         pendings[id] = d;
         (<any>self).postMessage(data);
-        return Q.timeout(d.promise, 10000).finally(() => {
+        return d.promise.finally(() => {
             delete pendings[id];
         });
     },
@@ -146,11 +146,9 @@ function receive(msg: any, deps: any) {
 function run(vsId: string, veId: string, stopTimes, config: any, deps): Q.Promise<any> {
     return STORAGE.installDB(config, () => {}).then(() => {
         return Q.spread<any>([STORAGE.tdspGraph(), STORAGE.exceptions()], (tdspGraph, exceptions) => {
-            Protocol.debug('sequencePromises');
             var next = true;
             return deps.utils.sequencePromises(stopTimes, (st) => {
                 if(next) {
-                    Protocol.debug('lookForBestTrip');
                     return deps.tdsp.lookForBestTrip(STORAGE, tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions, Protocol.debug).then((result) => {
                         return Protocol.progress('lookForBestTrip', result).then((onContinue) => {
                             next = onContinue;
@@ -158,6 +156,7 @@ function run(vsId: string, veId: string, stopTimes, config: any, deps): Q.Promis
                         });
                     }).catch((reason) => {
                         Protocol.debug(reason);
+                        Protocol.progress('lookForBestTrip', null);
                     });
                 } else {
                     return deps.utils.Promise.DONE();

@@ -166,22 +166,24 @@ class Timetable extends View implements IView {
             return ftemplate.then((t) => {
                 var min = 3;
                 return PlannerTask.lookForBestTrip(startId, endId, departureTimes, (schedule) => {
-                    min -= 1;
-                    var dom = tmpl(t, { schedule: this.processResult(schedule) });
-                    var $scope = this.$scope();
-                    var $schedules = $scope.find('.schedules');
-                    $schedules.data('startId', startId);
-                    $schedules.data('endId', endId);
-                    $schedules.data('when', when.getTime());
-                    var $list = $schedules.find('ul');
-                    $list.append(dom);
-                    addTripToCache(startId, endId, when.getTime(), schedule);
-                    this.myIScroll.refresh();
-                    if(this.toggleShowPullup() || min > 0) {
-                        return true;
-                    } else if(min <= 0) {
-                        return false;
-                    }
+                    if(schedule) {
+                        min -= 1;
+                        var dom = tmpl(t, { schedule: this.processResult(schedule) });
+                        var $scope = this.$scope();
+                        var $schedules = $scope.find('.schedules');
+                        $schedules.data('startId', startId);
+                        $schedules.data('endId', endId);
+                        $schedules.data('when', when.getTime());
+                        var $list = $schedules.find('ul');
+                        $list.append(dom);
+                        addTripToCache(startId, endId, when.getTime(), schedule);
+                        this.myIScroll.refresh();
+                        if(this.toggleShowPullup() || min > 0) {
+                            return true;
+                        } else if(min <= 0) {
+                            return false;
+                        }
+                    } else return true;
                 });
             });
         })();

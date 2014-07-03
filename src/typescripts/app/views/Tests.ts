@@ -85,25 +85,38 @@ class Tests extends View implements IView {
                 this.timeout(1000 * 60);
 
                 it('should find a direct trip', (done) => {
-                    var ts = moment().hours(7).minutes(57).seconds(0).toDate().getTime();
+                    var ts = moment().hours(13).minutes(34).seconds(0).toDate().getTime();
+                    var exceptions = Storage.exceptions();
+                    var graph = Storage.tdspGraph();
                     var vsId = self.stops['Chartres'];
                     var veId = self.stops['Paris-Montparnasse 1-2'];
-                    var vsTripId = 'OCESN016756F0100230254';
+                    var vs = graph[vsId];
                     var debug = () => {};
+                    var when = new Date();
 
-                    tdsp.lookForBestTrip(self.storageInterface, Storage.tdspGraph(), vsId, veId, vsTripId, ts, Storage.exceptions(), debug).then((results) => {
-                        breakpoint
-                        chai.expect(self.asTimeString(results[0].gi.arrivalTime)).to.equal('07:48:00');
-                        chai.expect(self.asTimeString(results[1].gi.arrivalTime)).to.equal('08:09:00');
-                        chai.expect(self.asTimeString(results[2].gi.arrivalTime)).to.equal('08:16:00');
-                        chai.expect(self.asTimeString(results[3].gi.arrivalTime)).to.equal('08:29:00');
-                        chai.expect(self.asTimeString(results[4].gi.arrivalTime)).to.equal('08:51:00');
-                        chai.expect(self.asTimeString(results[5].gi.arrivalTime)).to.equal('09:05:00');
-                        chai.expect(results.length).to.equal(6);
+                    var sortedStopTimes = _.sortBy(vs.stopTimes, (st:any) => {
+                        return st.departureTime;
+                    });
+
+                    var partitionned = _.partition(sortedStopTimes, (st:any) => {
+                        var d1 = utils.setSameTime(new Date(st.departureTime), when);
+                        return d1.getTime() < when.getTime();
+                    });
+
+                    var departureTimes = partitionned[1].concat(partitionned[0]);
+
+                    utils.sequencePromises(departureTimes, (st:any) => {
+                        return tdsp.lookForBestTrip(self.storageInterface, graph, vsId, veId, st.tripId, st.departureTime, exceptions, debug).then((results) => {
+                            console.log(results);
+                        }).catch(function(reason) {
+                            console.log(reason);
+                        });
+                    }).then(() => {
                         done();
                     }).catch(function(reason) {
-                        console.log('ERROR', reason);
-                    });
+                        console.log('here');
+                        done(reason);
+                    });;
                 });
             });
         });
