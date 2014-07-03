@@ -64,7 +64,15 @@
 
                 icon_cheminot('circle', blue)
 
-                &:before {
+                &.first:before {
+                    color: green
+                }
+
+                &.last:before {
+                    color: orange
+                }
+
+                &::before {
                     position: absolute
                     left: -0.63em
                     background: #FFF

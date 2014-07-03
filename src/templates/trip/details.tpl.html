@@ -1,13 +1,15 @@
-<% stops.forEach(function(stop) { %>
+<% stops.forEach(function(stop, index) { %>
 <li>
   <div class="time">
     <span class="alarm-clock"></span>
     <span class="at"><%= moment(stop.departureTime).format('HH:mm') %></span>
   </div>
-  <span class="line"></span>
+  <span class="line <%= index==0 ? 'first' : ''%> <%= index==stops.length-1 ? 'last' : '' %>"></span>
   <div class="stop">
     <span class="name"><%= stop.name %></span>
+    <% if(stop.waiting > 0) { %>
     <span class="waiting"><%= stop.waiting %> min</span>
+    <% } %>
   </div>
 </li>
 <% }); %>

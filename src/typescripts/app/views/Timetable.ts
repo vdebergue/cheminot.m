@@ -98,10 +98,10 @@ class Timetable extends View implements IView {
         var $schedules = this.$scope().find('.schedules');
         var startId = $schedules.data('start-id');
         var endId = $schedules.data('end-id');
-        var when = $schedules.data('when');
+        var when = $schedules.data('starttime');
         var schedule = getTripFromCache(startId, endId, when);
 
-        App.Navigate.trip(startId, endId, when, ts, schedule);
+        App.Navigate.trip(startId, endId, ts, ts, schedule);
         return false;
     }
 

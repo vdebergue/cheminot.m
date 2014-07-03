@@ -97,9 +97,10 @@ class Trip extends View implements IView {
                             var dom = tmpl(t, { stops: this.processResult(trip) });
                             var $stops = this.$scope().find('.stops');
                             $stops.html(dom);
-                            return true;
-                        } else {
+                            utils.log('DONE');
                             return false;
+                        } else {
+                            return true;
                         }
                     });
                 });
