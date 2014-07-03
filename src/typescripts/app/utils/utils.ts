@@ -52,8 +52,8 @@ export function sequencePromises<T>(seq: Array<T>, f: (t: T) => Q.Promise<T>): Q
 
 export function viewportSize(): tuple.Tuple2<number, number> {
     return new tuple.Tuple2<number, number>(
-        document.documentElement.clientHeight,
-        document.documentElement.clientWidth
+        Math.max(document.documentElement.clientHeight, window.innerHeight || 0),
+        Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
     );
 }
 

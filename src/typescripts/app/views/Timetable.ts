@@ -202,8 +202,10 @@ class Timetable extends View implements IView {
         var $scroller = $scope.find('#scroller');
         var scrollerOffset = $scroller.offset();
         var $pullUp = $scope.find('.pull-up');
+        var viewportSize = utils.viewportSize();
+        var height = Math.max(viewportSize._1, viewportSize._2);
 
-        if((scrollerOffset.top + scrollerOffset.height) > utils.viewportSize()._1) {
+        if((scrollerOffset.top + scrollerOffset.height) > height) {
             $scope.find('.pull-up').addClass('visible');
             return false;
         } else {
