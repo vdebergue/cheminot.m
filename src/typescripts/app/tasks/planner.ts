@@ -15,6 +15,14 @@ export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<num
     });
 
     worker.postMessage({
+        event: 'init',
+        data: {
+            tdspGraph: Storage.tdspGraph(),
+            exceptions: Storage.exceptions()
+        }
+    });
+
+    worker.postMessage({
         event: 'search',
         stopTimes: stopTimes,
         config: config,

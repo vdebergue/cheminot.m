@@ -58,17 +58,8 @@ class Tests extends View implements IView {
 
     initStorageInterface(): void {
         this.storageInterface = {
-            installDB: function() {
-                Storage.installDB(Cheminot.config(), function() {});
-            },
             tripsByIds: function(ids) {
                 return Storage.impl().tripsByIds(ids);
-            },
-            tdspGraph: function() {
-                return utils.Promise.pure(Storage.tdspGraph());
-            },
-            exceptions: function() {
-                return utils.Promise.pure(Storage.exceptions());
             }
         };
     }
