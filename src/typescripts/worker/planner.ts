@@ -76,6 +76,7 @@ var STORAGE = {
         var toQuery = ids.filter((id) => {
             return !cache[tripCacheKey(id)];
         });
+
         return Protocol.query('tripsByIds', [toQuery]).then((trips) => {
             trips.forEach((trip) => {
                 cache[tripCacheKey(trip.id)] = trip;
@@ -92,10 +93,6 @@ require(["utils/tdsp/tdsp", "utils/utils"], function(tdsp, utils) {
         tdsp: tdsp,
         utils: utils
     }
-
-    readyPromise.then(() => {
-        Protocol.debug('Worker ready!');
-    });
 
     ready.resolve(true);
 
@@ -122,6 +119,7 @@ function receive(msg: any, deps: any) {
     case EVENTS.init: {
         tdspGraph = msg.data.tdspGraph;
         exceptions = msg.data.exceptions;
+        Protocol.debug('Worker ready!');
         break;
     }
     case EVENTS.search: {

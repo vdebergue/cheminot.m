@@ -2195,6 +2195,8 @@ interface _Chain<T> {
 	**/
 	forEach(iterator: _.ObjectIterator<T, void >, context?: any): _Chain<T>;
 
+    partition<T>(iterator: _.ListIterator<T, boolean>, context?: any)
+
 	/**
 	* Wrapped type `any[]`.
 	* @see _.map

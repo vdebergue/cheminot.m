@@ -64,6 +64,13 @@ export function setSameTime(from: Date, reference: Date): Date {
     return moment(reference).hours(h).minutes(m).seconds(s).toDate()
 }
 
+export function setSameDay(from: Date, reference: Date): Date {
+    var date = from.getDate();
+    var month = from.getMonth();
+    var year = from.getFullYear();
+    return moment(reference).date(date).month(month).year(year).toDate()
+}
+
 export function oops(message: string): void {
     throw new Error(message);
 }

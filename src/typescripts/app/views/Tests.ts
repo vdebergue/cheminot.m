@@ -82,7 +82,7 @@ class Tests extends View implements IView {
                     var vsId = self.stops['Chartres'];
                     var veId = self.stops['Paris-Montparnasse 1-2'];
                     var vs = graph[vsId];
-                    var debug = () => {};
+                    var debug = (any) => { console.log(any) };
                     var when = new Date();
 
                     var sortedStopTimes = _.sortBy(vs.stopTimes, (st:any) => {

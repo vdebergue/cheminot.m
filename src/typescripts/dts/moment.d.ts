@@ -64,6 +64,7 @@ interface Moment {
 
     add(input: MomentInput): Moment;
     add(soort: string, aantal: number): Moment;
+    add(n: number, duration: string): Moment;
     add(duration: Duration): Moment;
     subtract(input: MomentInput): Moment;
     subtract(soort: string, aantal: number): Moment;

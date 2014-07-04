@@ -151,14 +151,27 @@ class Timetable extends View implements IView {
         var ftemplate = Templating.timetable.schedule();
         var fschedules = (() => {
             var vs = Storage.tdspGraph()[startId];
-            var sortedStopTimes = _.sortBy(vs.stopTimes, (st:any) => {
+            var partitionned = _.chain(vs.stopTimes).sortBy((st: any) => {
                 return st.departureTime;
-            });
-            var partitionned = _.partition(sortedStopTimes, (st:any) => {
+            }).partition((st:any) => {
                 var d1 = utils.setSameTime(new Date(st.departureTime), when);
                 return d1.getTime() < when.getTime();
+            }).value();
+
+            var current = when;
+            var departureTimes = partitionned[1].concat(partitionned[0]).map((st) => {
+                var departureTime = utils.setSameDay(current, new Date(st.departureTime));
+                if(departureTime.getTime() < current.getTime()) {
+                    departureTime = current = moment(departureTime).add(1, 'day').toDate();
+                }
+                var arrivalTime = utils.setSameDay(current, new Date(st.arrivalTime));
+                if(arrivalTime.getTime() < current.getTime()) {
+                    arrivalTime = current = moment(arrivalTime).add(1, 'day').toDate();
+                }
+                st.departureTime = departureTime.getTime();
+                st.arrivalTime = arrivalTime.getTime();
+                return st;
             });
-            var departureTimes = partitionned[1].concat(partitionned[0]);
 
             return ftemplate.then((t) => {
                 var min = 3;
