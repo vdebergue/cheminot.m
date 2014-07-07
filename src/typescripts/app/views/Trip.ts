@@ -72,7 +72,6 @@ class Trip extends View implements IView {
     buildWith(startId: string, endId: string, when: Date, ts: number, maybeTrip: opt.IOption<any>): Q.Promise<void> {
         var ftemplate = Templating.trip.details();
         this.updateTitle(startId, endId);
-        console.log(maybeTrip);
         return maybeTrip.map((trip) => {
             return ftemplate.then((t) => {
                 var dom = tmpl(t, { stops: this.processResult(trip) });
@@ -81,28 +80,29 @@ class Trip extends View implements IView {
             });
         }).getOrElse(() => {
             var fschedules = (() => {
-                var maxResults = 1;
                 var vs = Storage.tdspGraph()[startId];
-                var sortedStopTimes = _.sortBy(vs.stopTimes, (st:any) => {
-                    return st.departureTime;
-                });
-                var partitionned = _.partition(sortedStopTimes, (st:any) => {
-                    var d1 = utils.setSameTime(new Date(st.departureTime), when);
+                var partitionned = _.chain(vs.stopTimes).sortBy((st: any) => {
+                    var d1 = utils.setSameDay(when, new Date(st.departureTime));
+                    return d1.getTime();
+                }).partition((st:any) => {
+                    var d1 = utils.setSameDay(when, new Date(st.departureTime));
                     return d1.getTime() < when.getTime();
-                });
+                }).value();
                 var departureTimes = partitionned[1].concat(partitionned[0]);
 
                 return ftemplate.then((t) => {
                     return PlannerTask.lookForBestTrip(startId, endId, departureTimes, (trip) => {
-                        if(trip && trip[0].gi.departureTime == ts) {
-                            var dom = tmpl(t, { stops: this.processResult(trip) });
-                            var $stops = this.$scope().find('.stops');
-                            $stops.html(dom);
-                            utils.log('DONE');
-                            return false;
-                        } else {
-                            return true;
+                        if(trip) {
+                            var departureTime = utils.setSameDay(when, new Date(trip[0].gi.departureTime));
+                            if(departureTime.getTime() === when.getTime()) {
+                                var dom = tmpl(t, { stops: this.processResult(trip) });
+                                var $stops = this.$scope().find('.stops');
+                                $stops.html(dom);
+                                utils.log('DONE');
+                                return false;
+                            }
                         }
+                        return true;
                     });
                 });
             })();
