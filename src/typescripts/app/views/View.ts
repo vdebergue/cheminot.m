@@ -35,6 +35,10 @@ class View {
         });
     }
 
+    onBackButton(f: (e: Event) => void): void {
+        document.addEventListener("backbutton", f, false);
+    }
+
     $container(): ZeptoCollection {
         return $(this.container);
     }
@@ -45,6 +49,10 @@ class View {
 
     showView(): void {
         this.$scope().removeClass('hidden');
+    }
+
+    isHidden(): boolean {
+        return this.$scope().is('.hidden');
     }
 
     hide(): Q.Promise<void> {

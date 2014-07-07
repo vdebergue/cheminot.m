@@ -8,13 +8,26 @@ var readyPromise = ready.promise;
 var stash = [];
 var pendings = {};
 
+var cancelled = false;
+
+function resetCancel(tdsp) {
+    cancelled = false;
+    tdsp.cancelled = false;
+}
+
+function setCancel(tdsp) {
+    cancelled = true;
+    tdsp.cancelled = true;
+}
+
 var EVENTS = {
     init: "init",
     search: "search",
     end: "end",
     progress: "progress",
     query: "query",
-    debug: "debug"
+    debug: "debug",
+    cancel: "cancel"
 };
 
 
@@ -122,6 +135,10 @@ function receive(msg: any, deps: any) {
         Protocol.debug('Worker ready!');
         break;
     }
+    case EVENTS.cancel: {
+        setCancel(deps.tdsp);
+        break;
+    }
     case EVENTS.search: {
         Protocol.debug("Let's starting !");
         run(msg.vsId, msg.veId, msg.stopTimes, msg.config, deps);
@@ -147,11 +164,12 @@ function receive(msg: any, deps: any) {
 
 function run(vsId: string, veId: string, stopTimes, config: any, deps): Q.Promise<any> {
     var next = true;
+    resetCancel(deps.tdsp);
     return deps.utils.sequencePromises(stopTimes, (st) => {
         if(next) {
             return deps.tdsp.lookForBestTrip(STORAGE, tdspGraph, vsId, veId, st.tripId, st.departureTime, exceptions, Protocol.debug).then((result) => {
                 return Protocol.progress('lookForBestTrip', result).then((onContinue) => {
-                    next = onContinue;
+                    next = !cancelled && onContinue;
                     return result;
                 });
             }).catch((reason) => {

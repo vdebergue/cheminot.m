@@ -21,6 +21,13 @@ export function init(): Worker {
     });
 }
 
+export function stop(): void {
+    var worker = init();
+    worker.postMessage({
+        event: 'cancel'
+    });
+}
+
 export function lookForBestTrip(vsId: string, veId: string, stopTimes: Array<number>, progress: (data: any) => boolean): Q.Promise<any> {
     var d = Q.defer<any>();
     var worker = init();

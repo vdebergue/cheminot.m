@@ -99,29 +99,33 @@ export function init(views: seq.IList<IView>) {
         }),
 
         timetable: Abyssa.State('timetable/:start/:end/:when', function(params) {
-            return this.async(
-                opt.Option(params['start']).flatMap((start:string) => {
-                    return opt.Option(params['end']).flatMap((end:string) => {
-                        return opt.Option(params['when']).flatMap((when:string) => {
-                            return opt.Option(parseInt(when, 10));
-                        }).map((when:number) => {
-                            var timetableView = cheminotViews.timetable();
-                            if(timetableView.isAlreadyComputed(start, end, when)) {
-                                cheminotViews.hideOthers('timetable');
-                                return timetableView.show();
-                            } else {
-                                return ensureInitApp('timetable').then(() => {
-                                    return timetableView.show().then(() => {
-                                        return timetableView.buildWith(start, end, new Date(when));
-                                    });
+            opt.Option(params['start']).flatMap((start:string) => {
+                return opt.Option(params['end']).flatMap((end:string) => {
+                    return opt.Option(params['when']).flatMap((when:string) => {
+                        return opt.Option(parseInt(when, 10));
+                    }).map((when:number) => {
+                        var timetableView = cheminotViews.timetable();
+                        if(timetableView.isAlreadyComputed(start, end, when)) {
+                            cheminotViews.hideOthers('timetable');
+                            return timetableView.show().then(() => {
+                                if(!timetableView.isScreenFilled()) {
+                                    return timetableView.buildWith(start, end, new Date(when));
+                                } else {
+                                    return utils.Promise.DONE();
+                                }
+                            });
+                        } else {
+                            return ensureInitApp('timetable').then(() => {
+                                return timetableView.show().then(() => {
+                                    return timetableView.buildWith(start, end, new Date(when));
                                 });
-                            }
-                        });
+                            });
+                        }
                     });
-                }).getOrElse(() => {
-                    return utils.Promise.DONE();
-                })
-            );
+                });
+            }).getOrElse(() => {
+                return utils.Promise.DONE();
+            })
         }),
 
         trip: Abyssa.State('trip/:start/:end/:when/:ts', function(params) {

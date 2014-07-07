@@ -80,7 +80,15 @@ class Timetable extends View implements IView {
     }
 
     bindEvents(): void {
-        super.bindEvent('tap', '.schedules li', this.onScheduleSelected);
+        super.bindEvent('tap', '.schedules li', (e: Event) => {
+            PlannerTask.stop();
+            return this.onScheduleSelected(e);
+        });
+        super.onBackButton(() => {
+            if(!super.isHidden()) {
+                PlannerTask.stop();
+            }
+        });
     }
 
     show(): Q.Promise<void> {
@@ -257,19 +265,21 @@ class Timetable extends View implements IView {
 
     toggleShowPullup(): boolean {
         var $scope = this.$scope();
-        var $scroller = $scope.find('#scroller');
-        var scrollerOffset = $scroller.offset();
-        var $pullUp = $scope.find('.pull-up');
-        var viewportSize = utils.viewportSize();
-        var height = Math.max(viewportSize._1, viewportSize._2);
-
-        if((scrollerOffset.top + scrollerOffset.height) > height) {
+        if(this.isScreenFilled()) {
             $scope.find('.pull-up').addClass('visible');
             return false;
         } else {
             $scope.find('.pull-up').removeClass('visible');
             return true;
         }
+    }
+
+    isScreenFilled(): boolean {
+        var $scope = this.$scope();
+        var scrollerOffset = $scope.find('#scroller').offset();
+        var viewportSize = utils.viewportSize();
+        var height = Math.max(viewportSize._1, viewportSize._2);
+        return (scrollerOffset.top + scrollerOffset.height) > height;
     }
 
     onPullUp() {
