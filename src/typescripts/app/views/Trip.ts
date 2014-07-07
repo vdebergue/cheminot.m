@@ -72,6 +72,7 @@ class Trip extends View implements IView {
     buildWith(startId: string, endId: string, when: Date, ts: number, maybeTrip: opt.IOption<any>): Q.Promise<void> {
         var ftemplate = Templating.trip.details();
         this.updateTitle(startId, endId);
+        console.log(maybeTrip);
         return maybeTrip.map((trip) => {
             return ftemplate.then((t) => {
                 var dom = tmpl(t, { stops: this.processResult(trip) });

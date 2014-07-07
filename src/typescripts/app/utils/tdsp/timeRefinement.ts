@@ -10,7 +10,6 @@ export var INFINI = 9999999999999;
 
 function tripsAvailability(Storage: any, tripIds: string[], when: Date, exceptions: any, debug: (msg: any) => void): Q.Promise<any> {
     return Storage.tripsByIds(tripIds).then((trips) => {
-        debug('tripsByIds done')
         return tripIds.reduce((acc, id, index) => {
             return opt.Option(trips[index]).map((trip) => {
                 acc[id] = planner.Trip.isValidOn(trip, when, exceptions, debug);
