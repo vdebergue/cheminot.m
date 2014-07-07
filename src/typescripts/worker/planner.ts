@@ -7,7 +7,7 @@ var ready = Q.defer<boolean>();
 var readyPromise = ready.promise;
 var stash = [];
 var pendings = {};
-
+var inProgress = false;
 var cancelled = false;
 
 function resetCancel(tdsp) {
@@ -141,7 +141,12 @@ function receive(msg: any, deps: any) {
     }
     case EVENTS.search: {
         Protocol.debug("Let's starting !");
-        run(msg.vsId, msg.veId, msg.stopTimes, msg.config, deps);
+        if(!inProgress) {
+            inProgress = true;
+            run(msg.vsId, msg.veId, msg.stopTimes, msg.config, deps);
+        } else {
+            Protocol.debug('Already in progress');
+        }
         break;
     }
     case EVENTS.query: {
@@ -188,5 +193,7 @@ function run(vsId: string, veId: string, stopTimes, config: any, deps): Q.Promis
             error: reason,
             data: null
         });
+    }).finally(() => {
+        inProgress = false;
     });
 }
