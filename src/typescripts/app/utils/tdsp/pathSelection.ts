@@ -5,7 +5,7 @@ export function pathSelection(graph: any, arrivalTimes: any, ts: number, vsId: s
     var vs = graph[vsId];
     var vj = graph[veId];
     var arrivalTimeVe = arrivalTimes[vj.id];
-    var p = [arrivalTimeVe];
+    var p = [];
     var start = Date.now();
     var hasFoundTrip = false;
 
@@ -19,7 +19,7 @@ export function pathSelection(graph: any, arrivalTimes: any, ts: number, vsId: s
 
             if(arrivalTimeVi) {
 
-                var maybeDepartureTime= _.find(vi.stopTimes, (st:any) => {
+                var maybeDepartureTime = _.find(vi.stopTimes, (st:any) => {
                     return st.tripId === arrivalTimeVj.gi.tripId && st.departureTime < arrivalTimeVj.gi.arrivalTime;
                 });
 

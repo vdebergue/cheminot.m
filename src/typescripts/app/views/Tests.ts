@@ -76,14 +76,13 @@ class Tests extends View implements IView {
                 this.timeout(1000 * 60);
 
                 it('should find a direct trip', (done) => {
-                    var ts = moment().hours(13).minutes(34).seconds(0).toDate().getTime();
                     var exceptions = Storage.exceptions();
                     var graph = Storage.tdspGraph();
                     var vsId = self.stops['Chartres'];
                     var veId = self.stops['Paris-Montparnasse 1-2'];
                     var vs = graph[vsId];
                     var debug = (any) => { console.log(any) };
-                    var when = new Date();
+                    var when = moment().hours(8).minutes(56).seconds(0).toDate();
 
                     var sortedStopTimes = _.sortBy(vs.stopTimes, (st:any) => {
                         return st.departureTime;
@@ -96,16 +95,17 @@ class Tests extends View implements IView {
 
                     var departureTimes = partitionned[1].concat(partitionned[0]);
 
-                    utils.sequencePromises(departureTimes, (st:any) => {
-                        return tdsp.lookForBestTrip(self.storageInterface, graph, vsId, veId, st.tripId, st.departureTime, exceptions, debug).then((results) => {
-                            console.log(results);
+                    var i = 0;
+                    utils.sequencePromises([departureTimes[7]], (st:any) => {
+                        return tdsp.lookForBestTrip(self.storageInterface, graph, vsId, veId, st.tripId, st.departureTime, exceptions, debug).then((result) => {
+                            return result;
                         }).catch(function(reason) {
                             console.log(reason);
                         });
-                    }).then(() => {
+                    }).then((results) => {
+                        console.log(results);
                         done();
                     }).catch(function(reason) {
-                        console.log('here');
                         done(reason);
                     });;
                 });

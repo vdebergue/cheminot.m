@@ -30,7 +30,6 @@ var EVENTS = {
     cancel: "cancel"
 };
 
-
 var cache = {};
 var tdspGraph = null;
 var exceptions = null;
