@@ -1,10 +1,13 @@
-<% stops.forEach(function(stop, index) { %>
-<li>
+<% stops.forEach(function(stop) { %>
+<li data-tripid="<%= stop.tripId %>">
   <div class="time">
     <span class="alarm-clock"></span>
     <span class="at"><%= moment(stop.departureTime).format('HH:mm') %></span>
   </div>
-  <span class="line <%= index==0 ? 'first' : ''%> <%= index==stops.length-1 ? 'last' : '' %>"></span>
+  <span class="line <%= (stop.isChangement && !stop.isFirst && !stop.isLast) ? 'changement' : '' %>
+               <%= stop.isFirst ? 'first' : ''%>
+               <%= stop.isLast ? 'last' : '' %>">
+  </span>
   <div class="stop">
     <span class="name"><%= stop.name %></span>
     <% if(stop.waiting > 0) { %>

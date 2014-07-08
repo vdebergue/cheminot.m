@@ -1,3 +1,6 @@
+<% if(isNewDay()) { %>
+<li class="day"><%= schedule.textDate %></li>
+<% } %>
 <li data-starttime="<%= schedule.startTime %>" data-endtime="<%= schedule.endTime %>">
   <div class="meta">
     <% if(schedule.steps <= 1) { %>

@@ -50,12 +50,17 @@ class Trip extends View implements IView {
     }
 
     private processResult(result: any[]): any[] {
-        return result.map((next) => {
+        return result.map((next, i) => {
             var waiting = Math.round(((next.gi.departureTime - next.gi.arrivalTime) / 1000) / 60);
+            var isChangement = result[i-1] && result[i-1].gi.tripId != next.gi.tripId;
             return {
                 departureTime: next.gi.departureTime,
                 waiting: waiting,
-                name: next.gi.stop.name
+                name: next.gi.stop.name,
+                tripId: next.gi.tripId,
+                isChangement: isChangement,
+                isLast: (i == result.length - 1),
+                isFirst: i == 0
             }
         });
     }
@@ -74,7 +79,9 @@ class Trip extends View implements IView {
         this.updateTitle(startId, endId);
         return maybeTrip.map((trip) => {
             return ftemplate.then((t) => {
-                var dom = tmpl(t, { stops: this.processResult(trip) });
+                var dom = tmpl(t, {
+                    stops: this.processResult(trip)
+                });
                 var $stops = this.$scope().find('.stops');
                 $stops.html(dom);
             });
