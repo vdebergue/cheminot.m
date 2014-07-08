@@ -4,7 +4,7 @@ import ps = require('./pathSelection');
 export var cancelled = false;
 
 export function isTimeout(start: number): boolean {
-    return cancelled || ((Date.now() - start) >= 10000);
+    return cancelled || ((Date.now() - start) >= 5000);
 }
 
 export function lookForBestTrip(Storage: any, graph: any, vsId: string, veId: string, vsTripId: string, ts: number, exceptions: any, debug: (msg: any) => void): Q.Promise<any> {

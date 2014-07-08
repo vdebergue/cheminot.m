@@ -237,7 +237,15 @@ class Timetable extends View implements IView {
                         current = getLastTime();
                         var processed = this.processResult(when, current, schedule);
                         var $list = $schedules.find('ul');
-                        var dom = tmpl(t, { schedule: processed });
+                        var dom = tmpl(t, {
+                            schedule: processed,
+                            isNewDay: () => {
+                                return !processed.isToday && this.$scope().find('.schedules .day').toArray().filter((el) => {
+                                    var $el = $(el);
+                                    return $el.text() == processed.textDate;
+                                }).length == 0;
+                            }
+                        });
                         $list.append(dom);
                         addTripToCache(startId, endId, processed.startTime, schedule);
                         this.myIScroll.refresh();
