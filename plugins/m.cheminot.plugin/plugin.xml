@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:rim="http://www.blackberry.com/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" id="m.cheminot" version="0.1.3">
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:rim="http://www.blackberry.com/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" id="m.cheminot.plugin" version="0.1.3">
     <name>CheminotPlugin</name>
     <description>Cheminot.m Plugin</description>
     <license></license>
@@ -14,7 +14,7 @@
     </js-module>
 
     <platform name="android">
-        <source-file src="src/android/m.cheminot/CheminotPlugin.java" target-dir="src/m/cheminot" />
+        <source-file src="src/android/m.cheminot.plugin/CheminotPlugin.java" target-dir="src/m/cheminot/plugin" />
         <config-file target="res/xml/config.xml" parent="/*">
         </config-file>
     </platform>

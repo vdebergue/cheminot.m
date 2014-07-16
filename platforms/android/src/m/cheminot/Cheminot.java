@@ -17,7 +17,7 @@
        under the License.
  */
 
-package cheminot.m;
+package m.cheminot;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,7 +29,7 @@ import org.apache.cordova.CordovaActivity;
 
 import android.os.Bundle;
 
-public class cheminotm extends CordovaActivity
+public class Cheminot extends CordovaActivity
 {
     @Override
     public void onCreate(Bundle savedInstanceState)

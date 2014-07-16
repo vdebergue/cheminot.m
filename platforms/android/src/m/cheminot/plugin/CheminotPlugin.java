@@ -1,4 +1,4 @@
-package m.cheminot;
+package m.cheminot.plugin;
 
 import java.io.IOException;
 
