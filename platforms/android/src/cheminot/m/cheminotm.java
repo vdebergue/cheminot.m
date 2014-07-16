@@ -17,14 +17,17 @@
        under the License.
  */
 
-package io.cheminot.m;
+package cheminot.m;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.FileOutputStream;
+
+import org.apache.cordova.Config;
+import org.apache.cordova.CordovaActivity;
+
 import android.os.Bundle;
-import org.apache.cordova.*;
 
 public class cheminotm extends CordovaActivity
 {
@@ -33,16 +36,10 @@ public class cheminotm extends CordovaActivity
     {
         super.onCreate(savedInstanceState);
         super.init();
-        try {
-            this.copyDbFile("cheminot.db");
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
-        }
-        // Set by <content src="index.html" /> in config.xml
         super.loadUrl(Config.getStartUrl());
-        //super.loadUrl("file:///android_asset/www/index.html")
     }
 
+    @SuppressWarnings("unused")
     private void copyDbFile(String dbFileName) throws java.io.IOException
     {
         File dbFile = getDatabasePath(dbFileName);

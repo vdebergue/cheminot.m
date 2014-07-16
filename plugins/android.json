@@ -44,6 +44,9 @@
         },
         "com.phonegap.plugins.sqlite": {
             "PACKAGE_NAME": "io.cheminot.m"
+        },
+        "m.cheminot": {
+            "PACKAGE_NAME": "io.cheminot.m"
         }
     },
     "dependent_plugins": {}
