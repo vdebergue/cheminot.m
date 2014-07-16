@@ -8,9 +8,6 @@
     <feature name="SoftKeyboard">
         <param name="android-package" value="org.apache.cordova.plugin.softkeyboard.SoftKeyboard" />
     </feature>
-    <feature name="SQLitePlugin">
-        <param name="android-package" value="org.pgsqlite.SQLitePlugin" />
-    </feature>
     <name>m.cheminot</name>
     <description />
     <author email="srenault.contact@gmail.com" href="">Sébastien Renault</author>

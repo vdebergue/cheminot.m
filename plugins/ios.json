@@ -23,22 +23,13 @@
                         {
                             "xml": "<preference name=\"StatusBarBackgroundColor\" value=\"#000000\" />",
                             "count": 1
-                        },
-                        {
-                            "xml": "<feature name=\"SQLitePlugin\"><param name=\"ios-package\" value=\"SQLitePlugin\" /></feature>",
-                            "count": 1
                         }
                     ]
                 }
             },
             "framework": {
                 "parents": {
-                    "libsqlite3.dylib": [
-                        {
-                            "xml": "false",
-                            "count": 1
-                        }
-                    ]
+                    "libsqlite3.dylib": []
                 }
             }
         }
@@ -51,9 +42,6 @@
             "PACKAGE_NAME": "m.cheminot"
         },
         "org.apache.cordova.plugin.softkeyboard": {
-            "PACKAGE_NAME": "m.cheminot"
-        },
-        "com.phonegap.plugins.sqlite": {
             "PACKAGE_NAME": "m.cheminot"
         }
     },

@@ -21,9 +21,6 @@
     </feature>
     <preference name="StatusBarOverlaysWebView" value="true" />
     <preference name="StatusBarBackgroundColor" value="#000000" />
-    <feature name="SQLitePlugin">
-        <param name="ios-package" value="SQLitePlugin" />
-    </feature>
     <name>cheminot.m</name>
     <description />
     <author email="sre@cheminot.io" href="http://cordova.io">sre</author>
