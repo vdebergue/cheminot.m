@@ -16,6 +16,9 @@
     <platform name="android">
         <source-file src="src/android/m.cheminot.plugin/CheminotPlugin.java" target-dir="src/m/cheminot/plugin" />
         <config-file target="res/xml/config.xml" parent="/*">
+          <feature name="Cheminot">
+            <param name="android-package" value="m.cheminot.plugin.CheminotPlugin" />
+          </feature>
         </config-file>
     </platform>
 </plugin>

@@ -13,13 +13,6 @@ module.exports = [
         "clobbers": [
             "window.StatusBar"
         ]
-    },
-    {
-        "file": "plugins/com.phonegap.plugins.sqlite/www/SQLitePlugin.js",
-        "id": "com.phonegap.plugins.sqlite.SQLitePlugin",
-        "clobbers": [
-            "SQLitePlugin"
-        ]
     }
 ];
 module.exports.metadata = 
@@ -27,8 +20,7 @@ module.exports.metadata =
 {
     "org.apache.cordova.keyboard": "0.1.2",
     "org.apache.cordova.statusbar": "0.1.3",
-    "org.apache.cordova.plugin.softkeyboard": "1.0.3",
-    "com.phonegap.plugins.sqlite": "1.0.0"
+    "org.apache.cordova.plugin.softkeyboard": "1.0.3"
 }
 // BOTTOM OF METADATA
 });

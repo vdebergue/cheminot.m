@@ -1,13 +1,11 @@
 package org.apache.cordova.plugin.softkeyboard;
 
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 
 import android.content.Context;
 import android.view.inputmethod.InputMethodManager;
-
-import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.PluginResult;
 
 public class SoftKeyboard extends CordovaPlugin {
 
@@ -17,7 +15,6 @@ public class SoftKeyboard extends CordovaPlugin {
     public void showKeyBoard() {
         InputMethodManager mgr = (InputMethodManager) cordova.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.showSoftInput(webView, InputMethodManager.SHOW_IMPLICIT);
-
         ((InputMethodManager) cordova.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(webView, 0);
     }
 
@@ -27,17 +24,17 @@ public class SoftKeyboard extends CordovaPlugin {
     }
 
     public boolean isKeyBoardShowing() {
-    	int heightDiff = webView.getRootView().getHeight() - webView.getHeight();
-    	return (100 < heightDiff); // if more than 100 pixels, its probably a keyboard...
+        int heightDiff = webView.getRootView().getHeight() - webView.getHeight();
+        return (100 < heightDiff); // if more than 100 pixels, its probably a keyboard...
     }
 
     @Override
-	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
-		if (action.equals("show")) {
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
+        if (action.equals("show")) {
             this.showKeyBoard();
             callbackContext.success("done");
             return true;
-		}
+        }
         else if (action.equals("hide")) {
             this.hideKeyBoard();
             callbackContext.success();
@@ -47,8 +44,8 @@ public class SoftKeyboard extends CordovaPlugin {
             callbackContext.success(Boolean.toString(this.isKeyBoardShowing()));
             return true;
         }
-		else {
-			return false;
-		}
-	}
+        else {
+            return false;
+        }
+    }
 }

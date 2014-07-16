@@ -6,7 +6,6 @@
 	objectVersion = 46;
 	objects = {
 /* Begin PBXBuildFile section */
-		10B9BE823A4B46D2A28802D3 /* SQLitePlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 231207B87AF54C7390778E7C /* SQLitePlugin.m */; };
 		1D3623260D0F684500981E51 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* AppDelegate.m */; };
 		1D60589B0D05DD56006BFB54 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
 		1F766FE113BBADB100FB74C0 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1F766FDC13BBADB100FB74C0 /* Localizable.strings */; };
@@ -40,7 +39,6 @@
 		7E7966E61810823500FA85AD /* icon-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 7E7966DC1810823500FA85AD /* icon-small.png */; };
 		7E7966E71810823500FA85AD /* icon-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7E7966DD1810823500FA85AD /* icon-small@2x.png */; };
 		96FF95F805CE4A87AB79EF90 /* CDVKeyboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 68EDBEADA3614A1591AA3D8D /* CDVKeyboard.m */; };
-		BB61A99C76DA4CF39B1F79DD /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 736650AB4C794DAF8B3D6FD2 /* libsqlite3.dylib */; };
 		CF10282DC57540C898F42CF9 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		CF469BB50D5E43EEADD31F54 /* CDVStatusBar.m in Sources */ = {isa = PBXBuildFile; fileRef = B0D7A678E5694CB283D2D099 /* CDVStatusBar.m */; };
 		D4A0D8761607E02300AEF8BB /* Default-568h@2x~iphone.png in Resources */ = {isa = PBXBuildFile; fileRef = D4A0D8751607E02300AEF8BB /* Default-568h@2x~iphone.png */; };
@@ -126,7 +124,6 @@
 				288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */,
 				305D5FD1115AB8F900A74A75 /* MobileCoreServices.framework in Frameworks */,
 				5AEE5B35173C68D80009041E /* CoreLocation.framework in Frameworks */,
-				BB61A99C76DA4CF39B1F79DD /* libsqlite3.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -430,7 +427,6 @@
 				CF10282DC57540C898F42CF9 /* (null) in Sources */,
 				96FF95F805CE4A87AB79EF90 /* CDVKeyboard.m in Sources */,
 				CF469BB50D5E43EEADD31F54 /* CDVStatusBar.m in Sources */,
-				10B9BE823A4B46D2A28802D3 /* SQLitePlugin.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
