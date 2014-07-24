@@ -9,6 +9,8 @@ tmp
 !.gitkeep
 tests/app
 tests/vendors
+.tscache
+.baseDir.ts
 
 www/
 *.db
@@ -19,6 +21,7 @@ platforms/android/gen/
 platforms/android/bin/
 platforms/android/ant-build
 platforms/android/ant-gen/
+platforms/android/obj/
 platforms/android/CordovaLib/ant-build/
 platforms/android/CordovaLib/ant-gen/
 platforms/android/CordovaLib/bin/
