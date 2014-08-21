@@ -6,5 +6,5 @@ public class CheminotLib {
         System.loadLibrary("cheminot");
     }
 
-    public static native String f(String db_path);
+    public static native String f(String dbpath);
 }

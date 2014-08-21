@@ -10,8 +10,8 @@ public class CheminotPlugin extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext cbc) {
-        String dbPath = this.cordova.getActivity().getDatabasePath("cheminot.db").getAbsolutePath();
-        cbc.success(CheminotLib.f(dbPath));
+        String dbpath = this.cordova.getActivity().getDatabasePath("cheminot.db").getAbsolutePath();
+        cbc.success(CheminotLib.f(dbpath));
         return true;
     }
 }

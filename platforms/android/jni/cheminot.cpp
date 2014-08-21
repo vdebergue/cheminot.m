@@ -5,10 +5,10 @@
 
 
 extern "C" {
-  JNIEXPORT jstring JNICALL Java_m_cheminot_plugin_jni_CheminotLib_f(JNIEnv * env, jobject obj, jstring db_path);
+  JNIEXPORT jstring JNICALL Java_m_cheminot_plugin_jni_CheminotLib_f(JNIEnv * env, jobject obj, jstring dbpath);
 };
 
-JNIEXPORT jstring JNICALL Java_m_cheminot_plugin_jni_CheminotLib_f(JNIEnv * env, jobject obj, jstring db_path)
+JNIEXPORT jstring JNICALL Java_m_cheminot_plugin_jni_CheminotLib_f(JNIEnv * env, jobject obj, jstring dbpath)
 {
-  return db_path;
+	return dbpath;
 }
