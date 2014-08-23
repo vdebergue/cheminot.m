@@ -21,4 +21,14 @@
           </feature>
         </config-file>
     </platform>
+
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Cheminot">
+                <param name="ios-package" value="Cheminot" onload="true" />
+            </feature>
+        </config-file>
+        <header-file src="src/ios/Cheminot.h" />
+        <source-file src="src/ios/Cheminot.m" />
+    </platform>
 </plugin>

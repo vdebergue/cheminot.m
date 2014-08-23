@@ -35,4 +35,7 @@
     <feature name="Keyboard">
         <param name="ios-package" onload="true" value="CDVKeyboard" />
     </feature>
+    <feature name="Cheminot">
+        <param name="ios-package" onload="true" value="Cheminot" />
+    </feature>
 </widget>

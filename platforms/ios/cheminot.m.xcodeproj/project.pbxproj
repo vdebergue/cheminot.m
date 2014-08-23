@@ -5,10 +5,14 @@
 	};
 	objectVersion = 46;
 	objects = {
+
 /* Begin PBXBuildFile section */
 		1D3623260D0F684500981E51 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* AppDelegate.m */; };
 		1D60589B0D05DD56006BFB54 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
 		1F766FE113BBADB100FB74C0 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1F766FDC13BBADB100FB74C0 /* Localizable.strings */; };
+		20C99D9419A8D23C00F3F096 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 736650AB4C794DAF8B3D6FD2 /* libsqlite3.dylib */; };
+		20C99D9A19A8EC7B00F3F096 /* Cheminot.mm in Sources */ = {isa = PBXBuildFile; fileRef = 20C99D9919A8EC7B00F3F096 /* Cheminot.mm */; };
+		20C99DA319A94DE300F3F096 /* Adapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 20C99DA119A94DE300F3F096 /* Adapter.cpp */; };
 		20D20936194F573D0013B546 /* cheminot.db in Resources */ = {isa = PBXBuildFile; fileRef = 20D20935194F573D0013B546 /* cheminot.db */; };
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
 		301BF552109A68D80062928A /* libCordova.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 301BF535109A57CC0062928A /* libCordova.a */; };
@@ -68,6 +72,10 @@
 		1D6058910D05DD3D006BFB54 /* cheminot.m.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = cheminot.m.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1F766FDD13BBADB100FB74C0 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = Localizable.strings; sourceTree = "<group>"; };
 		1F766FE013BBADB100FB74C0 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = Localizable.strings; sourceTree = "<group>"; };
+		20C99D9819A8EC7300F3F096 /* Cheminot.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Cheminot.h; path = m.cheminot.plugin/Cheminot.h; sourceTree = "<group>"; };
+		20C99D9919A8EC7B00F3F096 /* Cheminot.mm */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = Cheminot.mm; path = m.cheminot.plugin/Cheminot.mm; sourceTree = "<group>"; };
+		20C99DA119A94DE300F3F096 /* Adapter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Adapter.cpp; path = m.cheminot.plugin/Adapter.cpp; sourceTree = "<group>"; };
+		20C99DA219A94DE300F3F096 /* Adapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Adapter.h; path = m.cheminot.plugin/Adapter.h; sourceTree = "<group>"; };
 		20D20935194F573D0013B546 /* cheminot.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = cheminot.db; sourceTree = "<group>"; };
 		231207B87AF54C7390778E7C /* SQLitePlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SQLitePlugin.m; path = com.phonegap.plugins.sqlite/SQLitePlugin.m; sourceTree = "<group>"; };
 		288765FC0DF74451002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -119,6 +127,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				20C99D9419A8D23C00F3F096 /* libsqlite3.dylib in Frameworks */,
 				5B1594DD16A7569C00FEF299 /* AssetsLibrary.framework in Frameworks */,
 				301BF552109A68D80062928A /* libCordova.a in Frameworks */,
 				288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */,
@@ -165,6 +174,17 @@
 				1F766FDF13BBADB100FB74C0 /* Localizable.strings */,
 			);
 			path = es.lproj;
+			sourceTree = "<group>";
+		};
+		20C99DA419A94DEC00F3F096 /* Cheminot */ = {
+			isa = PBXGroup;
+			children = (
+				20C99D9819A8EC7300F3F096 /* Cheminot.h */,
+				20C99DA119A94DE300F3F096 /* Adapter.cpp */,
+				20C99DA219A94DE300F3F096 /* Adapter.h */,
+				20C99D9919A8EC7B00F3F096 /* Cheminot.mm */,
+			);
+			name = Cheminot;
 			sourceTree = "<group>";
 		};
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
@@ -232,6 +252,7 @@
 		307C750510C5A3420062BCA9 /* Plugins */ = {
 			isa = PBXGroup;
 			children = (
+				20C99DA419A94DEC00F3F096 /* Cheminot */,
 				68EDBEADA3614A1591AA3D8D /* CDVKeyboard.m */,
 				D96513CE645F4AC0908979A3 /* CDVKeyboard.h */,
 				B0D7A678E5694CB283D2D099 /* CDVStatusBar.m */,
@@ -425,6 +446,8 @@
 				1D3623260D0F684500981E51 /* AppDelegate.m in Sources */,
 				302D95F114D2391D003F00A1 /* MainViewController.m in Sources */,
 				CF10282DC57540C898F42CF9 /* (null) in Sources */,
+				20C99D9A19A8EC7B00F3F096 /* Cheminot.mm in Sources */,
+				20C99DA319A94DE300F3F096 /* Adapter.cpp in Sources */,
 				96FF95F805CE4A87AB79EF90 /* CDVKeyboard.m in Sources */,
 				CF469BB50D5E43EEADD31F54 /* CDVStatusBar.m in Sources */,
 			);
