@@ -30,3 +30,5 @@ platforms/android/CordovaLib/gen/
 ## IOS
 platforms/ios/www/
 platforms/ios/cheminot.m.xcodeproj/xcuserdata/sre.xcuserdatad/xcdebugger/
+
+*.so

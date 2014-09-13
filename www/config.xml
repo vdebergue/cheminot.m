@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="m.cheminot" version="0.0.1" versionCode="1404" versionName="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="m.cheminot" version="0.0.1" versionCode="1405" versionName="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>m.cheminot</name>
     <description></description>
     <author email="srenault.contact@gmail.com" href="">Sébastien Renault</author>
@@ -8,6 +8,7 @@
     <preference name="phonegap-version" value="3.4.0"/>
     <preference name="DisallowOverscroll" value="true"/>
     <preference name="KeyboardDisplayRequiresUserAction" value="false"/>
+    <preference name="BackupWebStorage" value="local"/>
     <feature name="StatusBar">
       <param name="ios-package" value="CDVStatusBar" onload="true" />
     </feature>

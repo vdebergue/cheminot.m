@@ -4,20 +4,29 @@
 #include <stdlib.h>
 #include <sqlite3.h>
 
+char *version = NULL;
+
 const char* getVersion(const char *dbpath) {
   int retval;
   sqlite3 *handle;
   sqlite3_stmt *stmt;
+  auto func = [] () {  };
   const char *result = "";
-
-  sqlite3_open_v2(dbpath, &handle, SQLITE_OPEN_READONLY, NULL);
-  sqlite3_prepare_v2(handle, "SELECT value FROM cache WHERE KEY = 'version';",-1, &stmt, 0);
-  sqlite3_column_count(stmt);
-  retval = sqlite3_step(stmt);
-  if(retval == SQLITE_ROW) {
-    result = (const char *)sqlite3_column_text(stmt, 0);
+  if(version == NULL) {
+    __android_log_print(ANDROID_LOG_DEBUG, "CheminotLog", "NOT FROM CACHE");
+    sqlite3_open_v2(dbpath, &handle, SQLITE_OPEN_READONLY, NULL);
+    sqlite3_prepare_v2(handle, "SELECT value FROM cache WHERE KEY = 'version';",-1, &stmt, 0);
+    sqlite3_column_count(stmt);
+    retval = sqlite3_step(stmt);
+    if(retval == SQLITE_ROW) {
+      result = (const char *)sqlite3_column_text(stmt, 0);
+      version = (char*) result;
+    }
+    sqlite3_close(handle);
+  } else {
+    __android_log_print(ANDROID_LOG_DEBUG, "CheminotLog", "FROM CACHE %s", version);
+    version = (char*) result;
   }
-  sqlite3_close(handle);
   return result;
 }
 

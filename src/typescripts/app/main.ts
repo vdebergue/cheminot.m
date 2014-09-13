@@ -13,7 +13,6 @@ import Home = require('./views/Home');
 import Timetable = require('./views/Timetable');
 import Trip = require('./views/Trip');
 import Splashscreen = require('./views/Splashscreen');
-import Tests = require('./views/Tests');
 import App = require('./application');
 import utils = require('./utils/utils');
 
@@ -50,6 +49,5 @@ function ready() {
     var timetableView = new Timetable('#viewport', '#timetable', 'timetable');
     var tripView = new Trip('#viewport', '#trip', 'trip');
     var splashscreenView = new Splashscreen('#viewport', '#splashscreen', 'splashscreen');
-    var testsView = new Tests('#viewport', '#tests', 'tests');
-    App.init(seq.List<IView>(homeView, timetableView, tripView, splashscreenView, testsView));
+    App.init(seq.List<IView>(homeView, timetableView, tripView, splashscreenView));
 }
