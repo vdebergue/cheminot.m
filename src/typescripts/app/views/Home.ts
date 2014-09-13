@@ -14,7 +14,6 @@ import TernaryTree = require('../utils/ternaryTree');
 declare var tmpl;
 declare var IScroll;
 declare var Zanimo;
-declare var StatusBar;
 
 export = Home;
 
@@ -216,7 +215,6 @@ class Home extends View implements IView {
         App.Navigate.home(this.getStart(), this.getEnd()).then(() => {
             return Q.all([finput(), this.moveDown()]).then(() => {
                 return Q.delay(200).then(() => {
-                    StatusBar.show();
                     this.disableInputsStation();
                 });
             });
@@ -327,7 +325,6 @@ class Home extends View implements IView {
 
         Q.all([fpannel(), this.moveUp(), finput()]).then(() => {
             return Q.delay(400).then(() => {
-                StatusBar.hide();
                 utils.showKeyboard($input);
                 $input.removeAttr('disabled');
                 $input.focus();

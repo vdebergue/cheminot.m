@@ -24,12 +24,6 @@
         }
     },
     "installed_plugins": {
-        "org.apache.cordova.keyboard": {
-            "PACKAGE_NAME": "m.cheminot"
-        },
-        "org.apache.cordova.statusbar": {
-            "PACKAGE_NAME": "m.cheminot"
-        },
         "org.apache.cordova.plugin.softkeyboard": {
             "PACKAGE_NAME": "m.cheminot"
         },

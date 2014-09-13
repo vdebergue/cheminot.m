@@ -17,27 +17,21 @@ import App = require('./application');
 import utils = require('./utils/utils');
 
 declare var Keyboard;
-declare var StatusBar;
 
 if(window['cordova'] != null) {
     document.addEventListener("deviceready", () => {
-        Keyboard.shrinkView(true);
-        Keyboard.disableScrollingInShrinkView(true);
-        StatusBar.styleLightContent();
         ready();
     }, false);
 } else {
     $(document).ready(function() {
-        window['StatusBar'] = {
-            hide: () => {},
-            show: () => {}
-        };
         ready();
     });
 }
 
 function ready() {
     if(utils.isAppleMobile()) {
+        Keyboard.shrinkView(true);
+        Keyboard.disableScrollingInShrinkView(true);
         $('body').addClass('ios');
     }
     if(utils.isIOS7()) {
