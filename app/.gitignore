@@ -1,0 +1,77 @@
+#=============#
+#   ANDROID   #
+#=============#
+
+# built application files
+*.apk
+*.ap_
+
+# files for the dex VM
+*.dex
+
+# Java class files
+target
+*.class
+
+# generated files - android project subfolder
+platforms/android/bin/
+platforms/android/gen/
+platforms/android/assets/*
+platforms/android/ant-gen/
+platforms/android/ant-build/
+platforms/android/www/
+platforms/android/CordovaLib/bin/
+platforms/android/CordovaLib/ant-gen/
+platforms/android/CordovaLib/ant-build/
+
+# generated files
+bin/
+gen/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+#=============#
+# IOS / XCODE #
+#=============#
+
+IOS/www/
+platforms/ios/build/
+platforms/ios/build.*/
+platforms/ios/CordovaLib/build/
+platforms/ios/www/
+profile
+xcuserdata
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.xcworkspace
+*.xcuserstate
+*.xcuserdatad
+!default.xcworkspace
+*.moved-aside
+
+#=============#
+#     OSX     #
+#=============#
+
+.DS_Store
+
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+#=============#
+#     MISC    #
+#=============#
+
+/www
+!.gitkeep

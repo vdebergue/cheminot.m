@@ -1,0 +1,11 @@
+{
+  "name": "cheminot",
+  "version": "0.0.0",
+  "description": "SNCF TER",
+  "dependencies": {
+    "q": "latest"
+  },
+  "devDependencies": {
+    "preprocess": "latest"
+  }
+}

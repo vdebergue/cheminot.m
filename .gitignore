@@ -1,0 +1,15 @@
+node_modules
+project/www
+src/ts/transpiled
+
+#=============#
+# IOS / XCODE #
+#=============#
+
+*.mobileprovision
+
+#=============#
+#     MISC    #
+#=============#
+
+private.json

@@ -1,0 +1,20 @@
+{
+  "name": "cheminot.m",
+  "version": "0.1.0",
+  "author": "Sebastien Renault (https://github.com/srenault)",
+  "devDependencies": {
+    "gulp": "latest",
+    "gulp-preprocess": "latest",
+    "gulp-util": "latest",
+    "watchify": "latest",
+    "stylus": "latest",
+    "gulp-stylus": "latest",
+    "gulp-tsc": "latest",
+    "yargs": "latest",
+    "nib": "latest",
+    "gulp-sourcemaps": "latest",
+    "gulp-react-ts": "latest",
+    "gulp-header": "latest",
+    "gulp-clean": "latest"
+  }
+}

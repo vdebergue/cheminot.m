@@ -1,0 +1,24 @@
+#!/bin/bash
+
+input=$1
+
+convert $input -resize 320x426 android/default/splashscreens/screen-320x426.png
+convert $input -resize 320x470 android/default/splashscreens/screen-320x470.png
+convert $input -resize 426x320 android/default/splashscreens/screen-426x320.png
+convert $input -resize 470x320 android/default/splashscreens/screen-470x320.png
+convert $input -resize 480x640 android/default/splashscreens/screen-480x640.png
+convert $input -resize 640x480 android/default/splashscreens/screen-640x480.png
+convert $input -resize 720x960 android/default/splashscreens/screen-720x960.png
+convert $input -resize 960x1410 android/default/splashscreens/screen-960x1410.png
+convert $input -resize 960x720 android/default/splashscreens/screen-960x720.png
+convert $input -resize 1280x1880 android/default/splashscreens/screen-1280x1880.png
+convert $input -resize 1410x960 android/default/splashscreens/screen-1410x960.png
+convert $input -resize 1880x1280 android/default/splashscreens/screen-1880x1280.png
+
+convert $input -resize 320x480 ios/default/splashscreens/screen-320x480.png
+convert $input -resize 640x960 ios/default/splashscreens/screen-640x960.png
+convert $input -resize 640x1136 ios/default/splashscreens/screen-640x1136.png
+convert $input -resize 768x1004 ios/default/splashscreens/screen-768x1004.png
+convert $input -resize 1024x748 ios/default/splashscreens/screen-1024x748.png
+convert $input -resize 1536x2008 ios/default/splashscreens/screen-1536x2008.png
+convert $input -resize 2048x1496 ios/default/splashscreens/screen-2048x1496.png
