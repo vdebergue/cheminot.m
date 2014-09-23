@@ -6,6 +6,9 @@
     "q": "latest"
   },
   "devDependencies": {
-    "preprocess": "latest"
+    "preprocess": "latest",
+    "zanimo": "latest",
+    "mithril": "latest",
+    "immutable": "latest"
   }
 }

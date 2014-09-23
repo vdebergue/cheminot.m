@@ -6,68 +6,84 @@ var gulp = require('gulp'),
     gutil = require('gulp-util'),
     nib = require('nib'),
     sourcemaps = require('gulp-sourcemaps'),
-    react = require('gulp-react-ts'),
     header = require('gulp-header'),
-    clean = require('gulp-clean'),
+    clean = require('gulp-rimraf'),
+    rjs = require('sre-gulp-rjs'),
     fs = require('fs');
 
 var Assets = {
     ts: {
-        src: ['src/ts/**/*.ts', '!src/ts/dts/**', '!src/ts/transpiled/**'],
-        transpiled: ['src/ts/transpiled/**/*.ts']
+        src: {
+            files: ['src/ts/**/*.ts', '!src/ts/dts/**'],
+            dir: 'src/ts/',
+        },
+        dest: {
+            files : ['project/www/js/**/*.js'],
+            dir: 'project/www/js/'
+        }
     },
-    styl: ['src/styl/**/*.styl']
+    styl: {
+        src: {
+            files: ['src/styl/**/*.styl'],
+            dir: 'src/styl/'
+        },
+        dest: {
+            files: ['project/www/css/**/*.css'],
+            dir: 'project/www/css/'
+        }
+    }
 };
 
-gulp.task('clean-stylus', function() {
-    return gulp.src('project/www/css')
-        .pipe(clean());
-});
-
-gulp.task('clean-jsx', function() {
-    return gulp.src('src/ts/transpiled')
-        .pipe(clean());
-});
-
 gulp.task('clean-ts', function() {
-    return gulp.src('project/www/js')
+    return gulp.src(Assets.ts.dest.dir)
         .pipe(clean());
 });
 
-gulp.task('jsx', ['clean-jsx'], function() {
-    var references = fs.readFileSync('src/ts/dts/references', 'utf8');
-    return gulp.src(Assets.ts.src)
-        .pipe(react())
-        .pipe(header(references))
-        .pipe(gulp.dest('src/ts/transpiled'));
-});
-
-gulp.task('ts', ['jsx', 'clean-ts'], function() {
-    return gulp.src(Assets.ts.transpiled)
+gulp.task('ts', ['clean-ts'], function() {
+    return gulp.src(Assets.ts.src.files)
         .pipe(ts({
             module: 'amd',
             noImplicitAny: true,
             sourcemap: true,
             safe: true,
-            out: 'main.js',
-            sourceRoot: '../../../src/ts/transpiled'
+            out: 'main.js'
         }))
-        .pipe(gulp.dest('project/www/js'));
+        .pipe(gulp.dest(Assets.ts.dest.dir));
+});
+
+gulp.task('clean-stylus', function() {
+    return gulp.src(Assets.styl.dest.dir)
+        .pipe(clean());
 });
 
 gulp.task('styl', ['clean-stylus'], function() {
-    return gulp.src(Assets.styl)
+    return gulp.src(Assets.styl.src.files)
+        .pipe(sourcemaps.init({ loadMaps: true }))
         .pipe(stylus({
             use: nib(),
             compress: true,
             sourcemap: {
                 inline: true,
-                basePath: 'project/www/css'
+                basePath: Assets.styl.dest.dir
             }
         }))
-        .pipe(sourcemaps.init({ loadMaps: true }))
         .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest('project/www/css'));
+        .pipe(gulp.dest(Assets.styl.dest.dir));
+});
+
+gulp.task('requirejs', ['ts'], function() {
+    return gulp.src(Assets.ts.dest.files)
+        .pipe(gulp.dest(Assets.ts.dest.dir))
+        .pipe(rjs({
+            baseUrl: Assets.ts.dest.dir,
+            out: Assets.ts.dest.dir + 'main.js',
+            name: 'main',
+            paths: {
+                'Immutable': '../vendors/Immutable',
+                'mithril': '../vendors/mithril'
+            },
+            optimize: 'none'
+        }));
 });
 
 gulp.task('watch', function() {
@@ -79,6 +95,6 @@ gulp.task('default', ['styl', 'ts', 'watch']);
 
 gulp.task('compile', ['ts']);
 
-gulp.task('build', ['styl', 'ts']);
+gulp.task('build', ['styl']);
 
 module.exports = gulp;

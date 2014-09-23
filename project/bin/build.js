@@ -43,11 +43,9 @@ module.exports = function build(platform, settings, configurationName) {
     gulp.doneCallback = function() {
         var settingsContent = "Settings = " + JSON.stringify(mapSettings(settings, platform, configurationName)) + ';';
         fs.writeFileSync(settingsPath, settingsContent, {"encoding": "utf8"});
-
         preprocess.preprocessFileSync(htmlPath.src, htmlPath.dest, {
             PLATFORM : platform
         });
-
         d.resolve();
     };
 

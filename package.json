@@ -6,15 +6,15 @@
     "gulp": "latest",
     "gulp-preprocess": "latest",
     "gulp-util": "latest",
-    "watchify": "latest",
+    "latest": "latest",
     "stylus": "latest",
     "gulp-stylus": "latest",
     "gulp-tsc": "latest",
     "yargs": "latest",
     "nib": "latest",
     "gulp-sourcemaps": "latest",
-    "gulp-react-ts": "latest",
     "gulp-header": "latest",
-    "gulp-clean": "latest"
+    "gulp-rimraf": "latest",
+    "sre-gulp-rjs": "latest"
   }
 }
