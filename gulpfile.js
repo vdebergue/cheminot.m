@@ -15,7 +15,7 @@ var Assets = {
     ts: {
         src: {
             files: ['src/ts/**/*.ts', '!src/ts/dts/**'],
-            dir: 'src/ts/',
+            dir: 'src/ts/'
         },
         dest: {
             files : ['project/www/js/**/*.js'],
@@ -44,7 +44,6 @@ gulp.task('ts', ['clean-ts'], function() {
         .pipe(ts({
             module: 'amd',
             noImplicitAny: true,
-            sourcemap: true,
             safe: true,
             out: 'main.js'
         }))
@@ -93,8 +92,8 @@ gulp.task('watch', function() {
 
 gulp.task('default', ['styl', 'ts', 'watch']);
 
-gulp.task('compile', ['ts']);
+gulp.task('compile', ['ts', 'styl']);
 
-gulp.task('build', ['styl']);
+gulp.task('build', ['requirejs']);
 
 module.exports = gulp;

@@ -31,6 +31,11 @@ declare module "mithril" {
         function startComputation(): void;
         function endComputation(): void;
 
+        module route {
+            function param(name: string): string;
+            var mode: string;
+        }
+
         interface VirtualElement {
             tag: string;
             attrs: Object;
