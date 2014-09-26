@@ -5,20 +5,20 @@ export interface Ctrl {
 
 export class Header implements m.Module<Ctrl> {
 
-    controller(): Ctrl {
-        return {
-        };
-    }
+  controller(): Ctrl {
+    return {
+    };
+  }
 
-    view(ctrl: Ctrl) {
-        return [
-            m("h1", {}, "Cheminot")
-        ];
-    }
+  view(ctrl: Ctrl) {
+    return [
+      m("h1", {}, "Header")
+    ];
+  }
 }
 
 var header = new Header();
 
 export function get(): Header {
-    return header;
+  return header;
 }

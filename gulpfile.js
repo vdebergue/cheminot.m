@@ -94,6 +94,6 @@ gulp.task('default', ['styl', 'ts', 'watch']);
 
 gulp.task('compile', ['ts', 'styl']);
 
-gulp.task('build', ['requirejs']);
+gulp.task('build', ['styl', 'requirejs']);
 
 module.exports = gulp;

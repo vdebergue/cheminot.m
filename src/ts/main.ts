@@ -1,14 +1,14 @@
-/// <reference path='dts/Immutable.d.ts'/>
 /// <reference path='dts/mithril.d.ts'/>
 
 'use strict';
 
-import Immutable = require('Immutable');
 import m = require('mithril');
 import App = require('app');
-import Departures = require('departures');
+import Routes = require('routes');
 
 m.route.mode = 'hash';
-m.route(document.querySelector('.body'), "/", {
-    "/": App.get()
+m.route(document.querySelector('#viewport'), "/", {
+  "/": App.get(),
+  "/departures": App.get(),
+  "/trip/:id": App.get()
 });
