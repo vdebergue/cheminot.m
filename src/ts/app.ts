@@ -1,4 +1,5 @@
 import m = require('mithril');
+import View = require('view');
 import Header = require('header');
 import Home = require('home');
 import Departures = require('departures');
@@ -9,6 +10,59 @@ export interface Ctrl {
   home: Home.Ctrl;
   departures: Departures.Ctrl;
   trip: Trip.Ctrl;
+}
+
+function renderHeader(ctrl: Header.Ctrl) {
+  return m("header", { id: "header" }, Header.get().view(ctrl));
+}
+
+function renderHome(ctrl: Home.Ctrl) {
+  var attributes: View.Attributes = {
+    'id': 'home',
+    'class': 'view hidden'
+  };
+
+  attributes = View.handleAttributes(attributes, (name, value) => {
+    switch (name + ':' + value) {
+      case 'class:hidden': return ctrl.isHidden;
+      default: return true;
+    }
+  });
+
+  return m("section", attributes, Home.get().view(ctrl));
+}
+
+function renderDepartures(ctrl: Departures.Ctrl) {
+  var attributes: View.Attributes = {
+    'id': 'departures',
+    'class': 'view hidden'
+  };
+
+  attributes = View.handleAttributes(attributes, (name, value) => {
+    switch (name + ':' + value) {
+      case 'class:hidden': return ctrl.isHidden;
+      default: return true;
+    }
+  });
+
+  return m("section", attributes, Departures.get().view(ctrl));
+}
+
+function renderTrip(ctrl: Trip.Ctrl) {
+
+  var attributes: View.Attributes = {
+    'id': 'trip',
+    'class': 'view hidden'
+  };
+
+  attributes = View.handleAttributes(attributes, (name, value) => {
+    switch (name + ':' + value) {
+      case 'class:hidden': return ctrl.isHidden;
+      default: return true;
+    }
+  });
+
+  return m("section", attributes, Trip.get().view(ctrl));
 }
 
 export class App implements m.Module<Ctrl> {
@@ -24,10 +78,10 @@ export class App implements m.Module<Ctrl> {
 
   view(ctrl: Ctrl) {
     return [
-      m("header", { id: "header" }, Header.get().view(ctrl.header)),
-      m("section", { id: "home", class: "view" }, Home.get().view(ctrl.home)),
-      m("section", { id: "departures", class: "view" }, Departures.get().view(ctrl.departures)),
-      m("section", { id: "trip", class: "view" }, Trip.get().view(ctrl.trip))
+      renderHeader(ctrl.header),
+      renderHome(ctrl.home),
+      renderDepartures(ctrl.departures),
+      renderTrip(ctrl.trip)
     ];
   }
 }

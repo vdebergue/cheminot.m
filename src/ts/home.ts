@@ -21,7 +21,7 @@ export class Home implements m.Module<Ctrl> {
   }
 
   view(ctrl: Ctrl) {
-    return ctrl.isHidden ? [] : render();
+    return render();
   }
 }
 

@@ -5,7 +5,7 @@ export interface Ctrl {
   isHidden: boolean
 }
 
-function display() {
+function render() {
   return [
     m("h1", {}, "Departures"),
     m("a[href='/trip/1']", {config: m.route}, "Trip")
@@ -21,7 +21,7 @@ export class Departures implements m.Module<Ctrl> {
   }
 
   view(ctrl: Ctrl) {
-    return ctrl.isHidden ? [] : display();
+    return render();
   }
 }
 

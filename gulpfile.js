@@ -57,16 +57,10 @@ gulp.task('clean-stylus', function() {
 
 gulp.task('styl', ['clean-stylus'], function() {
     return gulp.src(Assets.styl.src.files)
-        .pipe(sourcemaps.init({ loadMaps: true }))
         .pipe(stylus({
             use: nib(),
-            compress: true,
-            sourcemap: {
-                inline: true,
-                basePath: Assets.styl.dest.dir
-            }
+            compress: true
         }))
-        .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest(Assets.styl.dest.dir));
 });
 

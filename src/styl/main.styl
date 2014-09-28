@@ -1,4 +1,9 @@
 @import 'reset';
+@import 'colors';
+@import "fonts";
+@import 'buttons';
+@import 'icons';
+@import 'devices';
 @import 'header';
 @import 'home';
 @import 'departures';
@@ -8,4 +13,8 @@ global-reset()
 
 #viewport {
     background: grey
+
+    .view.hidden {
+        display: none
+    }
 }

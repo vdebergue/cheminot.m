@@ -6,7 +6,7 @@ export interface Ctrl {
   id: string;
 }
 
-function display(id: string) {
+function render(id: string) {
   return [
     m("h1", {}, "Trip " + id)
   ];
@@ -22,7 +22,7 @@ export class Trip implements m.Module<Ctrl> {
   }
 
   view(ctrl: Ctrl) {
-    return (ctrl.id && !ctrl.isHidden) ? display(ctrl.id) : [];
+    return render(ctrl.id);
   }
 }
 
