@@ -10,11 +10,8 @@ export interface Ctrl {
   isHidden: boolean
 }
 
-console.log(z);
-
-var hint = m("div", { class: "hint" });
-
 function renderTabs() {
+  var hint = m("div", { class: "hint" });
   return m("ul", { class: "top-bar tabs"}, [
     m("li", { class: "today selected"}, ["Aujourd'hui", hint]),
     m("li", { class: "tomorrow" }, ["Demain", hint]),
@@ -34,6 +31,12 @@ function renderStartEnd() {
                m("button", { type: "button", class: "font reset" })
              ])
            ]));
+}
+
+function renderStations() {
+  return m("div", { class: "stations" },
+           m("div", { id: "wrapper" },
+             m("ul", { class: "suggestions list" })));
 }
 
 function renderDateTime() {
@@ -59,6 +62,7 @@ function render() {
   return [
     renderTabs(),
     renderStartEnd(),
+    renderStations(),
     renderDateTime()
   ];
 }

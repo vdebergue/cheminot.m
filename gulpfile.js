@@ -7,7 +7,10 @@ var gulp = require('gulp'),
     nib = require('nib'),
     sourcemaps = require('gulp-sourcemaps'),
     clean = require('gulp-rimraf'),
+    exec = require('gulp-exec'),
     rjs = require('sre-gulp-rjs'),
+    watch = require('gulp-watch'),
+    plumber = require('gulp-plumber'),
     browserify = require('gulp-browserify'),
     fs = require('fs');
 
@@ -97,15 +100,35 @@ gulp.task('requirejs', ['ts'], function() {
         }));
 });
 
-gulp.task('watch', function() {
-    gulp.watch(Assets.styl, ['styl']);
-    gulp.watch(Assets.ts.src, ['ts']);
+gulp.task('watch', ['compile'], function() {
+    var assets = Assets.ts.src.files.concat(Assets.styl.src.files);
+    gulp.src(assets)
+        .pipe(watch(assets))
+        .pipe(plumber())
+        .pipe(exec('tarifa build web', {
+            pipeStdout: true
+        }))
+        .pipe(exec.reporter({
+            err: true,
+            stderr: true,
+            stdout: true
+        }));
 });
 
-gulp.task('default', ['styl', 'ts', 'watch']);
+gulp.task('default', ['watch']);
 
-gulp.task('compile', ['ts', 'styl']);
+gulp.task('compile', ['requirejs', 'styl']);
 
-gulp.task('build', ['styl', 'requirejs']);
+gulp.task('build', function() {
+    return gulp.src('.')
+        .pipe(exec('tarifa build web', {
+            pipeStdout: true
+        }))
+        .pipe(exec.reporter({
+            err: true,
+            stderr: true,
+            stdout: true
+        }));
+});
 
 module.exports = gulp;

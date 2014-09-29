@@ -49,7 +49,7 @@ module.exports = function build(platform, settings, configurationName) {
         d.resolve();
     };
 
-    gulp.start.apply(gulp, ['build']);
+    gulp.start.apply(gulp, ['compile']);
 
     return d.promise;
 };
