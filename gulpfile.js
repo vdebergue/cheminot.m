@@ -34,13 +34,33 @@ var Assets = {
             files: ['project/www/css/**/*.css'],
             dir: 'project/www/css/'
         }
+    },
+    vendors: {
+        src: {
+            requirejs: 'project/node_modules/requirejs/require.js',
+            q: 'project/node_modules/q/q.js',
+            mithril: 'project/node_modules/mithril/mithril.js',
+            zanimo: 'project/node_modules/zanimo/src/Zanimo.js',
+            iscroll: 'project/node_modules/iscroll/build/iscroll-probe.js',
+            moment: 'project/node_modules/moment/moment.js'
+        },
+        dest: 'project/www/vendors/'
     }
 };
 
-gulp.task('zanimo', function() {
-    return gulp.src("project/bower_components/zanimo/src/Zanimo.js")
-        .pipe(browserify({ "standalone": "Zanimo" }))
-        .pipe(gulp.dest('project/bower_components/zanimo/amd'));
+gulp.task('vendors', function() {
+    function browserifyVendor(path, name) {
+        return gulp.src(path)
+            .pipe(browserify({ "standalone": name }))
+            .pipe(gulp.dest(Assets.vendors.dest));
+    }
+
+    gulp.src(Assets.vendors.src.requirejs).pipe(gulp.dest(Assets.vendors.dest));
+    browserifyVendor(Assets.vendors.src.q, 'q');
+    browserifyVendor(Assets.vendors.src.mithril, 'mithril');
+    browserifyVendor(Assets.vendors.src.iscroll, 'IScroll');
+    browserifyVendor(Assets.vendors.src.zanimo, 'Zanimo');
+    browserifyVendor(Assets.vendors.src.moment, 'moment');
 });
 
 gulp.task('clean-ts', function() {
@@ -86,15 +106,6 @@ gulp.task('requirejs', ['ts'], function() {
                 'Zanimo': '../vendors/Zanimo',
                 'IScroll': '../vendors/iscroll-probe',
                 'moment': '../vendors/moment'
-            },
-            wrapShim: true,
-            shim: {
-                "IScroll": {
-                    "exports": "IScroll"
-                },
-                "moment": {
-                    "exports": "moment"
-                }
             },
             optimize: 'none'
         }));

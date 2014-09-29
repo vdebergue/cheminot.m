@@ -3,7 +3,6 @@ import q = require('q');
 import z = require('Zanimo');
 import IScroll = require('IScroll');
 import moment = require('moment');
-
 import Routes = require('routes');
 
 export interface Ctrl {
