@@ -13,8 +13,8 @@
     "yargs": "latest",
     "nib": "latest",
     "gulp-sourcemaps": "latest",
-    "gulp-header": "latest",
     "gulp-rimraf": "latest",
-    "sre-gulp-rjs": "latest"
+    "sre-gulp-rjs": "latest",
+    "gulp-browserify": "latest"
   }
 }

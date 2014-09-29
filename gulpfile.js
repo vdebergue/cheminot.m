@@ -6,9 +6,9 @@ var gulp = require('gulp'),
     gutil = require('gulp-util'),
     nib = require('nib'),
     sourcemaps = require('gulp-sourcemaps'),
-    header = require('gulp-header'),
     clean = require('gulp-rimraf'),
     rjs = require('sre-gulp-rjs'),
+    browserify = require('gulp-browserify'),
     fs = require('fs');
 
 var Assets = {
@@ -33,6 +33,12 @@ var Assets = {
         }
     }
 };
+
+gulp.task('zanimo', function() {
+    return gulp.src("project/bower_components/zanimo/src/Zanimo.js")
+        .pipe(browserify({ "standalone": "Zanimo" }))
+        .pipe(gulp.dest('project/bower_components/zanimo/amd'));
+});
 
 gulp.task('clean-ts', function() {
     return gulp.src(Assets.ts.dest.dir)
@@ -72,8 +78,20 @@ gulp.task('requirejs', ['ts'], function() {
             out: Assets.ts.dest.dir + 'main.js',
             name: 'main',
             paths: {
-                'Immutable': '../vendors/Immutable',
-                'mithril': '../vendors/mithril'
+                'mithril': '../vendors/mithril',
+                'q': '../vendors/q',
+                'Zanimo': '../vendors/Zanimo',
+                'IScroll': '../vendors/iscroll-probe',
+                'moment': '../vendors/moment'
+            },
+            wrapShim: true,
+            shim: {
+                "IScroll": {
+                    "exports": "IScroll"
+                },
+                "moment": {
+                    "exports": "moment"
+                }
             },
             optimize: 'none'
         }));

@@ -25,7 +25,7 @@ trip_time_width=80px
 device(min_width, max_width, factor) {
     portrait = "only screen and (min-device-width : " + min_width + ") and (max-device-width : " + max_width + ")"
     @media portrait {
-        header, .tabs {
+        header, .top-bar {
             height: scale(header_height, factor)
             font-size: scale(header_size, factor)
         }
@@ -89,7 +89,7 @@ device(min_width, max_width, factor) {
 
 // IPHONE 5 (default)
 @media only screen {
-    header, .tabs {
+    header, .top-bar {
         height: header_height
         font-size: header_size
     }

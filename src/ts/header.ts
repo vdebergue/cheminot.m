@@ -12,7 +12,7 @@ export class Header implements m.Module<Ctrl> {
 
   view(ctrl: Ctrl) {
     return [
-      m("h1", {}, "Header")
+      m("h1", {}, "Cheminot")
     ];
   }
 }

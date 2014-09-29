@@ -1,6 +1,8 @@
 node_modules
 project/www
+project/bower_components
 src/ts/transpiled
+*.log
 
 #=============#
 # IOS / XCODE #
