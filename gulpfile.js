@@ -17,11 +17,12 @@ var gulp = require('gulp'),
 var Assets = {
     ts: {
         src: {
-            files: ['src/ts/**/*.ts', '!src/ts/dts/**'],
+            files: ['src/ts/**/*.ts'],
+            main: ['src/ts/main.ts'],
             dir: 'src/ts/'
         },
         dest: {
-            files : ['project/www/js/**/*.js'],
+            files : ['project/www/js/**/*.js', '!project/www/js/vendors/**/*.js'],
             dir: 'project/www/js/'
         }
     },
@@ -44,7 +45,7 @@ var Assets = {
             iscroll: 'project/node_modules/iscroll/build/iscroll-probe.js',
             moment: 'project/node_modules/moment/moment.js'
         },
-        dest: 'project/www/vendors/'
+        dest: 'project/www/js/vendors/'
     }
 };
 
@@ -63,28 +64,27 @@ gulp.task('vendors', function() {
     browserifyVendor(Assets.vendors.src.moment, 'moment');
 });
 
-gulp.task('clean-ts', function() {
-    return gulp.src(Assets.ts.dest.dir)
+gulp.task('clean-js', function() {
+    return gulp.src(Assets.ts.dest.files)
         .pipe(clean());
 });
 
-gulp.task('ts', ['clean-ts'], function() {
-    return gulp.src(Assets.ts.src.files)
+gulp.task('ts', ['clean-js'], function() {
+    return gulp.src(Assets.ts.src.main)
         .pipe(ts({
             module: 'amd',
             noImplicitAny: true,
-            safe: true,
-            out: 'main.js'
+            safe: true
         }))
         .pipe(gulp.dest(Assets.ts.dest.dir));
 });
 
-gulp.task('clean-stylus', function() {
+gulp.task('clean-css', function() {
     return gulp.src(Assets.styl.dest.dir)
         .pipe(clean());
 });
 
-gulp.task('styl', ['clean-stylus'], function() {
+gulp.task('styl', ['clean-css'], function() {
     return gulp.src(Assets.styl.src.files)
         .pipe(stylus({
             use: nib(),
@@ -101,11 +101,11 @@ gulp.task('requirejs', ['ts'], function() {
             out: Assets.ts.dest.dir + 'main.js',
             name: 'main',
             paths: {
-                'mithril': '../vendors/mithril',
-                'q': '../vendors/q',
-                'Zanimo': '../vendors/Zanimo',
-                'IScroll': '../vendors/iscroll-probe',
-                'moment': '../vendors/moment'
+                'mithril': 'vendors/mithril',
+                'q': 'vendors/q',
+                'Zanimo': 'vendors/Zanimo',
+                'IScroll': 'vendors/iscroll-probe',
+                'moment': 'vendors/moment'
             },
             optimize: 'none'
         }));
@@ -128,17 +128,21 @@ gulp.task('watch', ['compile'], function() {
 
 gulp.task('default', ['watch']);
 
-gulp.task('compile', ['requirejs', 'styl']);
+gulp.task('compile', ['ts', 'styl']);
+
+gulp.task('compile-prod', ['requirejs', 'styl']);
 
 gulp.task('build', function() {
     return gulp.src('.')
         .pipe(exec('tarifa build web', {
             pipeStdout: true
-        }))
-        .pipe(exec.reporter({
-            err: true,
-            stderr: true,
-            stdout: true
+        }));
+});
+
+gulp.task('build-prod', function() {
+    return gulp.src('.')
+        .pipe(exec('tarifa build web prod', {
+            pipeStdout: true
         }));
 });
 

@@ -12,6 +12,6 @@
   },
   "devDependencies": {
     "preprocess": "latest",
-    "q": "1.0.1"
+    "q": "latest"
   }
 }

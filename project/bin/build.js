@@ -49,7 +49,12 @@ module.exports = function build(platform, settings, configurationName) {
         d.resolve();
     };
 
-    gulp.start.apply(gulp, ['compile']);
+    switch(configurationName) {
+        case 'default': gulp.start.apply(gulp, ['compile']); break;
+        case 'stage': gulp.start.apply(gulp, ['compile-prod']); break;
+        case 'prod': gulp.start.apply(gulp, ['compile-prod']); break;
+        default: gulp.start.apply(gulp, ['compile']);
+    }
 
     return d.promise;
 };

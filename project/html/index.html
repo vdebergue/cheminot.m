@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name = "viewport" content = "width = device-width, height=device-height, initial-scale = 1, user-scalable = no, minimal-ui">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, minimal-ui" media="(device-height: 568px)">
-    <script data-main="js/main.js" src="vendors/require.js"></script>
+    <script data-main="js/main.js" src="js/vendors/require.js"></script>
     <link rel="stylesheet" href="css/main.css">
   </head>
   <body>
@@ -15,6 +15,20 @@
     </main>
     <!-- @if PLATFORM != 'web' -->
     <script src="cordova.js"></script>
+    <!-- @endif -->
+    <!-- @if PLATFORM == 'web' -->
+    <script type="text/javascript">
+      require.config({
+        name: 'main',
+        paths: {
+          'mithril': 'vendors/mithril',
+          'q': 'vendors/q',
+          'Zanimo': 'vendors/Zanimo',
+          'IScroll': 'vendors/iscroll-probe',
+          'moment': 'vendors/moment'
+        }
+      });
+    </script>
     <!-- @endif -->
     <script src="js/settings.js"></script>
   </body>
