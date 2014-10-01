@@ -1,8 +1,11 @@
+/// <reference path='dts/lib.d.ts'/>
 /// <reference path='dts/mithril.d.ts'/>
 /// <reference path='dts/Q.d.ts'/>
 /// <reference path='dts/IScroll.d.ts'/>
 /// <reference path='dts/moment.d.ts'/>
 /// <reference path='dts/Zanimo.d.ts'/>
+/// <reference path='dts/lodash.d.ts'/>
+/// <reference path='dts/cheminot.d.ts'/>
 
 'use strict';
 

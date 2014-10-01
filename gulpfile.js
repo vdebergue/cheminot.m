@@ -43,7 +43,8 @@ var Assets = {
             mithril: 'project/node_modules/mithril/mithril.js',
             zanimo: 'project/node_modules/zanimo/src/Zanimo.js',
             iscroll: 'project/node_modules/iscroll/build/iscroll-probe.js',
-            moment: 'project/node_modules/moment/moment.js'
+            moment: 'project/node_modules/moment/moment.js',
+            lodash: 'project/node_modules/lodash/lodash.js'
         },
         dest: 'project/www/js/vendors/'
     }
@@ -62,6 +63,7 @@ gulp.task('vendors', function() {
     browserifyVendor(Assets.vendors.src.iscroll, 'IScroll');
     browserifyVendor(Assets.vendors.src.zanimo, 'Zanimo');
     browserifyVendor(Assets.vendors.src.moment, 'moment');
+    browserifyVendor(Assets.vendors.src.lodash, 'lodash');
 });
 
 gulp.task('clean-js', function() {
@@ -74,7 +76,8 @@ gulp.task('ts', ['clean-js'], function() {
         .pipe(ts({
             module: 'amd',
             noImplicitAny: true,
-            safe: true
+            safe: true,
+            noLib: true
         }))
         .pipe(gulp.dest(Assets.ts.dest.dir));
 });
@@ -105,7 +108,8 @@ gulp.task('requirejs', ['ts'], function() {
                 'q': 'vendors/q',
                 'Zanimo': 'vendors/Zanimo',
                 'IScroll': 'vendors/iscroll-probe',
-                'moment': 'vendors/moment'
+                'moment': 'vendors/moment',
+                'lodash': 'vendors/lodash'
             },
             optimize: 'none'
         }));

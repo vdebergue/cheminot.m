@@ -2,7 +2,7 @@ import m = require('mithril');
 import Routes = require('routes');
 
 export interface Ctrl {
-  isHidden: boolean;
+  shouldBeHidden: () => boolean;
   id: string;
 }
 
@@ -16,7 +16,9 @@ export class Trip implements m.Module<Ctrl> {
 
   controller(): Ctrl {
     return {
-      isHidden: !Routes.matchTrip(m.route()),
+      shouldBeHidden: () => {
+        return !Routes.matchTrip(m.route());
+      },
       id: m.route.param("id")
     };
   }

@@ -2,7 +2,7 @@ import m = require('mithril');
 import Routes = require('routes');
 
 export interface Ctrl {
-  isHidden: boolean
+  shouldBeHidden: () => boolean
 }
 
 function render() {
@@ -16,7 +16,9 @@ export class Departures implements m.Module<Ctrl> {
 
   controller(): Ctrl {
     return {
-      isHidden: !Routes.matchDepartures(m.route())
+      shouldBeHidden: () => {
+        return !Routes.matchDepartures(m.route());
+      }
     };
   }
 

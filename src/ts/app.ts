@@ -24,7 +24,7 @@ function renderHome(ctrl: Home.Ctrl) {
 
   attributes = View.handleAttributes(attributes, (name, value) => {
     switch (name + ':' + value) {
-      case 'class:hidden': return ctrl.isHidden;
+      case 'class:hidden': return ctrl.shouldBeHidden();
       default: return true;
     }
   });
@@ -40,7 +40,7 @@ function renderDepartures(ctrl: Departures.Ctrl) {
 
   attributes = View.handleAttributes(attributes, (name, value) => {
     switch (name + ':' + value) {
-      case 'class:hidden': return ctrl.isHidden;
+    case 'class:hidden': return ctrl.shouldBeHidden();
       default: return true;
     }
   });
@@ -57,7 +57,7 @@ function renderTrip(ctrl: Trip.Ctrl) {
 
   attributes = View.handleAttributes(attributes, (name, value) => {
     switch (name + ':' + value) {
-      case 'class:hidden': return ctrl.isHidden;
+    case 'class:hidden': return ctrl.shouldBeHidden();
       default: return true;
     }
   });
