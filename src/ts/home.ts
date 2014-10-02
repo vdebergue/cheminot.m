@@ -11,7 +11,8 @@ export interface Ctrl {
   scope: () => HTMLElement;
   shouldBeHidden: () => boolean;
   onTabTouched: (e: Event) => void;
-  onInputStationTouched:(ctrl: Ctrl, e: Event) => void;
+  onInputStationTouched :(ctrl: Ctrl, e: Event) => void;
+  onResetStationTouched: (ctrl: Ctrl, e: Event) => void;
 }
 
 function renderTabs(ctrl: Ctrl) {
@@ -33,22 +34,30 @@ function renderTabs(ctrl: Ctrl) {
 
 function renderInputsStation(ctrl: Ctrl) {
   var inputStationAttrs = {
-    config: function(el: HTMLElement, isUpdate: boolean, context: any) {
+    config: function(el: HTMLElement, isUpdate: boolean, context: Object) {
       if (!isUpdate) {
-        el.addEventListener('touchstart', _.partial(ctrl.onInputStationTouched, ctrl));
+        Utils.DOM.Event.one(el, 'touchend', _.partial(ctrl.onInputStationTouched, ctrl));
       }
     }
   };
+
+  var resetStationAttrs = {
+    config: function(el: HTMLElement, isUpdate: boolean, context: any) {
+      if (!isUpdate) {
+        el.addEventListener('touchend', _.partial(ctrl.onResetStationTouched, ctrl));
+      }
+    }
+  }
 
   return m("div", { class: "start-end" },
            m("form", {}, [
              m("div", _.merge({ class: "input start"}, inputStationAttrs), [
                m("input", { name: "start", disabled: "true", type: "text", placeholder: "Départ" }),
-               m("button", { type: "button", class: "font reset" })
+               m("button", _.merge({ type: "button", class: "font reset" }, resetStationAttrs))
              ]),
              m("div", _.merge({ class: "input end"}, inputStationAttrs), [
                m("input", { name: "end", disabled: "true", type: "text", placeholder: "Arrivée" }),
-               m("button", { type: "button", class: "font reset" })
+               m("button", _.merge({ type: "button", class: "font reset" }, resetStationAttrs))
              ])
            ]));
 }
@@ -113,12 +122,22 @@ export class Home implements m.Module<Ctrl> {
         }
       },
 
-      onInputStationTouched: (ctrl: Ctrl, e: Event) => {
+      onInputStationTouched: function(ctrl: Ctrl, e: Event) {
         var station = e.currentTarget;
         var inputStation = station.querySelector('input');
-        var hideInput = (inputStation.getAttribute('name') == "start") ? hideInputStationEnd : hideInputStationStart;
+        var hideInput = isInputStationStart(inputStation) ? hideInputStationEnd : hideInputStationStart;
         Q.all([moveUpViewport(ctrl), hideInput(ctrl), hideDateTimePanel(ctrl)]).then(() => {
           station.querySelector('button.reset').classList.add('focus');
+        });
+      },
+
+      onResetStationTouched: (ctrl: Ctrl, e: Event) => {
+        var reset = e.currentTarget;
+        var input = reset.previousElementSibling;
+        var showInput = isInputStationStart(input) ? showInputStationEnd : showInputStationStart;
+        Q.all([moveDownViewport(ctrl), showInput(ctrl), showDateTimePanel(ctrl)]).then(() => {
+          reset.classList.remove('focus');
+          Utils.DOM.Event.one(reset.parentElement, 'touchend', _.partial(ctrl.onInputStationTouched, ctrl));
         });
       }
     };
@@ -137,6 +156,10 @@ export function get(): Home {
 
 /** HELPERS */
 
+function isInputStationStart(el: Element): boolean {
+  return el.getAttribute('name') == "start";
+}
+
 function hideInputStationEnd(ctrl: Ctrl): Q.Promise<HTMLElement> {
   var inputStationEnd = ctrl.scope().querySelector('.input.end');
   var inputStationStart = ctrl.scope().querySelector('.input.start');
@@ -146,9 +169,24 @@ function hideInputStationEnd(ctrl: Ctrl): Q.Promise<HTMLElement> {
   return Zanimo(inputStationEnd, 'transform', 'translate3d(0,'+ translateY + 'px,0)', 200);
 }
 
+function showInputStationEnd(ctrl: Ctrl): Q.Promise<HTMLElement> {
+  var inputStationEnd = ctrl.scope().querySelector('.input.end');
+  return Zanimo(inputStationEnd, 'transform', 'translate3d(0,0,0)', 200).then(() => {
+    inputStationEnd.classList.remove('animating');
+    inputStationEnd.classList.remove('above');
+    return inputStationEnd;
+  });
+}
+
 function hideInputStationStart(ctrl: Ctrl): Q.Promise<HTMLElement> {
   var stationStart = ctrl.scope().querySelector('.input.start');
   stationStart.style.display = 'none';
+  return Utils.Promise.pure(stationStart);
+}
+
+function showInputStationStart(ctrl: Ctrl): Q.Promise<HTMLElement> {
+  var stationStart = ctrl.scope().querySelector('.input.start');
+  stationStart.style.display = 'block';
   return Utils.Promise.pure(stationStart);
 }
 
@@ -163,8 +201,22 @@ function moveUpViewport(ctrl: Ctrl): Q.Promise<HTMLElement> {
   });
 }
 
+function moveDownViewport(ctrl: Ctrl): Q.Promise<HTMLElement> {
+  var viewport = document.querySelector('#viewport');
+  return Zanimo(viewport, 'transform', 'translate3d(0,0,0)', 200).then(() => {
+    viewport.style.bottom = '0';
+    return viewport;
+  });
+}
+
 function hideDateTimePanel(ctrl: Ctrl): Q.Promise<HTMLElement> {
   var datetime = ctrl.scope().querySelector('.datetime');
   datetime.style.display = 'none';
+  return Utils.Promise.pure(datetime);
+}
+
+function showDateTimePanel(ctrl: Ctrl): Q.Promise<HTMLElement> {
+  var datetime = ctrl.scope().querySelector('.datetime');
+  datetime.style.display = 'block';
   return Utils.Promise.pure(datetime);
 }

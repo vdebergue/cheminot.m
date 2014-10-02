@@ -149,3 +149,17 @@ export module Transition {
     return transitionend;
   }
 }
+
+export module DOM {
+
+  export module Event {
+
+    export function one(el: Element, event: string, handler: (e: Event) => void): Element {
+      el.addEventListener(event, function h(e) {
+        handler(e);
+        el.removeEventListener(event, h);
+      });
+      return el;
+    }
+  }
+}
