@@ -126,8 +126,10 @@ export class Home implements m.Module<Ctrl> {
         var station = e.currentTarget;
         var inputStation = station.querySelector('input');
         var hideInput = isInputStationStart(inputStation) ? hideInputStationEnd : hideInputStationStart;
-        Q.all([moveUpViewport(ctrl), hideInput(ctrl), hideDateTimePanel(ctrl)]).then(() => {
-          station.querySelector('button.reset').classList.add('focus');
+        Q.all([hideInput(ctrl), hideDateTimePanel(ctrl)]).then(() => {
+          return moveUpViewport(ctrl).then(() => {
+            station.querySelector('button.reset').classList.add('focus');
+          });
         });
       },
 
@@ -135,12 +137,16 @@ export class Home implements m.Module<Ctrl> {
         var reset = e.currentTarget;
         var input = reset.previousElementSibling;
         var showInput = isInputStationStart(input) ? showInputStationEnd : showInputStationStart;
-        Q.all([moveDownViewport(ctrl), showInput(ctrl), showDateTimePanel(ctrl)]).then(() => {
-          reset.classList.remove('focus');
-          Utils.DOM.Event.one(reset.parentElement, 'touchend', _.partial(ctrl.onInputStationTouched, ctrl));
+        moveDownViewport(ctrl).then(() => {
+          showInput(ctrl).then(() => {
+            showDateTimePanel(ctrl).then(() => {
+              reset.classList.remove('focus');
+              Utils.DOM.Event.one(reset.parentElement, 'touchend', _.partial(ctrl.onInputStationTouched, ctrl));
+            });
+          });
         });
       }
-    };
+    }
   }
 
   view(ctrl: Ctrl) {
