@@ -39,4 +39,7 @@
     <preference name="AutoHideSplashScreen" value="true" />
     <preference name="KeyboardShrinksView" value="true" />
     <preference name="KeepRunning" value="true" />
+    <feature name="Keyboard">
+        <param name="ios-package" onload="true" value="CDVKeyboard" />
+    </feature>
 </widget>

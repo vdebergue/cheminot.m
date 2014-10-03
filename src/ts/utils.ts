@@ -71,25 +71,28 @@ export module Detectizr {
   export function isIOS7() {
     return isIOS() && navigator.userAgent.match(/OS 7/);
   }
-
-  export function isCordovaApp(): boolean {
-    return cordova!= null;
-  }
 }
 
 export module Keyboard {
 
-  export function showKeyboard(el: HTMLElement) {
-    if(Detectizr.isAndroid() && Detectizr.isCordovaApp()) {
-      cordova.plugins.SoftKeyboard.show();
-    }
-    el.focus();
+  export function show(): Q.Promise<void> {
+    var d = Q.defer<void>();
+    cordova.plugins.SoftKeyboard.show(() => {
+      d.resolve(null);
+    }, () => {
+      d.reject(null);
+    });
+    return d.promise;
   }
 
-  export function hideKeyboard() {
-    if(Detectizr.isAndroid() && Detectizr.isCordovaApp()) {
-      cordova.plugins.SoftKeyboard.hide();
-    }
+  export function hide(): Q.Promise<void> {
+    var d = Q.defer<void>();
+    cordova.plugins.SoftKeyboard.hide(() => {
+      d.resolve(null);
+    }, () => {
+      d.reject(null);
+    });
+    return d.promise;
   }
 }
 

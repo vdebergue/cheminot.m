@@ -10,6 +10,9 @@
     <feature name="Cheminot">
         <param name="android-package" value="m.cheminot.plugin.Cheminot" />
     </feature>
+    <feature name="SoftKeyboard">
+        <param name="android-package" value="org.apache.cordova.plugin.softkeyboard.SoftKeyboard" />
+    </feature>
     <name>Cheminot</name>
     <description>SNCF TER</description>
     <author email="srenault.contact@gmail.com" href="https://github.com/srenault">Sebastien Renault</author>

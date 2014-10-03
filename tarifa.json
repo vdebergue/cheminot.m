@@ -11,7 +11,8 @@
   "plugins": [
     "org.apache.cordova.splashscreen",
     "m.cheminot.plugin",
-    null
+    "org.apache.cordova.plugin.softkeyboard",
+    "org.apache.cordova.labs.keyboard"
   ],
   "configurations": {
     "ios": {

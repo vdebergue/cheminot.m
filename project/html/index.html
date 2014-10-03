@@ -16,6 +16,9 @@
     <!-- @if PLATFORM != 'web' -->
     <script src="cordova.js"></script>
     <!-- @endif -->
+    <!-- @if PLATFORM == 'web' -->
+    <script src="cordova-mock.js"></script>
+    <!-- @endif -->
     <script type="text/javascript">
       require.config({
         name: 'main',

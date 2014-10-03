@@ -25,6 +25,10 @@
                         {
                             "xml": "<feature name=\"Cheminot\"><param name=\"ios-package\" value=\"Cheminot\" /><param name=\"onload\" value=\"true\" /></feature>",
                             "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Keyboard\"><param name=\"ios-package\" onload=\"true\" value=\"CDVKeyboard\" /></feature>",
+                            "count": 1
                         }
                     ]
                 }
@@ -36,6 +40,12 @@
             "PACKAGE_NAME": "m.cheminot"
         },
         "m.cheminot.plugin": {
+            "PACKAGE_NAME": "m.cheminot"
+        },
+        "org.apache.cordova.plugin.softkeyboard": {
+            "PACKAGE_NAME": "m.cheminot"
+        },
+        "org.apache.cordova.labs.keyboard": {
             "PACKAGE_NAME": "m.cheminot"
         }
     },

@@ -129,19 +129,25 @@ export class Home implements m.Module<Ctrl> {
         Q.all([hideInput(ctrl), hideDateTimePanel(ctrl)]).then(() => {
           return moveUpViewport(ctrl).then(() => {
             station.querySelector('button.reset').classList.add('focus');
+            inputStation.removeAttribute('disabled');
+            inputStation.focus();
+            Utils.Keyboard.show();
           });
         });
       },
 
       onResetStationTouched: (ctrl: Ctrl, e: Event) => {
         var reset = e.currentTarget;
-        var input = reset.previousElementSibling;
-        var showInput = isInputStationStart(input) ? showInputStationEnd : showInputStationStart;
-        moveDownViewport(ctrl).then(() => {
-          showInput(ctrl).then(() => {
-            showDateTimePanel(ctrl).then(() => {
-              reset.classList.remove('focus');
-              Utils.DOM.Event.one(reset.parentElement, 'touchend', _.partial(ctrl.onInputStationTouched, ctrl));
+        var inputStation = reset.previousElementSibling;
+        var showInput = isInputStationStart(inputStation) ? showInputStationEnd : showInputStationStart;
+        inputStation.setAttribute('disabled', 'true');
+        Utils.Keyboard.hide().then(() => {
+          moveDownViewport(ctrl).then(() => {
+            showInput(ctrl).then(() => {
+              showDateTimePanel(ctrl).then(() => {
+                reset.classList.remove('focus');
+                Utils.DOM.Event.one(reset.parentElement, 'touchend', _.partial(ctrl.onInputStationTouched, ctrl));
+              });
             });
           });
         });
