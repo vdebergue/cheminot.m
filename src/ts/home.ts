@@ -13,6 +13,7 @@ export interface Ctrl {
   onTabTouched: (e: Event) => void;
   onInputStationTouched :(ctrl: Ctrl, e: Event) => void;
   onResetStationTouched: (ctrl: Ctrl, e: Event) => void;
+  onDateTimeChange: (ctrl: Ctrl, e: Event) => void;
 }
 
 function renderTabs(ctrl: Ctrl) {
@@ -68,17 +69,25 @@ function renderStations() {
              m("ul", { class: "suggestions list" })));
 }
 
-function renderDateTime() {
+function renderDateTime(ctrl: Ctrl) {
+  var inputDateTimeAttrs = {
+    config: function(el: HTMLElement, isUpdate: boolean, context: Object) {
+      if (!isUpdate) {
+        el.addEventListener('change', _.partial(ctrl.onDateTimeChange, ctrl));
+      }
+    }
+  };
+
   return m("ul", { class: 'list datetime'}, [
     m("li", { class: "date" }, [
       m("span", { class: "label" }, "Date de départ"),
       m("span", { class: "value" }),
-      m("input", { type: "date" })
+      m("input", _.merge({ type: "date" }, inputDateTimeAttrs))
     ]),
     m("li", { class: "time" }, [
       m("span", { class: "label" }, "Heure de départ"),
       m("span", { class: "value" }),
-      m("input", { type: "time" })
+      m("input", _.merge({ type: "time" }, inputDateTimeAttrs))
     ]),
     m("li", { class: "submit disabled" }, [
       m("span", {}, "Rechercher"),
@@ -92,7 +101,7 @@ function render(ctrl: Ctrl) {
     renderTabs(ctrl),
     renderInputsStation(ctrl),
     renderStations(),
-    renderDateTime()
+    renderDateTime(ctrl)
   ];
 }
 
@@ -151,6 +160,12 @@ export class Home implements m.Module<Ctrl> {
             });
           });
         });
+      },
+
+      onDateTimeChange: (ctrl: Ctrl, e: Event) => {
+        var input = <HTMLInputElement> e.currentTarget;
+        var value = input.previousElementSibling;
+        value.textContent = input.value;
       }
     }
   }
@@ -166,7 +181,7 @@ export function get(): Home {
   return home;
 }
 
-/** HELPERS */
+/** BACK STAGE */
 
 function isInputStationStart(el: Element): boolean {
   return el.getAttribute('name') == "start";
