@@ -1,8 +1,6 @@
 var gulp = require('gulp'),
     ts = require('gulp-tsc'),
     stylus = require('gulp-stylus'),
-    preprocess = require('gulp-preprocess'),
-    argv = require('yargs').argv,
     gutil = require('gulp-util'),
     nib = require('nib'),
     sourcemaps = require('gulp-sourcemaps'),

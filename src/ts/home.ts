@@ -5,6 +5,7 @@ import _ = require('lodash');
 import IScroll = require('IScroll');
 import moment = require('moment');
 import Utils = require('utils');
+import Stops = require('stops');
 import Routes = require('routes');
 
 export interface Ctrl {
