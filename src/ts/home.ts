@@ -5,7 +5,7 @@ import _ = require('lodash');
 import IScroll = require('IScroll');
 import moment = require('moment');
 import Utils = require('utils');
-import Stops = require('stops');
+import Suggestions = require('suggestions');
 import Routes = require('routes');
 
 export interface Ctrl {
@@ -15,6 +15,10 @@ export interface Ctrl {
   onInputStationTouched :(ctrl: Ctrl, e: Event) => void;
   onResetStationTouched: (ctrl: Ctrl, e: Event) => void;
   onDateTimeChange: (ctrl: Ctrl, e: Event) => void;
+  onInputStationKeyUp: (ctrl: Ctrl, e: Event) => void;
+  inputStationTerm: (value?: string) => string;
+  stations: (value?: Array<Suggestions.Station>) => Array<Suggestions.Station>;
+  onStationSelected: (ctrl: Ctrl, e: Event) => void;
 }
 
 function renderTabs(ctrl: Ctrl) {
@@ -35,16 +39,23 @@ function renderTabs(ctrl: Ctrl) {
 }
 
 function renderInputsStation(ctrl: Ctrl) {
-  var inputStationAttrs = {
-    config: function(el: HTMLElement, isUpdate: boolean, context: Object) {
+  var inputStationWrapperAttrs = {
+    config: (el: HTMLElement, isUpdate: boolean, context: Object) => {
       if (!isUpdate) {
         Utils.DOM.Event.one(el, 'touchend', _.partial(ctrl.onInputStationTouched, ctrl));
       }
     }
   };
 
+  var inputStationAttrs = {
+    disabled: "true",
+    type: "text",
+    onkeyup: _.partial(ctrl.onInputStationKeyUp, ctrl),
+    value: ctrl.inputStationTerm()
+  };
+
   var resetStationAttrs = {
-    config: function(el: HTMLElement, isUpdate: boolean, context: any) {
+    config: (el: HTMLElement, isUpdate: boolean, context: any) => {
       if (!isUpdate) {
         el.addEventListener('touchend', _.partial(ctrl.onResetStationTouched, ctrl));
       }
@@ -53,26 +64,42 @@ function renderInputsStation(ctrl: Ctrl) {
 
   return m("div", { class: "start-end" },
            m("form", {}, [
-             m("div", _.merge({ class: "input start"}, inputStationAttrs), [
-               m("input", { name: "start", disabled: "true", type: "text", placeholder: "Départ" }),
+             m("div", _.merge({ class: "input start" }, inputStationWrapperAttrs), [
+               m("input", _.merge({ name: "start", placeholder: "Départ" }, inputStationAttrs)),
                m("button", _.merge({ type: "button", class: "font reset" }, resetStationAttrs))
              ]),
-             m("div", _.merge({ class: "input end"}, inputStationAttrs), [
-               m("input", { name: "end", disabled: "true", type: "text", placeholder: "Arrivée" }),
+             m("div", _.merge({ class: "input end"}, inputStationWrapperAttrs), [
+               m("input", _.merge({ name: "end", placeholder: "Arrivée" }, inputStationAttrs)),
                m("button", _.merge({ type: "button", class: "font reset" }, resetStationAttrs))
              ])
            ]));
 }
 
-function renderStations() {
+function renderStations(ctrl: Ctrl) {
+  var term = ctrl.inputStationTerm();
+  var stationAttrs = {
+    config: function(el: HTMLElement, isUpdate: boolean, context: any) {
+      if (!isUpdate) {
+        el.addEventListener('touchend', _.partial(ctrl.onStationSelected, ctrl));
+      }
+    }
+  }
+
   return m("div", { class: "stations" },
            m("div", { id: "wrapper" },
-             m("ul", { class: "suggestions list" })));
+             m("ul", { class: "suggestions list" },
+               ctrl.stations().map((station) => {
+                 return m('li', _.merge({ "data-id": station.id, "data-name": station.name }, stationAttrs),
+                          m('div', {}, [
+                            m('span', { class: 'match' }, _.take(station.name, term.length).join('')),
+                            m('span', {}, _.drop(station.name, term.length).join(''))
+                          ]));
+               }))));
 }
 
 function renderDateTime(ctrl: Ctrl) {
   var inputDateTimeAttrs = {
-    config: function(el: HTMLElement, isUpdate: boolean, context: Object) {
+    config: (el: HTMLElement, isUpdate: boolean, context: Object) => {
       if (!isUpdate) {
         el.addEventListener('change', _.partial(ctrl.onDateTimeChange, ctrl));
       }
@@ -101,7 +128,7 @@ function render(ctrl: Ctrl) {
   return [
     renderTabs(ctrl),
     renderInputsStation(ctrl),
-    renderStations(),
+    renderStations(ctrl),
     renderDateTime(ctrl)
   ];
 }
@@ -132,7 +159,7 @@ export class Home implements m.Module<Ctrl> {
         }
       },
 
-      onInputStationTouched: function(ctrl: Ctrl, e: Event) {
+      onInputStationTouched: (ctrl: Ctrl, e: Event) => {
         var station = e.currentTarget;
         var inputStation = station.querySelector('input');
         var hideInput = isInputStationStart(inputStation) ? hideInputStationEnd : hideInputStationStart;
@@ -146,21 +173,31 @@ export class Home implements m.Module<Ctrl> {
         });
       },
 
+      onInputStationKeyUp: (ctrl: Ctrl, e: Event) => {
+        var input = <HTMLInputElement> e.currentTarget;
+        var term = input.value;
+        ctrl.stations(Suggestions.search(term));
+      },
+
+      inputStationTerm: m.prop(''),
+
+      stations: m.prop([]),
+
+      onStationSelected: (ctrl: Ctrl, e: Event) => {
+        var station = e.currentTarget;
+        var id = station.getAttribute('data-id');
+        var inputStation = currentInputStation(ctrl);
+        inputStation.setAttribute('data-selected', id);
+        resetInputStationsPosition(ctrl, inputStation);
+        checkSubmitRequirements(ctrl);
+      },
+
       onResetStationTouched: (ctrl: Ctrl, e: Event) => {
-        var reset = e.currentTarget;
-        var inputStation = reset.previousElementSibling;
-        var showInput = isInputStationStart(inputStation) ? showInputStationEnd : showInputStationStart;
-        inputStation.setAttribute('disabled', 'true');
-        Utils.Keyboard.hide().then(() => {
-          moveDownViewport(ctrl).then(() => {
-            showInput(ctrl).then(() => {
-              showDateTimePanel(ctrl).then(() => {
-                reset.classList.remove('focus');
-                Utils.DOM.Event.one(reset.parentElement, 'touchend', _.partial(ctrl.onInputStationTouched, ctrl));
-              });
-            });
-          });
-        });
+        var resetButton = e.currentTarget;
+        var inputStation = <HTMLInputElement> resetButton.previousElementSibling;
+        inputStation.removeAttribute('data-selected');
+        resetInputStationsPosition(ctrl, inputStation);
+        checkSubmitRequirements(ctrl);
       },
 
       onDateTimeChange: (ctrl: Ctrl, e: Event) => {
@@ -247,4 +284,56 @@ function showDateTimePanel(ctrl: Ctrl): Q.Promise<HTMLElement> {
   var datetime = ctrl.scope().querySelector('.datetime');
   datetime.style.display = 'block';
   return Utils.Promise.pure(datetime);
+}
+
+function resetInputStationsPosition(ctrl: Ctrl, inputStation: HTMLInputElement): Q.Promise<void> {
+  var showInput = isInputStationStart(inputStation) ? showInputStationEnd : showInputStationStart;
+  var resetButton = <HTMLElement> inputStation.nextElementSibling;
+  inputStation.setAttribute('disabled', 'true');
+  resetButton.classList.remove('focus');
+  return Utils.Keyboard.hide().then(() => {
+    moveDownViewport(ctrl).then(() => {
+      showInput(ctrl).then(() => {
+        showDateTimePanel(ctrl).then(() => {
+          Utils.DOM.Event.one(resetButton.parentElement, 'touchend', _.partial(ctrl.onInputStationTouched, ctrl));
+        });
+      });
+    });
+  });
+}
+
+function currentInputStation(ctrl: Ctrl): HTMLInputElement {
+  var inputStation = <HTMLInputElement> ctrl.scope().querySelector('.input input:not([disabled])');
+  return inputStation;
+}
+
+function canBeSubmitted(ctrl: Ctrl): boolean {
+  var inputsStation = ctrl.scope().querySelectorAll('.input input[type=text]');
+  var isStationsSelected = _.every(inputsStation, (input) => {
+    return input.getAttribute('data-selected') != null;
+  });
+
+  if(isStationsSelected) {
+    var tab = ctrl.scope().querySelector('.tabs .selected');
+    var time = ctrl.scope().querySelector('.datetime .time .value');
+    if(tab.classList.contains('other')) {
+      var date = ctrl.scope().querySelector('.datetime .date .value');
+      return !!date && !!time;
+    } else {
+      return !!time;
+    }
+  }
+  return false;
+}
+
+function checkSubmitRequirements(ctrl: Ctrl): void {
+  var submitButton = ctrl.scope().querySelector('.datetime .submit');
+  console.log('here');
+  if(canBeSubmitted(ctrl)) {
+    submitButton.classList.remove('disabled');
+    submitButton.classList.add('enabled');
+  } else {
+    submitButton.classList.remove('enabled');
+    submitButton.classList.add('disabled');
+  }
 }

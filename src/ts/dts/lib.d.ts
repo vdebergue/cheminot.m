@@ -4461,7 +4461,7 @@ declare var SVGZoomEvent: {
 }
 
 interface NodeSelector {
-    querySelectorAll(selectors: string): NodeList;
+    querySelectorAll(selectors: string): HTMLElement[];
     querySelector(selectors: string): HTMLElement;
 }
 

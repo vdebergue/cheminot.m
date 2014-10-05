@@ -12,6 +12,9 @@
 import m = require('mithril');
 import App = require('app');
 import Routes = require('routes');
+import Suggestions = require('suggestions');
+
+Suggestions.init();
 
 m.route.mode = 'hash';
 m.route(document.querySelector('#viewport'), "/", {

@@ -1,18 +1,23 @@
 import m = require('mithril');
 import Q = require('q');
 
-var STOPS: any[] = null;
+var STATIONS: any[] = null;
 
-function getStops(): Q.Promise<any> {
+export interface Station {
+  name: string;
+  id: string;
+}
+
+function getStationsTree(): Q.Promise<any> {
   var d = Q.defer<any>();
   var req = new XMLHttpRequest();
-  if(!STOPS) {
+  if(!STATIONS) {
     req.onreadystatechange = () => {
       if (req.readyState === 4) {
         if(req.status === 200) {
-          var stops = JSON.parse(req.responseText);
-          STOPS = stops;
-          d.resolve(stops);
+          var stations = JSON.parse(req.responseText);
+          STATIONS = stations;
+          d.resolve(stations);
         } else {
           d.reject('Unable to get stops_ttree.json');
         }
@@ -21,7 +26,7 @@ function getStops(): Q.Promise<any> {
     req.open('GET', 'data/stops_ttree.json', true);
     req.send(null);
   } else {
-    d.resolve(STOPS);
+    d.resolve(STATIONS);
   }
   return d.promise;
 }
@@ -41,7 +46,7 @@ function suggestions(node: any): any[] {
   };
 }
 
-export function search(term: string): Q.Promise<any[]> {
+export function search(term: string): Station[] {
   function step(term: string, node: any, results: any[]): any[] {
     if(node) {
       var word = term.split('');
@@ -69,11 +74,9 @@ export function search(term: string): Q.Promise<any[]> {
     }
   }
 
-  return getStops().then((stops) => {
-    return step(term, stops, [])
-  });
+  return (term.length > 0) ? step(term.toLowerCase(), STATIONS, []) : [];
 }
 
-export function init(): Q.Promise<any[]> {
-  return getStops();
+export function init(): Q.Promise<any> {
+  return getStationsTree();
 }
