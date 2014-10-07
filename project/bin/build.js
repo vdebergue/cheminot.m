@@ -32,7 +32,7 @@ function mapSettings(settings, platform, configurationName) {
     return result;
 }
 
-module.exports = function build(platform, settings, configurationName) {
+module.exports.build = function (platform, settings, configurationName) {
     var d = Q.defer(),
         settingsPath = path.join(__dirname, '../www/js/settings.js'),
         htmlPath = {

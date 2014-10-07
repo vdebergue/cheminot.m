@@ -19,7 +19,7 @@ declare module "mithril" {
         function trust(html: string): String;
         function render(rootElement: Element, children?: any): void;
         function render(rootElement: HTMLDocument, children?: any): void;
-        function redraw(): void;
+        function redraw(force?: boolean): void;
         function route<T>(rootElement: Element, defaultRoute: string, routes: { [key: string]: m.Module<T> }): void;
         function route<T>(rootElement: HTMLDocument, defaultRoute: string, routes: { [key: string]: m.Module<T> }): void;
         function route(path: string, params?: any, shouldReplaceHistory?: boolean): void;

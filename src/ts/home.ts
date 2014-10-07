@@ -7,6 +7,7 @@ import moment = require('moment');
 import Utils = require('utils');
 import Suggestions = require('suggestions');
 import Routes = require('routes');
+import View = require('view');
 
 export interface Ctrl {
   scope: () => HTMLElement;
@@ -15,11 +16,16 @@ export interface Ctrl {
   onInputStationTouched :(ctrl: Ctrl, e: Event) => void;
   onResetStationTouched: (ctrl: Ctrl, e: Event) => void;
   onDateTimeChange: (ctrl: Ctrl, e: Event) => void;
-  onInputStationKeyUp: (ctrl: Ctrl, e: Event) => void;
-  inputStationTerm: (value?: string) => string;
+  onInputStationKeyUp: (ctrl: Ctrl, value: string) => void;
+  inputStationStartTerm: (value?: string) => string;
+  inputStationEndTerm: (value?: string) => string;
+  isInputStationStartDisabled: (value?: boolean) => boolean;
+  isInputStationEndDisabled: (value?: boolean) => boolean;
   stations: (value?: Array<Suggestions.Station>) => Array<Suggestions.Station>;
   onStationSelected: (ctrl: Ctrl, e: Event) => void;
 }
+
+/// RENDER TABS
 
 function renderTabs(ctrl: Ctrl) {
   var attributes = {
@@ -38,6 +44,8 @@ function renderTabs(ctrl: Ctrl) {
   ])
 }
 
+/// RENDER INPUTS STATION
+
 function renderInputsStation(ctrl: Ctrl) {
   var inputStationWrapperAttrs = {
     config: (el: HTMLElement, isUpdate: boolean, context: Object) => {
@@ -47,11 +55,19 @@ function renderInputsStation(ctrl: Ctrl) {
     }
   };
 
-  var inputStationAttrs = {
-    disabled: "true",
-    type: "text",
-    onkeyup: _.partial(ctrl.onInputStationKeyUp, ctrl),
-    value: ctrl.inputStationTerm()
+  var inputStationAttrs = (isStartStation: boolean) => {
+    var attrs: View.Attributes = {
+      disabled: "true",
+      type: "text",
+      onkeyup: m.withAttr('value', _.partial(ctrl.onInputStationKeyUp, ctrl)),
+      value: isStartStation ? ctrl.inputStationStartTerm() : ctrl.inputStationEndTerm()
+    };
+
+    return View.handleAttributes(attrs, (name, value) => {
+      if(name == 'disabled') {
+        return isStartStation ? ctrl.isInputStationStartDisabled() : ctrl.isInputStationEndDisabled();
+      } else return true;
+    });
   };
 
   var resetStationAttrs = {
@@ -65,18 +81,20 @@ function renderInputsStation(ctrl: Ctrl) {
   return m("div", { class: "start-end" },
            m("form", {}, [
              m("div", _.merge({ class: "input start" }, inputStationWrapperAttrs), [
-               m("input", _.merge({ name: "start", placeholder: "Départ" }, inputStationAttrs)),
+               m("input", _.merge({ name: "start", placeholder: "Départ" }, inputStationAttrs(true))),
                m("button", _.merge({ type: "button", class: "font reset" }, resetStationAttrs))
              ]),
              m("div", _.merge({ class: "input end"}, inputStationWrapperAttrs), [
-               m("input", _.merge({ name: "end", placeholder: "Arrivée" }, inputStationAttrs)),
+               m("input", _.merge({ name: "end", placeholder: "Arrivée" }, inputStationAttrs(false))),
                m("button", _.merge({ type: "button", class: "font reset" }, resetStationAttrs))
              ])
            ]));
 }
 
+/// RENDER STATION SUGGESTIONS
+
 function renderStations(ctrl: Ctrl) {
-  var term = ctrl.inputStationTerm();
+  var term = ctrl.inputStationStartTerm() || ctrl.inputStationEndTerm();
   var stationAttrs = {
     config: function(el: HTMLElement, isUpdate: boolean, context: any) {
       if (!isUpdate) {
@@ -96,6 +114,8 @@ function renderStations(ctrl: Ctrl) {
                           ]));
                }))));
 }
+
+/// RENDER DATETIME SELECTOR
 
 function renderDateTime(ctrl: Ctrl) {
   var inputDateTimeAttrs = {
@@ -166,27 +186,37 @@ export class Home implements m.Module<Ctrl> {
         Q.all([hideInput(ctrl), hideDateTimePanel(ctrl)]).then(() => {
           return moveUpViewport(ctrl).then(() => {
             station.querySelector('button.reset').classList.add('focus');
-            inputStation.removeAttribute('disabled');
-            inputStation.focus();
-            Utils.Keyboard.show();
+            enableInputStation(ctrl, inputStation);
+            Utils.Keyboard.show().then(() => {
+              inputStation.focus();
+            });
           });
         });
       },
 
-      onInputStationKeyUp: (ctrl: Ctrl, e: Event) => {
-        var input = <HTMLInputElement> e.currentTarget;
-        var term = input.value;
-        ctrl.stations(Suggestions.search(term));
+      onInputStationKeyUp: (ctrl: Ctrl, value: string) => {
+        var inputStation = currentInputStation(ctrl);
+        setInputStationValue(ctrl, inputStation, value);
+        ctrl.stations(Suggestions.search(value));
       },
 
-      inputStationTerm: m.prop(''),
+      inputStationStartTerm: m.prop(''),
+
+      inputStationEndTerm: m.prop(''),
+
+      isInputStationStartDisabled: m.prop(true),
+
+      isInputStationEndDisabled: m.prop(true),
 
       stations: m.prop([]),
 
       onStationSelected: (ctrl: Ctrl, e: Event) => {
         var station = e.currentTarget;
         var id = station.getAttribute('data-id');
+        var name = station.getAttribute('data-name');
         var inputStation = currentInputStation(ctrl);
+        ctrl.stations([]);
+        setInputStationValue(ctrl, inputStation, name);
         inputStation.setAttribute('data-selected', id);
         resetInputStationsPosition(ctrl, inputStation);
         checkSubmitRequirements(ctrl);
@@ -195,6 +225,7 @@ export class Home implements m.Module<Ctrl> {
       onResetStationTouched: (ctrl: Ctrl, e: Event) => {
         var resetButton = e.currentTarget;
         var inputStation = <HTMLInputElement> resetButton.previousElementSibling;
+        setInputStationValue(ctrl, inputStation, '');
         inputStation.removeAttribute('data-selected');
         resetInputStationsPosition(ctrl, inputStation);
         checkSubmitRequirements(ctrl);
@@ -289,7 +320,7 @@ function showDateTimePanel(ctrl: Ctrl): Q.Promise<HTMLElement> {
 function resetInputStationsPosition(ctrl: Ctrl, inputStation: HTMLInputElement): Q.Promise<void> {
   var showInput = isInputStationStart(inputStation) ? showInputStationEnd : showInputStationStart;
   var resetButton = <HTMLElement> inputStation.nextElementSibling;
-  inputStation.setAttribute('disabled', 'true');
+  disableInputStation(ctrl, inputStation);
   resetButton.classList.remove('focus');
   return Utils.Keyboard.hide().then(() => {
     moveDownViewport(ctrl).then(() => {
@@ -328,7 +359,6 @@ function canBeSubmitted(ctrl: Ctrl): boolean {
 
 function checkSubmitRequirements(ctrl: Ctrl): void {
   var submitButton = ctrl.scope().querySelector('.datetime .submit');
-  console.log('here');
   if(canBeSubmitted(ctrl)) {
     submitButton.classList.remove('disabled');
     submitButton.classList.add('enabled');
@@ -336,4 +366,24 @@ function checkSubmitRequirements(ctrl: Ctrl): void {
     submitButton.classList.remove('enabled');
     submitButton.classList.add('disabled');
   }
+}
+
+function disableInputStation(ctrl: Ctrl, input: HTMLElement): void {
+  if(isInputStationStart(input)) {
+    ctrl.isInputStationStartDisabled(false)
+  } else {
+    ctrl.isInputStationEndDisabled(false);
+  }
+}
+
+function enableInputStation(ctrl: Ctrl, input: HTMLElement): void {
+  if(isInputStationStart(input)) {
+    ctrl.isInputStationStartDisabled(true)
+  } else {
+    ctrl.isInputStationEndDisabled(true);
+  }
+}
+
+function setInputStationValue(ctrl: Ctrl, input: HTMLElement, value: string): void {
+  isInputStationStart(input) ? ctrl.inputStationStartTerm(value) : ctrl.inputStationEndTerm(value);
 }
