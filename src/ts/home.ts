@@ -12,15 +12,20 @@ import View = require('view');
 export interface Ctrl {
   scope: () => HTMLElement;
   shouldBeHidden: () => boolean;
-  onTabTouched: (e: Event) => void;
+  onTabTouched: (ctrl: Ctrl, e: Event) => void;
   onInputStationTouched :(ctrl: Ctrl, e: Event) => void;
   onResetStationTouched: (ctrl: Ctrl, e: Event) => void;
   onDateTimeChange: (ctrl: Ctrl, e: Event) => void;
   onInputStationKeyUp: (ctrl: Ctrl, value: string) => void;
   inputStationStartTerm: (value?: string) => string;
   inputStationEndTerm: (value?: string) => string;
+  inputStationStartSelected: (value?: string) => string;
+  inputStationEndSelected: (value?: string) => string;
   isInputStationStartDisabled: (value?: boolean) => boolean;
   isInputStationEndDisabled: (value?: boolean) => boolean;
+  isTodayTabSelected: (value?: boolean) => boolean;
+  isTomorrowTabSelected: (value?: boolean) => boolean;
+  isOtherTabSelected: (value?: boolean) => boolean;
   stations: (value?: Array<Suggestions.Station>) => Array<Suggestions.Station>;
   onStationSelected: (ctrl: Ctrl, e: Event) => void;
 }
@@ -31,16 +36,38 @@ function renderTabs(ctrl: Ctrl) {
   var attributes = {
     config: function(el: HTMLElement, isUpdate: boolean, context: any) {
       if (!isUpdate) {
-        el.addEventListener('touchend', ctrl.onTabTouched);
+        el.addEventListener('touchend', _.partial(ctrl.onTabTouched, ctrl));
       }
     }
   }
 
+  var todayAttrs = View.handleAttributes({ class: 'today selected'}, (name, value) => {
+    if((name + ':' + value) == 'class:selected') {
+      return ctrl.isTodayTabSelected();
+    }
+    return true;
+  });
+
+  var tomorrowAttrs = View.handleAttributes({ class: 'tomorrow selected'}, (name, value) => {
+    if((name + ':' + value) == 'class:selected') {
+      return ctrl.isTomorrowTabSelected();
+    }
+    return true;
+  });
+
+  var otherAttrs = View.handleAttributes({ class: 'other selected'}, (name, value) => {
+    if((name + ':' + value) == 'class:selected') {
+      return ctrl.isOtherTabSelected();
+    }
+    return true;
+  });
+
   var hint = m("div", { class: "hint" });
+
   return m("ul", { class: "top-bar tabs"}, [
-    m("li", _.merge({ class: "today selected" }, attributes), ["Aujourd'hui", hint]),
-    m("li", _.merge({ class: "tomorrow" }, attributes), ["Demain", hint]),
-    m("li", _.merge({ class: "other" }, attributes), ["Autre", hint])
+    m("li", _.merge(todayAttrs, attributes), ["Aujourd'hui", hint]),
+    m("li", _.merge(tomorrowAttrs, attributes), ["Demain", hint]),
+    m("li", _.merge(otherAttrs, attributes), ["Autre", hint])
   ])
 }
 
@@ -60,7 +87,10 @@ function renderInputsStation(ctrl: Ctrl) {
       disabled: "true",
       type: "text",
       onkeyup: m.withAttr('value', _.partial(ctrl.onInputStationKeyUp, ctrl)),
-      value: isStartStation ? ctrl.inputStationStartTerm() : ctrl.inputStationEndTerm()
+      value: isStartStation ? ctrl.inputStationStartTerm() : ctrl.inputStationEndTerm(),
+      config: (el: HTMLElement, isUpdate: boolean, context: Object) => {
+        if(!el.getAttribute('disabled')) el.focus();
+      }
     };
 
     return View.handleAttributes(attrs, (name, value) => {
@@ -70,23 +100,34 @@ function renderInputsStation(ctrl: Ctrl) {
     });
   };
 
-  var resetStationAttrs = {
-    config: (el: HTMLElement, isUpdate: boolean, context: any) => {
-      if (!isUpdate) {
-        el.addEventListener('touchend', _.partial(ctrl.onResetStationTouched, ctrl));
+  var resetStationAttrs = (isStartStation: boolean) => {
+    return View.handleAttributes({
+      class: 'font reset focus',
+      type: 'button',
+      config: (el: HTMLElement, isUpdate: boolean, context: any) => {
+        if (!isUpdate) {
+          el.addEventListener('touchend', _.partial(ctrl.onResetStationTouched, ctrl));
+        }
       }
-    }
-  }
+    }, (name, value) => {
+      if((name + ':' + value) == 'class:focus') {
+        var isSelected = isStartStation ? ctrl.inputStationStartSelected()!='' : ctrl.inputStationEndSelected()!='';
+        var isEnabled = isStartStation ? !ctrl.isInputStationStartDisabled() : !ctrl.isInputStationEndDisabled();
+        return isSelected || isEnabled;
+      }
+      return true;
+    });
+  };
 
   return m("div", { class: "start-end" },
            m("form", {}, [
              m("div", _.merge({ class: "input start" }, inputStationWrapperAttrs), [
                m("input", _.merge({ name: "start", placeholder: "Départ" }, inputStationAttrs(true))),
-               m("button", _.merge({ type: "button", class: "font reset" }, resetStationAttrs))
+               m("button", resetStationAttrs(true))
              ]),
              m("div", _.merge({ class: "input end"}, inputStationWrapperAttrs), [
                m("input", _.merge({ name: "end", placeholder: "Arrivée" }, inputStationAttrs(false))),
-               m("button", _.merge({ type: "button", class: "font reset" }, resetStationAttrs))
+               m("button", resetStationAttrs(false))
              ])
            ]));
 }
@@ -126,8 +167,15 @@ function renderDateTime(ctrl: Ctrl) {
     }
   };
 
+  var dateSelectorAtts = View.handleAttributes({ class: 'date other'}, (name, value) => {
+    if((name + ':' + value) == 'class:other') {
+      return ctrl.isOtherTabSelected();
+    }
+    return true;
+  });
+
   return m("ul", { class: 'list datetime'}, [
-    m("li", { class: "date" }, [
+    m("li", dateSelectorAtts, [
       m("span", { class: "label" }, "Date de départ"),
       m("span", { class: "value" }),
       m("input", _.merge({ type: "date" }, inputDateTimeAttrs))
@@ -145,6 +193,7 @@ function renderDateTime(ctrl: Ctrl) {
 }
 
 function render(ctrl: Ctrl) {
+  console.log('RENDER ' + Date.now());
   return [
     renderTabs(ctrl),
     renderInputsStation(ctrl),
@@ -165,31 +214,33 @@ export class Home implements m.Module<Ctrl> {
         return !Routes.matchHome(m.route());
       },
 
-      onTabTouched: (e: Event) => {
-        var touched = e.currentTarget;
-        var tabs = touched.parentElement.querySelectorAll('li');
-        Array.apply(null, tabs).forEach((e: HTMLElement) => e.classList.remove('selected'));
-        touched.classList.add('selected');
+      onTabTouched: (ctrl: Ctrl, e: Event) => {
+        var tab = e.currentTarget;
 
-        var date = document.querySelector('#home .datetime .date');
-        if(touched.classList.contains('other')) {
-          date.classList.add('other');
-        } else {
-          date.classList.remove('other');
+        m.startComputation();
+        ctrl.isTodayTabSelected(false);
+        ctrl.isTomorrowTabSelected(false);
+        ctrl.isOtherTabSelected(false);
+
+        if(isTodayTab(tab)) {
+          ctrl.isTodayTabSelected(true)
+        } else if(isTomorrowTab(tab)) {
+          ctrl.isTomorrowTabSelected(true);
+        } else if(isOtherTab(tab)) {
+          ctrl.isOtherTabSelected(true);
         }
+        m.endComputation();
       },
 
       onInputStationTouched: (ctrl: Ctrl, e: Event) => {
         var station = e.currentTarget;
         var inputStation = station.querySelector('input');
         var hideInput = isInputStationStart(inputStation) ? hideInputStationEnd : hideInputStationStart;
+        m.startComputation();
         Q.all([hideInput(ctrl), hideDateTimePanel(ctrl)]).then(() => {
           return moveUpViewport(ctrl).then(() => {
-            station.querySelector('button.reset').classList.add('focus');
             enableInputStation(ctrl, inputStation);
-            Utils.Keyboard.show().then(() => {
-              inputStation.focus();
-            });
+            Utils.Keyboard.show().then(() => m.endComputation());
           });
         });
       },
@@ -204,9 +255,19 @@ export class Home implements m.Module<Ctrl> {
 
       inputStationEndTerm: m.prop(''),
 
+      inputStationStartSelected: m.prop(''),
+
+      inputStationEndSelected: m.prop(''),
+
       isInputStationStartDisabled: m.prop(true),
 
       isInputStationEndDisabled: m.prop(true),
+
+      isTodayTabSelected: m.prop(true),
+
+      isTomorrowTabSelected: m.prop(false),
+
+      isOtherTabSelected: m.prop(false),
 
       stations: m.prop([]),
 
@@ -215,20 +276,29 @@ export class Home implements m.Module<Ctrl> {
         var id = station.getAttribute('data-id');
         var name = station.getAttribute('data-name');
         var inputStation = currentInputStation(ctrl);
+        m.startComputation();
         ctrl.stations([]);
+        setInputStationSelected(ctrl, inputStation, id);
         setInputStationValue(ctrl, inputStation, name);
-        inputStation.setAttribute('data-selected', id);
         resetInputStationsPosition(ctrl, inputStation);
         checkSubmitRequirements(ctrl);
+        m.endComputation();
       },
 
       onResetStationTouched: (ctrl: Ctrl, e: Event) => {
+        e.stopPropagation();
         var resetButton = e.currentTarget;
         var inputStation = <HTMLInputElement> resetButton.previousElementSibling;
+        m.startComputation();
+        var isStartAndSelected = isInputStationStart(inputStation) && ctrl.inputStationStartSelected() != '';
+        var isEndAndSelected = !isInputStationStart(inputStation) && ctrl.inputStationEndSelected() != '';
+        if(!(isStartAndSelected || isEndAndSelected)) {
+          resetInputStationsPosition(ctrl, inputStation);
+        }
         setInputStationValue(ctrl, inputStation, '');
-        inputStation.removeAttribute('data-selected');
-        resetInputStationsPosition(ctrl, inputStation);
+        ctrl.stations([]);
         checkSubmitRequirements(ctrl);
+        m.endComputation();
       },
 
       onDateTimeChange: (ctrl: Ctrl, e: Event) => {
@@ -320,8 +390,9 @@ function showDateTimePanel(ctrl: Ctrl): Q.Promise<HTMLElement> {
 function resetInputStationsPosition(ctrl: Ctrl, inputStation: HTMLInputElement): Q.Promise<void> {
   var showInput = isInputStationStart(inputStation) ? showInputStationEnd : showInputStationStart;
   var resetButton = <HTMLElement> inputStation.nextElementSibling;
+  m.startComputation();
   disableInputStation(ctrl, inputStation);
-  resetButton.classList.remove('focus');
+  m.endComputation();
   return Utils.Keyboard.hide().then(() => {
     moveDownViewport(ctrl).then(() => {
       showInput(ctrl).then(() => {
@@ -370,20 +441,42 @@ function checkSubmitRequirements(ctrl: Ctrl): void {
 
 function disableInputStation(ctrl: Ctrl, input: HTMLElement): void {
   if(isInputStationStart(input)) {
-    ctrl.isInputStationStartDisabled(false)
-  } else {
-    ctrl.isInputStationEndDisabled(false);
-  }
-}
-
-function enableInputStation(ctrl: Ctrl, input: HTMLElement): void {
-  if(isInputStationStart(input)) {
     ctrl.isInputStationStartDisabled(true)
   } else {
     ctrl.isInputStationEndDisabled(true);
   }
 }
 
+function enableInputStation(ctrl: Ctrl, input: HTMLElement): void {
+  if(isInputStationStart(input)) {
+    ctrl.isInputStationStartDisabled(false)
+  } else {
+    ctrl.isInputStationEndDisabled(false);
+  }
+}
+
 function setInputStationValue(ctrl: Ctrl, input: HTMLElement, value: string): void {
-  isInputStationStart(input) ? ctrl.inputStationStartTerm(value) : ctrl.inputStationEndTerm(value);
+  if(isInputStationStart(input)) {
+    ctrl.inputStationStartTerm(value)
+    ctrl.inputStationStartSelected(value);
+  } else {
+    ctrl.inputStationEndTerm(value);
+    ctrl.inputStationEndSelected(value);
+  }
+}
+
+function setInputStationSelected(ctrl: Ctrl, input: HTMLElement, id: string): void {
+  isInputStationStart(input) ? ctrl.inputStationStartSelected(id) : ctrl.inputStationEndSelected(id);
+}
+
+function isTodayTab(el: HTMLElement): boolean {
+  return el.classList.contains('today');
+}
+
+function isTomorrowTab(el: HTMLElement): boolean {
+  return el.classList.contains('tomorrow');
+}
+
+function isOtherTab(el: HTMLElement): boolean {
+  return el.classList.contains('other');
 }

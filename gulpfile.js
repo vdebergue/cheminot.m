@@ -39,8 +39,8 @@ var Assets = {
             requirejs: 'project/node_modules/requirejs/require.js',
             q: 'project/node_modules/q/q.js',
             mithril: 'project/node_modules/mithril/mithril.js',
-            zanimo: 'project/node_modules/zanimo/src/Zanimo.js',
-            iscroll: 'project/node_modules/iscroll/build/iscroll-probe.js',
+            Zanimo: 'project/node_modules/zanimo/src/Zanimo.js',
+            IScroll: 'project/node_modules/iscroll/build/iscroll-probe.js',
             moment: 'project/node_modules/moment/moment.js',
             lodash: 'project/node_modules/lodash/lodash.js'
         },
@@ -48,7 +48,12 @@ var Assets = {
     }
 };
 
-gulp.task('vendors', function() {
+gulp.task('clean-vendors', function() {
+    return gulp.src(Assets.vendors.dest)
+        .pipe(clean());
+});
+
+gulp.task('vendors', ['clean-vendors'], function() {
     function browserifyVendor(path, name) {
         return gulp.src(path)
             .pipe(browserify({ "standalone": name }))
@@ -56,12 +61,12 @@ gulp.task('vendors', function() {
     }
 
     gulp.src(Assets.vendors.src.requirejs).pipe(gulp.dest(Assets.vendors.dest));
-    browserifyVendor(Assets.vendors.src.q, 'q');
-    browserifyVendor(Assets.vendors.src.mithril, 'mithril');
-    browserifyVendor(Assets.vendors.src.iscroll, 'IScroll');
-    browserifyVendor(Assets.vendors.src.zanimo, 'Zanimo');
-    browserifyVendor(Assets.vendors.src.moment, 'moment');
-    browserifyVendor(Assets.vendors.src.lodash, 'lodash');
+
+    Object.keys(Assets.vendors.src).forEach(function(vendor) {
+        if(!['requirejs'].some(function(v) { return v == vendor;})) {
+            browserifyVendor(Assets.vendors.src[vendor], vendor);
+        }
+    });
 });
 
 gulp.task('clean-js', function() {

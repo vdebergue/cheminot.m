@@ -1,4 +1,7 @@
 declare module cordova {
+
+  var isMock: boolean;
+
   module plugins {
     module SoftKeyboard {
       function show(success: () => void, error: () => void): Q.Promise<void>;
@@ -8,4 +11,9 @@ declare module cordova {
     module Cheminot {
     }
   }
+}
+
+declare module Splashscreen {
+  function show(): void;
+  function hide(): void;
 }

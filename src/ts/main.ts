@@ -9,16 +9,18 @@
 
 'use strict';
 
+import Utils = require('utils');
 import m = require('mithril');
 import App = require('app');
 import Routes = require('routes');
 import Suggestions = require('suggestions');
 
-Suggestions.init();
-
-m.route.mode = 'hash';
-m.route(document.querySelector('#viewport'), "/", {
-  "/": App.get(),
-  "/departures": App.get(),
-  "/trip/:id": App.get()
+Utils.qstart().then(() => {
+  Suggestions.init();
+  m.route.mode = 'hash';
+  m.route(document.querySelector('#viewport'), "/", {
+    "/": App.get(),
+    "/departures": App.get(),
+    "/trip/:id": App.get()
+  });
 });

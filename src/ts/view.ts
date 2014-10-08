@@ -1,7 +1,7 @@
 import _ = require('lodash');
 
 export interface Attributes {
-    [index: string]: any;
+  [index: string]: any;
 }
 
 export function handleAttributes(attributes: Attributes, validate: (name: string, value: string) => boolean): Attributes {

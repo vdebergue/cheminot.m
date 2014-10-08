@@ -33,5 +33,18 @@
       });
     </script>
     <script src="js/settings.js"></script>
+    <script type="text/javascript">
+      if(cordova.isMock) {
+        window.document.addEventListener("readystatechange", function() {
+          if(document.readyState == "complete") {
+            document.body.classList.add('ready');
+          }
+        }, false);
+      } else {
+        window.document.addEventListener("deviceready", function() {
+          document.body.classList.add('ready');
+        }, false);
+      }
+    </script>
   </body>
 </html>

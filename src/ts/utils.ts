@@ -8,6 +8,28 @@ export function viewportSize(): [number, number] {
   ];
 }
 
+export function qstart(): Q.Promise<Document> {
+  var d = Q.defer<Document>();
+  if(!document.body.classList.contains('ready')) {
+    var errorf = (e: Event) => d.reject(e);
+    var successf = () => {
+      window.removeEventListener("error", errorf);
+      d.resolve(window.document);
+    };
+    window.addEventListener("error", errorf, false);
+    if(Detectizr.isCordovaApp()) {
+      window.document.addEventListener("deviceready", successf, false);
+    } else {
+      window.document.addEventListener("readystatechange", () => {
+        if(document.readyState == "complete") successf();
+      }, false);
+    }
+  } else {
+    d.resolve(document);
+  }
+  return d.promise;
+}
+
 export module DateTime {
 
   export function setSameTime(from: Date, reference: Date): Date {
@@ -70,6 +92,10 @@ export module Detectizr {
 
   export function isIOS7() {
     return isIOS() && navigator.userAgent.match(/OS 7/);
+  }
+
+  export function isCordovaApp() {
+    return !cordova.isMock;
   }
 }
 
