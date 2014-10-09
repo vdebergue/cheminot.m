@@ -28,6 +28,11 @@ export interface Ctrl {
   isOtherTabSelected: (value?: boolean) => boolean;
   stations: (value?: Array<Suggestions.Station>) => Array<Suggestions.Station>;
   onStationSelected: (ctrl: Ctrl, e: Event) => void;
+  inputDateSelected: (value?: string) => string;
+  inputTimeSelected: (value?: string) => string;
+  isSubmitDisabled: (value?: boolean) => boolean;
+  iscroll: () => IScroll;
+  adaptWrapperTop: (ctrl: Ctrl) => void;
 }
 
 /// RENDER TABS
@@ -136,10 +141,17 @@ function renderInputsStation(ctrl: Ctrl) {
 
 function renderStations(ctrl: Ctrl) {
   var term = ctrl.inputStationStartTerm() || ctrl.inputStationEndTerm();
-  var stationAttrs = {
-    config: function(el: HTMLElement, isUpdate: boolean, context: any) {
-      if (!isUpdate) {
-        el.addEventListener('touchend', _.partial(ctrl.onStationSelected, ctrl));
+  var stationAttrs = function(index: number) {
+    return {
+      config: function(el: HTMLElement, isUpdate: boolean, context: any) {
+        if (!isUpdate) {
+          el.addEventListener('touchend', _.partial(ctrl.onStationSelected, ctrl));
+        }
+        if((index + 1) === ctrl.stations().length) {
+          console.log('here');
+          ctrl.adaptWrapperTop(ctrl);
+          ctrl.iscroll().refresh();
+        }
       }
     }
   }
@@ -147,8 +159,8 @@ function renderStations(ctrl: Ctrl) {
   return m("div", { class: "stations" },
            m("div", { id: "wrapper" },
              m("ul", { class: "suggestions list" },
-               ctrl.stations().map((station) => {
-                 return m('li', _.merge({ "data-id": station.id, "data-name": station.name }, stationAttrs),
+               ctrl.stations().map((station, index) => {
+                 return m('li', _.merge({ "data-id": station.id, "data-name": station.name }, stationAttrs(index)),
                           m('div', {}, [
                             m('span', { class: 'match' }, _.take(station.name, term.length).join('')),
                             m('span', {}, _.drop(station.name, term.length).join(''))
@@ -167,9 +179,16 @@ function renderDateTime(ctrl: Ctrl) {
     }
   };
 
-  var dateSelectorAtts = View.handleAttributes({ class: 'date other'}, (name, value) => {
+  var dateSelectorAtts = View.handleAttributes({ class: 'date other' }, (name, value) => {
     if((name + ':' + value) == 'class:other') {
       return ctrl.isOtherTabSelected();
+    }
+    return true;
+  });
+
+  var submitAtts = View.handleAttributes({ class: 'submit disabled' }, (name, value) => {
+    if((name + ':' + value) == 'class:disabled') {
+      return !canBeSubmitted(ctrl);
     }
     return true;
   });
@@ -177,15 +196,15 @@ function renderDateTime(ctrl: Ctrl) {
   return m("ul", { class: 'list datetime'}, [
     m("li", dateSelectorAtts, [
       m("span", { class: "label" }, "Date de départ"),
-      m("span", { class: "value" }),
+      m("span", { class: "value" }, ctrl.inputDateSelected()),
       m("input", _.merge({ type: "date" }, inputDateTimeAttrs))
     ]),
     m("li", { class: "time" }, [
       m("span", { class: "label" }, "Heure de départ"),
       m("span", { class: "value" }),
-      m("input", _.merge({ type: "time" }, inputDateTimeAttrs))
+      m("input", _.merge({ type: "time" }, ctrl.inputTimeSelected()))
     ]),
-    m("li", { class: "submit disabled" }, [
+    m("li", submitAtts, [
       m("span", {}, "Rechercher"),
       m("button", { class: "font go" })
     ])
@@ -193,7 +212,6 @@ function renderDateTime(ctrl: Ctrl) {
 }
 
 function render(ctrl: Ctrl) {
-  console.log('RENDER ' + Date.now());
   return [
     renderTabs(ctrl),
     renderInputsStation(ctrl),
@@ -269,6 +287,22 @@ export class Home implements m.Module<Ctrl> {
 
       isOtherTabSelected: m.prop(false),
 
+      inputDateSelected: m.prop(''),
+
+      inputTimeSelected: m.prop(''),
+
+      isSubmitDisabled: m.prop(true),
+
+      iscroll: _.once(() => new IScroll('#home #wrapper')),
+
+      adaptWrapperTop: (ctrl: Ctrl) => {
+        var wrapper = ctrl.scope().querySelector('#wrapper');
+        var startEndWrapper = ctrl.scope().querySelector('.start-end');
+        var top = startEndWrapper.offsetTop + startEndWrapper.offsetHeight + Math.abs(document.body.offsetTop) + 10;
+        console.log('here');
+        wrapper.style.top = top + 'px';
+      },
+
       stations: m.prop([]),
 
       onStationSelected: (ctrl: Ctrl, e: Event) => {
@@ -281,7 +315,6 @@ export class Home implements m.Module<Ctrl> {
         setInputStationSelected(ctrl, inputStation, id);
         setInputStationValue(ctrl, inputStation, name);
         resetInputStationsPosition(ctrl, inputStation);
-        checkSubmitRequirements(ctrl);
         m.endComputation();
       },
 
@@ -297,14 +330,17 @@ export class Home implements m.Module<Ctrl> {
         }
         setInputStationValue(ctrl, inputStation, '');
         ctrl.stations([]);
-        checkSubmitRequirements(ctrl);
         m.endComputation();
       },
 
       onDateTimeChange: (ctrl: Ctrl, e: Event) => {
         var input = <HTMLInputElement> e.currentTarget;
-        var value = input.previousElementSibling;
-        value.textContent = input.value;
+        var wrapper = input.parentElement;
+        if(wrapper.classList.contains('date')) {
+          ctrl.inputDateSelected(input.value);
+        } else if(wrapper.classList.contains('time')) {
+          ctrl.inputTimeSelected(input.value);
+        }
       }
     }
   }
@@ -410,33 +446,17 @@ function currentInputStation(ctrl: Ctrl): HTMLInputElement {
 }
 
 function canBeSubmitted(ctrl: Ctrl): boolean {
-  var inputsStation = ctrl.scope().querySelectorAll('.input input[type=text]');
-  var isStationsSelected = _.every(inputsStation, (input) => {
-    return input.getAttribute('data-selected') != null;
-  });
+  var selectedStart = ctrl.inputStationStartSelected();
+  var selectedEnd = ctrl.inputStationEndSelected();
 
-  if(isStationsSelected) {
-    var tab = ctrl.scope().querySelector('.tabs .selected');
-    var time = ctrl.scope().querySelector('.datetime .time .value');
-    if(tab.classList.contains('other')) {
-      var date = ctrl.scope().querySelector('.datetime .date .value');
-      return !!date && !!time;
+  if(selectedStart && selectedEnd) {
+    if(ctrl.isOtherTabSelected()) {
+      return ctrl.inputDateSelected() != '' && ctrl.inputTimeSelected() != '';
     } else {
-      return !!time;
+      return ctrl.inputTimeSelected() != '';
     }
   }
   return false;
-}
-
-function checkSubmitRequirements(ctrl: Ctrl): void {
-  var submitButton = ctrl.scope().querySelector('.datetime .submit');
-  if(canBeSubmitted(ctrl)) {
-    submitButton.classList.remove('disabled');
-    submitButton.classList.add('enabled');
-  } else {
-    submitButton.classList.remove('enabled');
-    submitButton.classList.add('disabled');
-  }
 }
 
 function disableInputStation(ctrl: Ctrl, input: HTMLElement): void {
