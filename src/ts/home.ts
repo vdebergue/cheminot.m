@@ -294,7 +294,10 @@ export class Home implements m.Module<Ctrl> {
 
       isSubmitDisabled: m.prop(true),
 
-      iscroll: _.once(() => new IScroll('#home #wrapper')),
+      iscroll: _.once(function() {
+        var wrapper = this.scope().querySelector('#wrapper');
+        return new IScroll(wrapper);
+      }),
 
       adaptWrapperTop: (ctrl: Ctrl) => {
         var wrapper = ctrl.scope().querySelector('#wrapper');

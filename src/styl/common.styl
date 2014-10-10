@@ -84,11 +84,15 @@ h1 {
     li {
         color: grey
         padding: 0 8px 0 8px
-        display: flex
-        align-items: center
         border-bottom: 2px solid grey-blue
         box-sizing: border-box
         width: 100%
+    }
+
+    li > * {
+        top: 50%
+        transform: translateY(-50%)
+        position: absolute
     }
 }
 

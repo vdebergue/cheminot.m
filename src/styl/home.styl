@@ -86,7 +86,6 @@
     }
 
     .stations {
-        /* border-top: 10px solid grey-blue */
 
         #wrapper {
             overflow: hidden
@@ -99,6 +98,8 @@
                 width: 100%
 
                 li {
+                    position: relative
+
                     div {
                         width: 100%
 
@@ -148,14 +149,12 @@
             display: none;
 
             &.other {
-                display: flex
+                display: block
             }
         }
 
         .submit {
             .go {
-                position: absolute
-                top: 0
                 height: 100%
                 width: 16px
                 right: global-margin-right
