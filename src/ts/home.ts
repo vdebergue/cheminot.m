@@ -33,6 +33,7 @@ export interface Ctrl {
   isSubmitDisabled: (value?: boolean) => boolean;
   iscroll: () => IScroll;
   adaptWrapperTop: (ctrl: Ctrl) => void;
+  isViewportUp: (value?: boolean) => boolean;
 }
 
 /// RENDER TABS
@@ -148,7 +149,6 @@ function renderStations(ctrl: Ctrl) {
           el.addEventListener('touchend', _.partial(ctrl.onStationSelected, ctrl));
         }
         if((index + 1) === ctrl.stations().length) {
-          console.log('here');
           ctrl.adaptWrapperTop(ctrl);
           ctrl.iscroll().refresh();
         }
@@ -172,11 +172,7 @@ function renderStations(ctrl: Ctrl) {
 
 function renderDateTime(ctrl: Ctrl) {
   var inputDateTimeAttrs = {
-    config: (el: HTMLElement, isUpdate: boolean, context: Object) => {
-      if (!isUpdate) {
-        el.addEventListener('change', _.partial(ctrl.onDateTimeChange, ctrl));
-      }
-    }
+    onchange: _.partial(ctrl.onDateTimeChange, ctrl),
   };
 
   var dateSelectorAtts = View.handleAttributes({ class: 'date other' }, (name, value) => {
@@ -186,9 +182,11 @@ function renderDateTime(ctrl: Ctrl) {
     return true;
   });
 
-  var submitAtts = View.handleAttributes({ class: 'submit disabled' }, (name, value) => {
+  var submitAtts = View.handleAttributes({ class: 'submit enabled disabled' }, (name, value) => {
     if((name + ':' + value) == 'class:disabled') {
       return !canBeSubmitted(ctrl);
+    } else if((name + ':' + value) == 'class:enabled'){
+      return canBeSubmitted(ctrl);
     }
     return true;
   });
@@ -201,8 +199,8 @@ function renderDateTime(ctrl: Ctrl) {
     ]),
     m("li", { class: "time" }, [
       m("span", { class: "label" }, "Heure de départ"),
-      m("span", { class: "value" }),
-      m("input", _.merge({ type: "time" }, ctrl.inputTimeSelected()))
+      m("span", { class: "value" }, ctrl.inputTimeSelected()),
+      m("input", _.merge({ type: "time" }, inputDateTimeAttrs))
     ]),
     m("li", submitAtts, [
       m("span", {}, "Rechercher"),
@@ -255,6 +253,7 @@ export class Home implements m.Module<Ctrl> {
         var inputStation = station.querySelector('input');
         var hideInput = isInputStationStart(inputStation) ? hideInputStationEnd : hideInputStationStart;
         m.startComputation();
+        setInputStationValue(ctrl, inputStation, '');
         Q.all([hideInput(ctrl), hideDateTimePanel(ctrl)]).then(() => {
           return moveUpViewport(ctrl).then(() => {
             enableInputStation(ctrl, inputStation);
@@ -291,6 +290,8 @@ export class Home implements m.Module<Ctrl> {
 
       inputTimeSelected: m.prop(''),
 
+      isViewportUp: m.prop(false),
+
       isSubmitDisabled: m.prop(true),
 
       iscroll: _.once(() => new IScroll('#home #wrapper')),
@@ -299,7 +300,6 @@ export class Home implements m.Module<Ctrl> {
         var wrapper = ctrl.scope().querySelector('#wrapper');
         var startEndWrapper = ctrl.scope().querySelector('.start-end');
         var top = startEndWrapper.offsetTop + startEndWrapper.offsetHeight + Math.abs(document.body.offsetTop) + 10;
-        console.log('here');
         wrapper.style.top = top + 'px';
       },
 
@@ -323,11 +323,7 @@ export class Home implements m.Module<Ctrl> {
         var resetButton = e.currentTarget;
         var inputStation = <HTMLInputElement> resetButton.previousElementSibling;
         m.startComputation();
-        var isStartAndSelected = isInputStationStart(inputStation) && ctrl.inputStationStartSelected() != '';
-        var isEndAndSelected = !isInputStationStart(inputStation) && ctrl.inputStationEndSelected() != '';
-        if(!(isStartAndSelected || isEndAndSelected)) {
-          resetInputStationsPosition(ctrl, inputStation);
-        }
+        if(ctrl.isViewportUp()) resetInputStationsPosition(ctrl, inputStation);
         setInputStationValue(ctrl, inputStation, '');
         ctrl.stations([]);
         m.endComputation();
@@ -399,6 +395,7 @@ function moveUpViewport(ctrl: Ctrl): Q.Promise<HTMLElement> {
   var translateY = tabsHeight + headerHeight;
   return Zanimo(viewport, 'transform', 'translate3d(0,-'+ translateY + 'px,0)', 200).then(() => {
     viewport.style.bottom = '-' + translateY + 'px';
+    ctrl.isViewportUp(true);
     return viewport;
   });
 }
@@ -407,6 +404,7 @@ function moveDownViewport(ctrl: Ctrl): Q.Promise<HTMLElement> {
   var viewport = document.querySelector('#viewport');
   return Zanimo(viewport, 'transform', 'translate3d(0,0,0)', 200).then(() => {
     viewport.style.bottom = '0';
+    ctrl.isViewportUp(false);
     return viewport;
   });
 }
