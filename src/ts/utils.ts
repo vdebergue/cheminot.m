@@ -64,6 +64,11 @@ export module Log {
       alert('INFO : ' + message);
     }
   }
+
+  export function debug<A>(message: A): A {
+    info(message);
+    return message;
+  }
 }
 
 export module Detectizr {

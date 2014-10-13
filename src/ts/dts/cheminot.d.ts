@@ -12,8 +12,3 @@ declare module cordova {
     }
   }
 }
-
-declare module Splashscreen {
-  function show(): void;
-  function hide(): void;
-}

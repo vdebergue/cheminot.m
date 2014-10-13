@@ -16,7 +16,7 @@ export interface Ctrl {
   onInputStationTouched :(ctrl: Ctrl, e: Event) => void;
   onResetStationTouched: (ctrl: Ctrl, e: Event) => void;
   onDateTimeChange: (ctrl: Ctrl, e: Event) => void;
-  onInputStationKeyUp: (ctrl: Ctrl, value: string) => void;
+  onInputStationKeyUp: (ctrl: Ctrl, e: Event) => void;
   inputStationStartTerm: (value?: string) => string;
   inputStationEndTerm: (value?: string) => string;
   inputStationStartSelected: (value?: string) => string;
@@ -92,7 +92,7 @@ function renderInputsStation(ctrl: Ctrl) {
     var attrs: View.Attributes = {
       disabled: "true",
       type: "text",
-      onkeyup: m.withAttr('value', _.partial(ctrl.onInputStationKeyUp, ctrl)),
+      onkeyup: _.partial(ctrl.onInputStationKeyUp, ctrl),
       value: isStartStation ? ctrl.inputStationStartTerm() : ctrl.inputStationEndTerm(),
       config: (el: HTMLElement, isUpdate: boolean, context: Object) => {
         if(!el.getAttribute('disabled')) el.focus();
@@ -262,10 +262,10 @@ export class Home implements m.Module<Ctrl> {
         });
       },
 
-      onInputStationKeyUp: (ctrl: Ctrl, value: string) => {
+      onInputStationKeyUp: (ctrl: Ctrl, e: Event) => {
         var inputStation = currentInputStation(ctrl);
-        setInputStationValue(ctrl, inputStation, value);
-        ctrl.stations(Suggestions.search(value));
+        setInputStationValue(ctrl, inputStation, inputStation.value);
+        ctrl.stations(Suggestions.search(inputStation.value));
       },
 
       inputStationStartTerm: m.prop(''),
@@ -286,9 +286,9 @@ export class Home implements m.Module<Ctrl> {
 
       isOtherTabSelected: m.prop(false),
 
-      inputDateSelected: m.prop(''),
+      inputDateSelected: m.prop(moment().format('YYYY-MM-DD')),
 
-      inputTimeSelected: m.prop(''),
+      inputTimeSelected: m.prop(moment().format('HH:mm')),
 
       isViewportUp: m.prop(false),
 
@@ -367,12 +367,12 @@ function hideInputStationEnd(ctrl: Ctrl): Q.Promise<HTMLElement> {
   inputStationStart.classList.remove('animating');
   inputStationEnd.classList.add('animating');
   var translateY = inputStationStart.offsetTop - inputStationEnd.offsetTop;
-  return Zanimo(inputStationEnd, 'transform', 'translate3d(0,'+ translateY + 'px,0)', 200);
+  return Zanimo(inputStationEnd, 'transform', 'translate3d(0,'+ translateY + 'px,0)', 10);
 }
 
 function showInputStationEnd(ctrl: Ctrl): Q.Promise<HTMLElement> {
   var inputStationEnd = ctrl.scope().querySelector('.input.end');
-  return Zanimo(inputStationEnd, 'transform', 'translate3d(0,0,0)', 200).then(() => {
+  return Zanimo(inputStationEnd, 'transform', 'translate3d(0,0,0)', 10).then(() => {
     inputStationEnd.classList.remove('animating');
     inputStationEnd.classList.remove('above');
     return inputStationEnd;
