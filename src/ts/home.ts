@@ -206,9 +206,7 @@ function renderDateTime(ctrl: Ctrl) {
     return _.merge(attrs, {
       config: function(el: HTMLElement, isUpdate: boolean, context: any) {
         if (!isUpdate) {
-          if(el.hasAttribute('enabled')) {
-            el.addEventListener('touchend', _.partial(ctrl.onSubmitTouched, ctrl));
-          }
+          el.addEventListener('touchend', _.partial(ctrl.onSubmitTouched, ctrl));
         }
       }
     });
@@ -277,6 +275,7 @@ export class Home implements m.Module<Ctrl> {
         var hideInput = isInputStationStart(inputStation) ? hideInputStationEnd : hideInputStationStart;
         m.startComputation();
         setInputStationValue(ctrl, inputStation, '');
+        setInputStationSelected(ctrl, inputStation, '');
         Q.all([hideInput(ctrl), hideDateTimePanel(ctrl)]).then(() => {
           return moveUpViewport(ctrl).then(() => {
             enableInputStation(ctrl, inputStation);
@@ -291,13 +290,13 @@ export class Home implements m.Module<Ctrl> {
         ctrl.stations(Suggestions.search(inputStation.value));
       },
 
-      inputStationStartTerm: m.prop(''),
+      inputStationStartTerm: m.prop('Chartres'),
 
-      inputStationEndTerm: m.prop(''),
+      inputStationEndTerm: m.prop('Paris-Montparnasse'),
 
-      inputStationStartSelected: m.prop(''),
+      inputStationStartSelected: m.prop('StopPoint:OCETrain TER-87394007'),
 
-      inputStationEndSelected: m.prop(''),
+      inputStationEndSelected: m.prop('StopPoint:OCETrain TER-87391003'),
 
       isInputStationStartDisabled: m.prop(true),
 
@@ -348,8 +347,8 @@ export class Home implements m.Module<Ctrl> {
           var inputStation = currentInputStation(ctrl);
           m.startComputation();
           ctrl.stations([]);
-          setInputStationSelected(ctrl, inputStation, id);
           setInputStationValue(ctrl, inputStation, name);
+          setInputStationSelected(ctrl, inputStation, id);
           resetInputStationsPosition(ctrl, inputStation);
           m.endComputation();
         }
@@ -362,11 +361,16 @@ export class Home implements m.Module<Ctrl> {
         m.startComputation();
         if(ctrl.isViewportUp()) resetInputStationsPosition(ctrl, inputStation);
         setInputStationValue(ctrl, inputStation, '');
+        setInputStationSelected(ctrl, inputStation, '');
         ctrl.stations([]);
         m.endComputation();
       },
 
       onSubmitTouched: (ctrl: Ctrl, e: Event) => {
+        var atDate = moment(ctrl.inputDateSelected()).toDate();
+        var atTime = moment(ctrl.inputTimeSelected(), 'hh:mm').toDate();
+        var atDateTime = Utils.DateTime.setSameTime(atTime, atDate);
+        m.route(Routes.departures(ctrl.inputStationStartSelected(), ctrl.inputStationEndSelected(), atDateTime.getTime()));
       },
 
       onScrollStations: (ctrl: Ctrl, e: Event) => {
@@ -436,7 +440,7 @@ function showInputStationStart(ctrl: Ctrl): Q.Promise<HTMLElement> {
 
 function moveUpViewport(ctrl: Ctrl): Q.Promise<HTMLElement> {
   var viewport = document.querySelector('#viewport');
-  var headerHeight = document.querySelector('header').offsetHeight;
+  var headerHeight = document.querySelector('#header').offsetHeight;
   var tabsHeight = ctrl.scope().querySelector('.tabs').offsetHeight;
   var translateY = tabsHeight + headerHeight;
   return Zanimo(viewport, 'transform', 'translate3d(0,-'+ translateY + 'px,0)', 200).then(() => {
@@ -522,10 +526,8 @@ function enableInputStation(ctrl: Ctrl, input: HTMLElement): void {
 function setInputStationValue(ctrl: Ctrl, input: HTMLElement, value: string): void {
   if(isInputStationStart(input)) {
     ctrl.inputStationStartTerm(value)
-    ctrl.inputStationStartSelected(value);
   } else {
     ctrl.inputStationEndTerm(value);
-    ctrl.inputStationEndSelected(value);
   }
 }
 

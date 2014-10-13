@@ -2,8 +2,8 @@ export function home() {
   return '/';
 }
 
-export function departures() {
-  return '/departures';
+export function departures(startId: string, endId: string, at: number) {
+  return '/departures/' + startId + '/' + endId + '/' + at;
 }
 
 export function trip(id: string) {
@@ -15,9 +15,9 @@ export function matchHome(route: string) {
 }
 
 export function matchDepartures(route: string) {
-  return route == departures();
+  return /\/departures\/.+/.test(route);
 }
 
 export function matchTrip(route: string) {
-  return/\/trip\/.+/.test(route);
+  return /\/trip\/.+/.test(route);
 }

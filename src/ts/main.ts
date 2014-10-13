@@ -20,7 +20,9 @@ Utils.qstart().then(() => {
   m.route.mode = 'hash';
   m.route(document.querySelector('#viewport'), "/", {
     "/": App.get(),
-    "/departures": App.get(),
+    "/departures/:start/:end/:at": App.get(),
     "/trip/:id": App.get()
   });
+}).catch((e) => {
+  console.log(e.stack);
 });

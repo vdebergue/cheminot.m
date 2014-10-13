@@ -1,3 +1,109 @@
 #departures {
-    background: blue
+
+    #wrapper {
+        background: grey-blue
+        position: absolute
+        width: 100%
+        overflow: hidden
+        bottom: 0
+
+        #scroller {
+            position: absolute
+            width: 100%
+        }
+
+        .empty {
+            display: none
+            padding-top: 50%
+            text-align: center
+        }
+
+        ul {
+            > li {
+                border-bottom: 2px solid grey-blue
+                box-sizing: border-box
+                color: dark-blue
+                padding: 0 global-margin-right 2% global-margin-right
+                background: #FFF
+
+                &.day {
+                    padding: 4%
+                    text-align: center
+                    background: grey-blue
+                    color: dark-blue
+                }
+
+                .meta {
+                    position: relative
+                    padding: 3% 0 3% 0
+
+                    .changements {
+                        color: grey-light
+                        icon_batch('split', grey-light)
+                    }
+
+                    .duration {
+                        position: absolute
+                        right: 0
+
+                        .egg-timer {
+                            icon_monstr('duration', grey-light)
+                        }
+                    }
+                }
+
+                .start-end {
+                    position: relative
+                    padding: 0 0 2% 0
+
+                    span:not(:last-children) {
+                        margin-right: 2%
+                    }
+                }
+
+                .alarm-clock {
+                    icon_batch('alarm-clock', grey-light)
+                }
+
+                .to {
+                    icon_cheminot('arrow-right', blue)
+                    margin: 0 5px 0 5px
+                    vertical-align: 2px
+                }
+            }
+        }
+
+        .pull-up {
+            display: none
+            align-items: center
+            justify-content: center
+            align-items: center
+            padding: 4% 0 4% 0
+
+            &.visible {
+                display: flex
+            }
+
+            .indicator {
+                icon_batch('arrow-up', 18px, 18px);
+                transform: rotate(0) translateZ(0)
+            }
+
+            .label {
+                margin-left: 10px
+            }
+
+            &.flip .indicator {
+                transform: rotate(-180deg) translateZ(0)
+            }
+
+            &.loading .indicator {
+                transform: rotate(0deg) translateZ(0);
+                transition-duration: 0ms;
+                animation-name: loading;
+                animation-duration: 2s;
+                animation-iteration-count: infinite;
+            }
+        }
+    }
 }
