@@ -8,7 +8,6 @@ var gulp = require('gulp'),
     exec = require('gulp-exec'),
     rjs = require('sre-gulp-rjs'),
     watch = require('gulp-watch'),
-    plumber = require('gulp-plumber'),
     browserify = require('gulp-browserify'),
     fs = require('fs');
 
@@ -20,7 +19,7 @@ var Assets = {
             dir: 'src/ts/'
         },
         dest: {
-            files : ['project/www/js/**/*.js', '!project/www/js/vendors/**/*.js'],
+            files : ['project/www/js/**/*.js', '!project/www/js/vendors/**/*.js', '!project/www/js/settings.js'],
             dir: 'project/www/js/'
         }
     },
@@ -120,17 +119,7 @@ gulp.task('requirejs', ['ts'], function() {
 
 gulp.task('watch', ['compile'], function() {
     var assets = Assets.ts.src.files.concat(Assets.styl.src.files);
-    gulp.src(assets)
-        .pipe(watch(assets))
-        .pipe(plumber())
-        .pipe(exec('tarifa build web', {
-            pipeStdout: true
-        }))
-        .pipe(exec.reporter({
-            err: true,
-            stderr: true,
-            stdout: true
-        }));
+    gulp.watch(assets, ['compile']);
 });
 
 gulp.task('default', ['watch']);
@@ -142,13 +131,6 @@ gulp.task('compile-prod', ['requirejs', 'styl']);
 gulp.task('build', function() {
     return gulp.src('.')
         .pipe(exec('tarifa build web', {
-            pipeStdout: true
-        }));
-});
-
-gulp.task('build-prod', function() {
-    return gulp.src('.')
-        .pipe(exec('tarifa build web prod', {
             pipeStdout: true
         }));
 });
