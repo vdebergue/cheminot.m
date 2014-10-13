@@ -4,9 +4,9 @@
   "description": "SNCF TER",
   "version": "0.0.0",
   "platforms": [
-    "ios",
+    "web",
     "android",
-    "web"
+    "ios"
   ],
   "plugins": [
     "org.apache.cordova.splashscreen",
@@ -15,7 +15,7 @@
     "org.apache.cordova.labs.keyboard"
   ],
   "configurations": {
-    "ios": {
+    "web": {
       "default": {
         "id": "m.cheminot",
         "product_name": "Cheminot",
@@ -44,42 +44,41 @@
         "product_file_name": "Cheminot"
       },
       "dev": {
-        "id": "m.cheminot",
+        "id": "m.cheminot.dev",
         "product_name": "Cheminot dev",
-        "product_file_name": "Cheminot"
+        "product_file_name": "Cheminot-dev"
       },
       "stage": {
-        "id": "m.cheminot",
+        "id": "m.cheminot.stage",
         "product_name": "Cheminot stage",
-        "product_file_name": "Cheminot"
+        "product_file_name": "Cheminot-stage"
       },
       "prod": {
-        "id": "m.cheminot",
+        "id": "m.cheminot.prod",
         "product_name": "Cheminot prod",
-        "product_file_name": "Cheminot",
-        "version_code": "1"
+        "product_file_name": "Cheminot-prod"
       }
     },
-    "web": {
+    "ios": {
       "default": {
         "id": "m.cheminot",
         "product_name": "Cheminot",
         "product_file_name": "Cheminot"
       },
       "dev": {
-        "id": "m.cheminot",
+        "id": "m.cheminot.dev",
         "product_name": "Cheminot dev",
-        "product_file_name": "Cheminot"
+        "product_file_name": "Cheminot-dev"
       },
       "stage": {
-        "id": "m.cheminot",
+        "id": "m.cheminot.stage",
         "product_name": "Cheminot stage",
-        "product_file_name": "Cheminot"
+        "product_file_name": "Cheminot-stage"
       },
       "prod": {
-        "id": "m.cheminot",
+        "id": "m.cheminot.prod",
         "product_name": "Cheminot prod",
-        "product_file_name": "Cheminot"
+        "product_file_name": "Cheminot-prod"
       }
     }
   },
@@ -103,5 +102,8 @@
     "name": "Sebastien Renault",
     "email": "srenault.contact@gmail.com",
     "href": "https://github.com/srenault"
+  },
+  "deploy": {
+    "apple_id": "srenault.contact@gmail.com"
   }
 }

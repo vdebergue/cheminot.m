@@ -18,7 +18,7 @@ interface Departure {
   startTime: Date;
   endTime: Date;
   nbSteps: number;
-  duration: Moment;
+  duration: Date;
 }
 
 function formatTime(dateTime: Date): string {
@@ -28,7 +28,7 @@ function formatTime(dateTime: Date): string {
 function renderMeta(departure: Departure): m.VirtualElement[] {
   var duration = m('div.duration', {}, [
     m('span.egg-timer'),
-    m('span.value', {}, departure.duration.format('HH:mm'))
+    m('span.value', {}, formatTime(departure.duration))
   ]);
 
   if(departure.nbSteps <= 1) {
@@ -100,7 +100,7 @@ export class Departures implements m.Module<Ctrl> {
         startTime: new Date(),
         endTime: moment().add('hours', 1).toDate(),
         nbSteps: 1,
-        duration: moment.utc(moment().add('hours',1).diff(moment()))
+        duration: moment.utc(moment().add('hours',1).diff(moment())).toDate()
       }])
     };
   }

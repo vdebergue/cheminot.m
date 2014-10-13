@@ -1,17 +1,14 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="m.cheminot" version="0.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <preference name="loglevel" value="DEBUG" />
-    <feature name="App">
-        <param name="android-package" value="org.apache.cordova.App" />
-    </feature>
-    <feature name="SplashScreen">
-        <param name="android-package" value="org.apache.cordova.splashscreen.SplashScreen" />
-    </feature>
     <feature name="Cheminot">
         <param name="android-package" value="m.cheminot.plugin.Cheminot" />
     </feature>
     <feature name="SoftKeyboard">
         <param name="android-package" value="org.apache.cordova.plugin.softkeyboard.SoftKeyboard" />
+    </feature>
+    <feature name="SplashScreen">
+        <param name="android-package" value="org.apache.cordova.splashscreen.SplashScreen" />
     </feature>
     <name>Cheminot</name>
     <description>SNCF TER</description>

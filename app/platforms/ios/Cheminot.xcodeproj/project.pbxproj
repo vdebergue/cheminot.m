@@ -25,7 +25,6 @@
 		308D05391370CCF300D202BF /* icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 308D05301370CCF300D202BF /* icon@2x.png */; };
 		30A0434814DC770100060A13 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 30A0434314DC770100060A13 /* Localizable.strings */; };
 		30FC414916E50CA1004E6F35 /* icon-72@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 30FC414816E50CA1004E6F35 /* icon-72@2x.png */; };
-		5AEE5B35173C68D80009041E /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AEE5B34173C68D80009041E /* CoreLocation.framework */; };
 		5B1594DD16A7569C00FEF299 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B1594DC16A7569C00FEF299 /* AssetsLibrary.framework */; };
 		7E7966DE1810823500FA85AD /* icon-40.png in Resources */ = {isa = PBXBuildFile; fileRef = 7E7966D41810823500FA85AD /* icon-40.png */; };
 		7E7966DF1810823500FA85AD /* icon-40@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7E7966D51810823500FA85AD /* icon-40@2x.png */; };
@@ -38,9 +37,9 @@
 		7E7966E61810823500FA85AD /* icon-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 7E7966DC1810823500FA85AD /* icon-small.png */; };
 		7E7966E71810823500FA85AD /* icon-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7E7966DD1810823500FA85AD /* icon-small@2x.png */; };
 		D4A0D8761607E02300AEF8BB /* Default-568h@2x~iphone.png in Resources */ = {isa = PBXBuildFile; fileRef = D4A0D8751607E02300AEF8BB /* Default-568h@2x~iphone.png */; };
-		993C522512E84C249726F366 /* CDVSplashScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 908820C5FB9C46B3874F720F /* CDVSplashScreen.m */; };
-		692BF1B801BB484FA99ED90A /* Cheminot.mm in Resources */ = {isa = PBXBuildFile; fileRef = C1E8CEF626BD48C6A084DDBD /* Cheminot.mm */; };
-		BED4C87BFB78425D98018385 /* CDVKeyboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 6B99058ECE4344D48E0BAB71 /* CDVKeyboard.m */; };
+		9FBACD9F2EAD4D51952C9408 /* Cheminot.mm in Resources */ = {isa = PBXBuildFile; fileRef = 44A52F6FEFE24629B48E5BE2 /* Cheminot.mm */; };
+		60A00345C76C4FEC82616120 /* CDVKeyboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 1389CB4B98544CB9A46DBF97 /* CDVKeyboard.m */; };
+		0D976C0AAF3947EBA0DEA2AC /* CDVSplashScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 73BCD8AF7BCD4ED89CA45824 /* CDVSplashScreen.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -87,7 +86,6 @@
 		30A0434714DC770100060A13 /* se */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = se; path = Localizable.strings; sourceTree = "<group>"; };
 		30FC414816E50CA1004E6F35 /* icon-72@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-72@2x.png"; sourceTree = "<group>"; };
 		32CA4F630368D1EE00C91783 /* Cheminot-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Cheminot-Prefix.pch"; sourceTree = "<group>"; };
-		5AEE5B34173C68D80009041E /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		5B1594DC16A7569C00FEF299 /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
 		7E7966D41810823500FA85AD /* icon-40.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-40.png"; sourceTree = "<group>"; };
 		7E7966D51810823500FA85AD /* icon-40@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-40@2x.png"; sourceTree = "<group>"; };
@@ -105,12 +103,12 @@
 		EB87FDF31871DA8E0020F90C /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; name = www; path = ../../www; sourceTree = "<group>"; };
 		EB87FDF41871DAF40020F90C /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = ../../config.xml; sourceTree = "<group>"; };
 		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = "Cheminot/config.xml"; sourceTree = "<group>"; };
-		908820C5FB9C46B3874F720F /* CDVSplashScreen.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "CDVSplashScreen.m"; path = "org.apache.cordova.splashscreen/CDVSplashScreen.m"; sourceTree = "<group>"; fileEncoding = 4; };
-		F10135D83244416C9BFF8ACA /* CDVSplashScreen.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "CDVSplashScreen.h"; path = "org.apache.cordova.splashscreen/CDVSplashScreen.h"; sourceTree = "<group>"; fileEncoding = 4; };
-		C1E8CEF626BD48C6A084DDBD /* Cheminot.mm */ = {isa = PBXFileReference; lastKnownFileType = unknown; name = "Cheminot.mm"; path = "m.cheminot.plugin/Cheminot.mm"; sourceTree = "<group>"; fileEncoding = 4; };
-		228158547D9F4EDEA4B8D84B /* Cheminot.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Cheminot.h"; path = "m.cheminot.plugin/Cheminot.h"; sourceTree = "<group>"; fileEncoding = 4; };
-		6B99058ECE4344D48E0BAB71 /* CDVKeyboard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "CDVKeyboard.m"; path = "org.apache.cordova.labs.keyboard/CDVKeyboard.m"; sourceTree = "<group>"; fileEncoding = 4; };
-		2B74D5CEB2E84639BEF02C2C /* CDVKeyboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "CDVKeyboard.h"; path = "org.apache.cordova.labs.keyboard/CDVKeyboard.h"; sourceTree = "<group>"; fileEncoding = 4; };
+		44A52F6FEFE24629B48E5BE2 /* Cheminot.mm */ = {isa = PBXFileReference; lastKnownFileType = unknown; name = "Cheminot.mm"; path = "m.cheminot.plugin/Cheminot.mm"; sourceTree = "<group>"; fileEncoding = 4; };
+		EF27510694F04F219D3F24C4 /* Cheminot.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Cheminot.h"; path = "m.cheminot.plugin/Cheminot.h"; sourceTree = "<group>"; fileEncoding = 4; };
+		1389CB4B98544CB9A46DBF97 /* CDVKeyboard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "CDVKeyboard.m"; path = "org.apache.cordova.labs.keyboard/CDVKeyboard.m"; sourceTree = "<group>"; fileEncoding = 4; };
+		9728E019FA14433993D31B3A /* CDVKeyboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "CDVKeyboard.h"; path = "org.apache.cordova.labs.keyboard/CDVKeyboard.h"; sourceTree = "<group>"; fileEncoding = 4; };
+		73BCD8AF7BCD4ED89CA45824 /* CDVSplashScreen.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "CDVSplashScreen.m"; path = "org.apache.cordova.splashscreen/CDVSplashScreen.m"; sourceTree = "<group>"; fileEncoding = 4; };
+		93AA9369414C41D5BC56BE6A /* CDVSplashScreen.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "CDVSplashScreen.h"; path = "org.apache.cordova.splashscreen/CDVSplashScreen.h"; sourceTree = "<group>"; fileEncoding = 4; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,7 +120,6 @@
 				301BF552109A68D80062928A /* libCordova.a in Frameworks */,
 				288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */,
 				305D5FD1115AB8F900A74A75 /* MobileCoreServices.framework in Frameworks */,
-				5AEE5B35173C68D80009041E /* CoreLocation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -212,7 +209,6 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				5AEE5B34173C68D80009041E /* CoreLocation.framework */,
 				5B1594DC16A7569C00FEF299 /* AssetsLibrary.framework */,
 				288765FC0DF74451002DB57D /* CoreGraphics.framework */,
 				305D5FD0115AB8F900A74A75 /* MobileCoreServices.framework */,
@@ -231,12 +227,12 @@
 		307C750510C5A3420062BCA9 /* Plugins */ = {
 			isa = PBXGroup;
 			children = (
-				908820C5FB9C46B3874F720F /* CDVSplashScreen.m */,
-				F10135D83244416C9BFF8ACA /* CDVSplashScreen.h */,
-				C1E8CEF626BD48C6A084DDBD /* Cheminot.mm */,
-				228158547D9F4EDEA4B8D84B /* Cheminot.h */,
-				6B99058ECE4344D48E0BAB71 /* CDVKeyboard.m */,
-				2B74D5CEB2E84639BEF02C2C /* CDVKeyboard.h */,
+				44A52F6FEFE24629B48E5BE2 /* Cheminot.mm */,
+				EF27510694F04F219D3F24C4 /* Cheminot.h */,
+				1389CB4B98544CB9A46DBF97 /* CDVKeyboard.m */,
+				9728E019FA14433993D31B3A /* CDVKeyboard.h */,
+				73BCD8AF7BCD4ED89CA45824 /* CDVSplashScreen.m */,
+				93AA9369414C41D5BC56BE6A /* CDVSplashScreen.h */,
 			);
 			name = Plugins;
 			path = "Cheminot/Plugins";
@@ -431,9 +427,9 @@
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
 				1D3623260D0F684500981E51 /* AppDelegate.m in Sources */,
 				302D95F114D2391D003F00A1 /* MainViewController.m in Sources */,
-				993C522512E84C249726F366 /* CDVSplashScreen.m in Sources */,
-				692BF1B801BB484FA99ED90A /* Cheminot.mm in Resources */,
-				BED4C87BFB78425D98018385 /* CDVKeyboard.m in Sources */,
+				9FBACD9F2EAD4D51952C9408 /* Cheminot.mm in Resources */,
+				60A00345C76C4FEC82616120 /* CDVKeyboard.m in Sources */,
+				0D976C0AAF3947EBA0DEA2AC /* CDVSplashScreen.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

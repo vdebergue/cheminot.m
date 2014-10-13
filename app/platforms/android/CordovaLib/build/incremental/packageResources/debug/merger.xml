@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger>
+
+    <dataSet config="main" >
+        <source path="/Volumes/HOME/Projects/me/tarifa.cheminot.m/app/platforms/android/CordovaLib/res" />
+        <source path="/Volumes/HOME/Projects/me/tarifa.cheminot.m/app/platforms/android/CordovaLib/build/res/rs/debug" />
+        <source path="/Volumes/HOME/Projects/me/tarifa.cheminot.m/app/platforms/android/CordovaLib/build/res/generated/debug" />
+    </dataSet>
+    <dataSet config="debug" >
+        <source path="/Volumes/HOME/Projects/me/tarifa.cheminot.m/app/platforms/android/CordovaLib/src/debug/res" />
+    </dataSet>
+
+</merger>
