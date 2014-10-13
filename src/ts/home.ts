@@ -15,8 +15,10 @@ export interface Ctrl {
   onTabTouched: (ctrl: Ctrl, e: Event) => void;
   onInputStationTouched :(ctrl: Ctrl, e: Event) => void;
   onResetStationTouched: (ctrl: Ctrl, e: Event) => void;
+  onSubmitTouched: (ctrl: Ctrl, e: Event) => void;
   onDateTimeChange: (ctrl: Ctrl, e: Event) => void;
   onInputStationKeyUp: (ctrl: Ctrl, e: Event) => void;
+  onScrollStations: (ctrl: Ctrl, e: Event) => void;
   inputStationStartTerm: (value?: string) => string;
   inputStationEndTerm: (value?: string) => string;
   inputStationStartSelected: (value?: string) => string;
@@ -31,6 +33,7 @@ export interface Ctrl {
   inputDateSelected: (value?: string) => string;
   inputTimeSelected: (value?: string) => string;
   isSubmitDisabled: (value?: boolean) => boolean;
+  isScrollingStations: (value?: boolean) => boolean;
   iscroll: () => IScroll;
   adaptWrapperTop: (ctrl: Ctrl) => void;
   isViewportUp: (value?: boolean) => boolean;
@@ -156,9 +159,17 @@ function renderStations(ctrl: Ctrl) {
     }
   }
 
+  var suggestionsAttrs = {
+    config: function(el: HTMLElement, isUpdate: boolean, context: any) {
+      if (!isUpdate) {
+        el.addEventListener('touchstart', _.partial(ctrl.onScrollStations, ctrl));
+      }
+    }
+  }
+
   return m("div", { class: "stations" },
            m("div", { id: "wrapper" },
-             m("ul", { class: "suggestions list" },
+             m("ul", _.merge({ class: "suggestions list" }, suggestionsAttrs),
                ctrl.stations().map((station, index) => {
                  return m('li', _.merge({ "data-id": station.id, "data-name": station.name }, stationAttrs(index)),
                           m('div', {}, [
@@ -175,24 +186,36 @@ function renderDateTime(ctrl: Ctrl) {
     onchange: _.partial(ctrl.onDateTimeChange, ctrl),
   };
 
-  var dateSelectorAtts = View.handleAttributes({ class: 'date other' }, (name, value) => {
+  var dateSelectorAttrs = View.handleAttributes({ class: 'date other' }, (name, value) => {
     if((name + ':' + value) == 'class:other') {
       return ctrl.isOtherTabSelected();
     }
     return true;
   });
 
-  var submitAtts = View.handleAttributes({ class: 'submit enabled disabled' }, (name, value) => {
-    if((name + ':' + value) == 'class:disabled') {
-      return !canBeSubmitted(ctrl);
-    } else if((name + ':' + value) == 'class:enabled'){
-      return canBeSubmitted(ctrl);
-    }
-    return true;
-  });
+  var submitAttrs: any = (() => {
+    var attrs = View.handleAttributes({ class: 'submit enabled disabled' }, (name, value) => {
+      if((name + ':' + value) == 'class:disabled') {
+        return !canBeSubmitted(ctrl);
+      } else if((name + ':' + value) == 'class:enabled'){
+        return canBeSubmitted(ctrl);
+      }
+      return true;
+    });
+
+    return _.merge(attrs, {
+      config: function(el: HTMLElement, isUpdate: boolean, context: any) {
+        if (!isUpdate) {
+          if(el.hasAttribute('enabled')) {
+            el.addEventListener('touchend', _.partial(ctrl.onSubmitTouched, ctrl));
+          }
+        }
+      }
+    });
+  })();
 
   return m("ul", { class: 'list datetime'}, [
-    m("li", dateSelectorAtts, [
+    m("li", dateSelectorAttrs, [
       m("span", { class: "label" }, "Date de départ"),
       m("span", { class: "value" }, ctrl.inputDateSelected()),
       m("input", _.merge({ type: "date" }, inputDateTimeAttrs))
@@ -202,7 +225,7 @@ function renderDateTime(ctrl: Ctrl) {
       m("span", { class: "value" }, ctrl.inputTimeSelected()),
       m("input", _.merge({ type: "time" }, inputDateTimeAttrs))
     ]),
-    m("li", submitAtts, [
+    m("li", submitAttrs, [
       m("span", {}, "Rechercher"),
       m("button", { class: "font go" })
     ])
@@ -294,9 +317,18 @@ export class Home implements m.Module<Ctrl> {
 
       isSubmitDisabled: m.prop(true),
 
+      isScrollingStations: m.prop(false),
+
       iscroll: _.once(function() {
         var wrapper = this.scope().querySelector('#wrapper');
-        return new IScroll(wrapper);
+        var iscroll = new IScroll(wrapper);
+        iscroll.on('scrollStart', () => {
+          this.isScrollingStations(true);
+        });
+        iscroll.on('scrollEnd', () => {
+          this.isScrollingStations(false);
+        });
+        return iscroll;
       }),
 
       adaptWrapperTop: (ctrl: Ctrl) => {
@@ -309,16 +341,18 @@ export class Home implements m.Module<Ctrl> {
       stations: m.prop([]),
 
       onStationSelected: (ctrl: Ctrl, e: Event) => {
-        var station = e.currentTarget;
-        var id = station.getAttribute('data-id');
-        var name = station.getAttribute('data-name');
-        var inputStation = currentInputStation(ctrl);
-        m.startComputation();
-        ctrl.stations([]);
-        setInputStationSelected(ctrl, inputStation, id);
-        setInputStationValue(ctrl, inputStation, name);
-        resetInputStationsPosition(ctrl, inputStation);
-        m.endComputation();
+        if(!ctrl.isScrollingStations()) {
+          var station = e.currentTarget;
+          var id = station.getAttribute('data-id');
+          var name = station.getAttribute('data-name');
+          var inputStation = currentInputStation(ctrl);
+          m.startComputation();
+          ctrl.stations([]);
+          setInputStationSelected(ctrl, inputStation, id);
+          setInputStationValue(ctrl, inputStation, name);
+          resetInputStationsPosition(ctrl, inputStation);
+          m.endComputation();
+        }
       },
 
       onResetStationTouched: (ctrl: Ctrl, e: Event) => {
@@ -330,6 +364,15 @@ export class Home implements m.Module<Ctrl> {
         setInputStationValue(ctrl, inputStation, '');
         ctrl.stations([]);
         m.endComputation();
+      },
+
+      onSubmitTouched: (ctrl: Ctrl, e: Event) => {
+      },
+
+      onScrollStations: (ctrl: Ctrl, e: Event) => {
+        ctrl.scope().querySelector('.input.start input').blur();
+        ctrl.scope().querySelector('.input.end input').blur();
+        Utils.Keyboard.hide();
       },
 
       onDateTimeChange: (ctrl: Ctrl, e: Event) => {
