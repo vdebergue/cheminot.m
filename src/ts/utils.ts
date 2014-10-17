@@ -32,6 +32,10 @@ export function qstart(): Q.Promise<Document> {
 
 export module DateTime {
 
+  export function duration(from: Date, to: Date): number {
+    return moment(to).diff(moment(from));
+  }
+
   export function setSameTime(from: Date, reference: Date): Date {
     var h = from.getHours();
     var m = from.getMinutes();
