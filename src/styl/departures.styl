@@ -1,3 +1,8 @@
+@keyframes pullup-loading {
+    from { transform: rotate(0deg) translateZ(0) }
+    to { transform:rotate(360deg) translateZ(0) }
+}
+
 #departures {
 
     #wrapper {
@@ -43,11 +48,20 @@
                     }
 
                     .duration {
-                        position: absolute
+                        display: inline-block
                         right: 0
+                        position: absolute
+                        width: 22%
 
                         .egg-timer {
+                            position: absolute
+                            left: 0
                             icon_monstr('duration', grey-light)
+                        }
+
+                        .value {
+                            position: absolute
+                            right: 0
                         }
                     }
                 }
@@ -58,6 +72,12 @@
 
                     span:not(:last-children) {
                         margin-right: 2%
+                    }
+
+                    .start {
+                        display: inline-block
+                        width: 40%
+                        padding-left: 5%
                     }
                 }
 
@@ -71,38 +91,28 @@
                     vertical-align: 2px
                 }
             }
-        }
 
-        .pull-up {
-            display: none
-            align-items: center
-            justify-content: center
-            align-items: center
-            padding: 4% 0 4% 0
+            .pull-up {
+                padding: 4% 0 4% 0
+                text-align: center
 
-            &.visible {
-                display: flex
-            }
+                .indicator {
+                    icon_batch('arrow-up');
+                    transform: rotate(0) translateZ(0)
+                }
 
-            .indicator {
-                icon_batch('arrow-up', 18px, 18px);
-                transform: rotate(0) translateZ(0)
-            }
+                .label {
+                    margin-left: 10px
+                }
 
-            .label {
-                margin-left: 10px
-            }
+                &.flip .indicator {
+                    transform: rotate(-180deg) translateZ(0)
+                }
 
-            &.flip .indicator {
-                transform: rotate(-180deg) translateZ(0)
-            }
-
-            &.loading .indicator {
-                transform: rotate(0deg) translateZ(0);
-                transition-duration: 0ms;
-                animation-name: loading;
-                animation-duration: 2s;
-                animation-iteration-count: infinite;
+                &.loading .indicator {
+                    transition-duration: 1s
+                    -webkit-animation: pullup-loading 2s infinite
+                }
             }
         }
     }

@@ -2,6 +2,7 @@ interface Departure {
   startTime: Date;
   endTime: Date;
   nbSteps: number;
+  id: () => string;
 }
 
 declare module cordova {

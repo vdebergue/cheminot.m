@@ -253,6 +253,8 @@ interface Moment {
     isSame(b: Date, granularity: string): boolean;
     isSame(b: number[], granularity: string): boolean;
 
+    locale(language: string): string;
+
     // Deprecated as of 2.8.0.
     lang(language: string): Moment;
     lang(reset: boolean): Moment;

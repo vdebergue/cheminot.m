@@ -16,9 +16,15 @@ export interface Ctrl {
   isPullUpLoading: (value?: boolean) => boolean;
   isPullUpFlip: (value?: boolean) => boolean;
   pullUpLabel: (value?: string) => string;
+  nbItemsPerScreen: (value?: number) => number;
   lastArrivalTime: (value?: Date) => Date;
+  currentPageSize: (value?: number) => number;
   at: Date;
   iscroll: () => IScroll;
+}
+
+function formatDay(dateTime: Date): string {
+  return moment(dateTime).format('dddd MM MMMM');
 }
 
 function formatTime(dateTime: Date): string {
@@ -46,21 +52,13 @@ function renderMeta(departure: Departure): m.VirtualElement[] {
 }
 
 function render(ctrl: Ctrl) {
-  var pullUpAttrs = View.handleAttributes({ class: 'loading flip'}, (name, value) => {
-    switch(name + ':' + value) {
-    case 'class:loading': return ctrl.isPullUpLoading();
-    case 'class:flip': return ctrl.isPullUpFlip();
-    default: return true;
-    }
-  });
-
-  var pullUp = m("li.pull-up", pullUpAttrs, [
+  var pullUp = m("li.pull-up", { key: 'departures-pullup' }, [
     m("span.indicator"),
-    m("span.label", {}, ctrl.pullUpLabel())
+    m("span.label", {}, 'Tirer pour actualiser')
   ]);
 
-  var departures = ctrl.departures().map((departure) => {
-    return m('li', {}, [
+  var departuresList = ctrl.departures().map((departure) => {
+    return m('li', { key: departure.id() }, [
       m('div.meta', {}, renderMeta(departure)),
       m('div.start-end', {}, [
         m('span.alarm-clock'),
@@ -70,8 +68,21 @@ function render(ctrl: Ctrl) {
     ]);
   });
 
+  var zipped = _.zip(ctrl.departures(), departuresList);
+  var departures = _.reduce(zipped, (acc, d) => {
+    var model = d[0];
+    var dom = d[1];
+    if(!moment(acc.lastDay).isSame(model.startTime, 'day')) {
+      var dayEl = m('li.day', { key: model.startTime }, formatDay(model.startTime));
+      acc.lastDay = model.startTime;
+      acc.elements.push(dayEl);
+    }
+    acc.elements.push(dom);
+    return acc;
+  }, { lastDay: new Date(), elements: new Array<m.VirtualElement>() });
+
   if(ctrl.isPullUpDisplayed()) {
-    departures.push(pullUp);
+    departures.elements.push(pullUp);
   }
 
   var departuresAttrs = {
@@ -79,14 +90,17 @@ function render(ctrl: Ctrl) {
       ctrl.iscroll().refresh();
       if(!isUpdate) {
         lookForNextDepartures(ctrl, ctrl.at);
+      } else {
+        ctrl.iscroll().scrollTo(0, ctrl.iscroll().maxScrollY, 600)
       }
     }
   };
 
-  return [m("div#wrapper", {}, m("ul.departures", departuresAttrs, departures))];
+  return [m("div#wrapper", {}, m("ul.departures", departuresAttrs, departures.elements))];
 }
 
 export class Departures implements m.Module<Ctrl> {
+
   controller(): Ctrl {
     var at = parseInt(m.route.param("at"), 10);
     return {
@@ -108,29 +122,23 @@ export class Departures implements m.Module<Ctrl> {
         var iscroll = new IScroll(wrapper, { probeType: 1});
 
         iscroll.on('refresh', () => {
-          console.log('refresh', this.isPullUpLoading());
-          if(this.isPullUpLoading()) {
-            m.startComputation();
+          if(this.isPullUpLoading() && this.currentPageSize() == 0) {
             this.isPullUpLoading(false);
+            this.scope().querySelector('.departures .pull-up');
             this.isPullUpFlip(false);
             this.pullUpLabel('Tirer pour actualiser');
-            m.endComputation();
           }
         });
 
         iscroll.on('scroll', function() {
-          console.log('scroll', this.y, this.maxScrollY);
-          if(this.y < (this.maxScrollY + 50) && !self.isPullUpFlip()) {
-            m.startComputation();
+          if(this.y < this.maxScrollY && !self.isPullUpFlip()) {
             self.isPullUpFlip(true);
             self.pullUpLabel('Relacher pour actualiser');
             this.maxScrollY = this.maxScrollY;
-            m.endComputation();
           }
         });
 
         iscroll.on('scrollEnd', function() {
-          console.log('scrollEnd', self.isPullUpFlip());
           if(self.isPullUpFlip() && !self.isPullUpLoading()) {
             self.isPullUpLoading(true);
             self.pullUpLabel('Chargement...');
@@ -149,13 +157,31 @@ export class Departures implements m.Module<Ctrl> {
 
       departures: m.prop([]),
 
+      nbItemsPerScreen: m.prop(0),
+
+      currentPageSize: m.prop(0),
+
       isPullUpDisplayed: m.prop(false),
 
-      isPullUpLoading: m.prop(false),
+      isPullUpLoading: Utils.m.prop(false, (isLoading: boolean) => {
+        if(isLoading) {
+          document.querySelector('.pull-up').classList.add('loading');
+        } else {
+          document.querySelector('.pull-up').classList.remove('loading');
+        }
+      }),
 
-      isPullUpFlip: m.prop(false),
+      isPullUpFlip: Utils.m.prop(false, (isFlip: boolean) => {
+        if(isFlip) {
+          document.querySelector('.pull-up').classList.add('flip');
+        } else {
+          document.querySelector('.pull-up').classList.remove('flip');
+        }
+      }),
 
-      pullUpLabel: m.prop('Tirer pour rafraichir'),
+      pullUpLabel: Utils.m.prop('Tirer pour rafraichir', (label: string) => {
+        document.querySelector('.pull-up .label').textContent = label;
+      }),
 
       lastArrivalTime: m.prop()
     };
@@ -167,13 +193,16 @@ export class Departures implements m.Module<Ctrl> {
 }
 
 function lookForNextDepartures(ctrl: Ctrl, at: Date): void {
-  cordova.plugins.Cheminot.lookForBestTrip(ctrl.startStation, ctrl.endStation, ctrl.at.getTime(),
+  cordova.plugins.Cheminot.lookForBestTrip(ctrl.startStation, ctrl.endStation, at.getTime(),
     (departure) => {
       m.startComputation();
       ctrl.departures().push(departure);
+      ctrl.currentPageSize(ctrl.currentPageSize() + 1);
       ctrl.lastArrivalTime(departure.endTime);
-      if(!isScreenFull(ctrl)) {
+      if(isMoreItemsNeeded(ctrl)) {
         lookForNextDepartures(ctrl, departure.endTime);
+      } else {
+        ctrl.currentPageSize(0);
       }
       m.endComputation();
     },
@@ -182,14 +211,25 @@ function lookForNextDepartures(ctrl: Ctrl, at: Date): void {
   );
 }
 
+function isMoreItemsNeeded(ctrl: Ctrl): boolean {
+  if(!isScreenFull(ctrl) && ctrl.nbItemsPerScreen() == 0) {
+    return true;
+  } else {
+    return ctrl.currentPageSize() < ctrl.nbItemsPerScreen();
+  }
+}
+
 function isScreenFull(ctrl: Ctrl): boolean {
   var departures = ctrl.scope().querySelector('.departures');
   var header = document.querySelector('#header');
   var viewportSize = Utils.viewportSize();
   var height = Math.max(viewportSize[0], viewportSize[1]);
-  var b = (departures.offsetHeight + header.offsetHeight) >= height;
-  ctrl.isPullUpDisplayed(b);
-  return b;
+  var isFull = (departures.offsetHeight + header.offsetHeight) >= height;
+  if(isFull && ctrl.nbItemsPerScreen() == 0) {
+    ctrl.nbItemsPerScreen(ctrl.departures().length);
+  }
+  ctrl.isPullUpDisplayed(isFull);
+  return isFull;
 }
 
 var departures = new Departures();

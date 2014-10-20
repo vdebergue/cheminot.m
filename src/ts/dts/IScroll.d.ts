@@ -85,6 +85,7 @@ declare class IScroll {
 	stop(): void;
 	zoom(x: number, y: number, scale: number, time?: number): void;
 	isReady(): boolean;
+	maxScrollY: number;
 
 	// Events
 	on: (type: string, fn: () => void) => void;
