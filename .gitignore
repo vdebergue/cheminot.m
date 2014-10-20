@@ -1,5 +1,7 @@
 node_modules
-project/www
+project/www/css
+project/www/js
+project/www/index.html
 project/bower_components
 src/ts/**/*.js
 *.log

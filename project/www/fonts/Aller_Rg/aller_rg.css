@@ -1,0 +1,8 @@
+@font-face {
+    font-family: 'AllerRegular';
+    src: url('aller_rg.eot');
+    src: url('aller_rg.eot') format('embedded-opentype'),
+         url('aller_rg.woff') format('woff'),
+         url('aller_rg.ttf') format('truetype'),
+         url('aller_rg.svg#AllerRegular') format('svg');
+}
