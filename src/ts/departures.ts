@@ -87,11 +87,13 @@ function render(ctrl: Ctrl) {
 
   var departuresAttrs = {
     config: function(el: HTMLElement, isUpdate: boolean, context: any) {
-      ctrl.iscroll().refresh();
-      if(!isUpdate) {
-        lookForNextDepartures(ctrl, ctrl.at);
-      } else {
-        ctrl.iscroll().scrollTo(0, ctrl.iscroll().maxScrollY, 600)
+      if(!ctrl.shouldBeHidden()) {
+        if(!isUpdate) {
+          lookForNextDepartures(ctrl, ctrl.at);
+        } else {
+          ctrl.iscroll().refresh();
+          ctrl.iscroll().scrollTo(0, ctrl.iscroll().maxScrollY, 600)
+        }
       }
     }
   };
@@ -124,7 +126,6 @@ export class Departures implements m.Module<Ctrl> {
         iscroll.on('refresh', () => {
           if(this.isPullUpLoading() && this.currentPageSize() == 0) {
             this.isPullUpLoading(false);
-            this.scope().querySelector('.departures .pull-up');
             this.isPullUpFlip(false);
             this.pullUpLabel('Tirer pour actualiser');
           }
