@@ -12,6 +12,7 @@ export interface Ctrl {
   startStation: string;
   endStation: string;
   departures: (value?: Array<Departure>) => Array<Departure>;
+  onDepartureTouched: (ctrl: Ctrl, e: Event) => void;
   isPullUpDisplayed: (value?: boolean) => boolean;
   isPullUpLoading: (value?: boolean) => boolean;
   isPullUpFlip: (value?: boolean) => boolean;
@@ -39,7 +40,7 @@ function formatDuration(duration: number): string {
 function renderMeta(departure: Departure): m.VirtualElement[] {
   var duration = m('div.duration', {}, [
     m('span.egg-timer'),
-    m('span.value', {}, formatDuration(Utils.DateTime.duration(departure.startTime, departure.endTime)))
+    m('span.value', {}, formatDuration(Utils.DateTime.diff(departure.startTime, departure.endTime)))
   ]);
 
   if(departure.nbSteps <= 1) {
@@ -58,7 +59,7 @@ function render(ctrl: Ctrl) {
   ]);
 
   var departuresList = ctrl.departures().map((departure) => {
-    return m('li', { key: departure.id() }, [
+    return m('li', { key: departure.id }, [
       m('div.meta', {}, renderMeta(departure)),
       m('div.start-end', {}, [
         m('span.alarm-clock'),
@@ -89,6 +90,7 @@ function render(ctrl: Ctrl) {
     config: function(el: HTMLElement, isUpdate: boolean, context: any) {
       if(!ctrl.shouldBeHidden()) {
         if(!isUpdate) {
+          el.addEventListener('touchend', _.partial(ctrl.onDepartureTouched, ctrl));
           lookForNextDepartures(ctrl, ctrl.at);
         } else {
           ctrl.iscroll().refresh();
@@ -167,6 +169,10 @@ export class Departures implements m.Module<Ctrl> {
 
       currentPageSize: m.prop(0),
 
+      onDepartureTouched: (ctrl: Ctrl, e: Event) => {
+        //m.route(Routes.trip()); TODO
+      },
+
       isPullUpDisplayed: m.prop(false),
 
       isPullUpLoading: Utils.m.prop(false, (isLoading: boolean) => {
@@ -190,7 +196,8 @@ export class Departures implements m.Module<Ctrl> {
       pullUpProgress: m.prop(0),
 
       pullUpLabel: Utils.m.prop('Tirer pour rafraichir', (label: string) => {
-        scope().querySelector('.pull-up .label').textContent = label;
+        var pullUpLabel = scope().querySelector('.pull-up .label')
+        if(pullUpLabel) pullUpLabel.textContent = label;
       }),
 
       lastArrivalTime: m.prop()
@@ -204,8 +211,9 @@ export class Departures implements m.Module<Ctrl> {
 
 function lookForNextDepartures(ctrl: Ctrl, at: Date): void {
   cordova.plugins.Cheminot.lookForBestTrip(ctrl.startStation, ctrl.endStation, at.getTime(),
-    (departure) => {
+    (trip) => {
       m.startComputation();
+      var departure = tripToDeparture(trip);
       ctrl.departures().push(departure);
       ctrl.currentPageSize(ctrl.currentPageSize() + 1);
       ctrl.lastArrivalTime(departure.endTime);
@@ -219,6 +227,18 @@ function lookForNextDepartures(ctrl: Ctrl, at: Date): void {
     () => {
     }
   );
+}
+
+function tripToDeparture(trip: StopTime[]): Departure {
+  var startTime = _.head(trip).departureTime;
+  var endTime = _.last(trip).arrivalTime;
+  var id = startTime.getTime() + '|' + endTime.getTime();
+  return {
+    startTime: startTime,
+    endTime: endTime,
+    nbSteps: trip.length,
+    id: cordova.isMock ? id + '|' + Date.now() : id
+  };
 }
 
 function isMoreItemsNeeded(ctrl: Ctrl): boolean {

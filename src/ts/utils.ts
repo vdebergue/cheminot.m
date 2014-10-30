@@ -32,7 +32,7 @@ export function qstart(): Q.Promise<Document> {
 
 export module DateTime {
 
-  export function duration(from: Date, to: Date): number {
+  export function diff(from: Date, to: Date): number {
     return moment(to).diff(moment(from));
   }
 

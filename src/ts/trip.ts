@@ -8,7 +8,14 @@ export interface Ctrl {
 
 function render(id: string) {
   return [
-    m("h1", {}, "Trip " + id)
+    m('div.top-bar.title', {}, [
+      m('div', {}, [
+        m('span.start'),
+        m('span.to'),
+        m('span.end')
+      ])
+    ]),
+    m('div#wrapper', {}, m('ul.stops'))
   ];
 }
 
