@@ -86,6 +86,9 @@ declare class IScroll {
 	zoom(x: number, y: number, scale: number, time?: number): void;
 	isReady(): boolean;
 	maxScrollY: number;
+	x: number;
+	y: number;
+	directionY: number;
 
 	// Events
 	on: (type: string, fn: () => void) => void;

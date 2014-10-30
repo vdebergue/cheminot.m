@@ -15,6 +15,7 @@ export interface Ctrl {
   isPullUpDisplayed: (value?: boolean) => boolean;
   isPullUpLoading: (value?: boolean) => boolean;
   isPullUpFlip: (value?: boolean) => boolean;
+  pullUpProgress: (value?: number) => number;
   pullUpLabel: (value?: string) => string;
   nbItemsPerScreen: (value?: number) => number;
   lastArrivalTime: (value?: Date) => Date;
@@ -53,7 +54,6 @@ function renderMeta(departure: Departure): m.VirtualElement[] {
 
 function render(ctrl: Ctrl) {
   var pullUp = m("li.pull-up", { key: 'departures-pullup' }, [
-    m("span.indicator"),
     m("span.label", {}, 'Tirer pour actualiser')
   ]);
 
@@ -105,18 +105,16 @@ export class Departures implements m.Module<Ctrl> {
 
   controller(): Ctrl {
     var at = parseInt(m.route.param("at"), 10);
+    var scope = () => document.querySelector('#departures');
     return {
-      scope: () => {
-        return document.querySelector('#departures');
-      },
+      scope: scope,
 
       shouldBeHidden: () => {
         return !Routes.matchDepartures(m.route());
       },
 
       iscroll: _.once(function() {
-        var self = this;
-        var wrapper = this.scope().querySelector('#wrapper');
+        var wrapper = scope().querySelector('#wrapper');
         var header = document.querySelector('#header');
         var top = header.offsetTop + header.offsetHeight;
         wrapper.style.top = top + 'px';
@@ -131,19 +129,26 @@ export class Departures implements m.Module<Ctrl> {
           }
         });
 
-        iscroll.on('scroll', function() {
-          if(this.y < this.maxScrollY && !self.isPullUpFlip()) {
-            self.isPullUpFlip(true);
-            self.pullUpLabel('Relacher pour actualiser');
-            this.maxScrollY = this.maxScrollY;
+        iscroll.on('scroll', () => {
+          this.pullUpProgress(computePullUpBar(iscroll));
+          if(this.pullUpProgress() >= 100) {
+            this.isPullUpFlip(true);
+            this.pullUpLabel('Relacher pour actualiser');
+          } else {
+            this.isPullUpFlip(false);
+            this.pullUpLabel('Tirer pour actualiser');
           }
+          this.maxScrollY = this.maxScrollY;
         });
 
-        iscroll.on('scrollEnd', function() {
-          if(self.isPullUpFlip() && !self.isPullUpLoading()) {
-            self.isPullUpLoading(true);
-            self.pullUpLabel('Chargement...');
-            lookForNextDepartures(self, self.lastArrivalTime());
+        iscroll.on('scrollEnd', () => {
+          if(this.isPullUpFlip() && !this.isPullUpLoading()) {
+            this.isPullUpLoading(true);
+            this.pullUpLabel('Chargement...');
+            lookForNextDepartures(this, this.lastArrivalTime());
+          } else {
+            this.pullUpProgress(0);
+            this.isPullUpFlip(false);
           }
         });
 
@@ -165,23 +170,27 @@ export class Departures implements m.Module<Ctrl> {
       isPullUpDisplayed: m.prop(false),
 
       isPullUpLoading: Utils.m.prop(false, (isLoading: boolean) => {
+        var wrapper = scope().querySelector('#wrapper');
         if(isLoading) {
-          document.querySelector('.pull-up').classList.add('loading');
+          wrapper.classList.add('loading');
         } else {
-          document.querySelector('.pull-up').classList.remove('loading');
+          wrapper.classList.remove('loading');
         }
       }),
 
       isPullUpFlip: Utils.m.prop(false, (isFlip: boolean) => {
+        var wrapper = scope().querySelector('#wrapper');
         if(isFlip) {
-          document.querySelector('.pull-up').classList.add('flip');
+          wrapper.classList.add('flip');
         } else {
-          document.querySelector('.pull-up').classList.remove('flip');
+          wrapper.classList.remove('flip');
         }
       }),
 
+      pullUpProgress: m.prop(0),
+
       pullUpLabel: Utils.m.prop('Tirer pour rafraichir', (label: string) => {
-        document.querySelector('.pull-up .label').textContent = label;
+        scope().querySelector('.pull-up .label').textContent = label;
       }),
 
       lastArrivalTime: m.prop()
@@ -231,6 +240,13 @@ function isScreenFull(ctrl: Ctrl): boolean {
   }
   ctrl.isPullUpDisplayed(isFull);
   return isFull;
+}
+
+function computePullUpBar(iscroll: IScroll): number {
+  var max = 8;
+  var deltaY = iscroll.y + Math.abs(iscroll.maxScrollY);
+  var value = Math.abs(deltaY * 100 / max);
+  return deltaY < 0 ? value : 0;
 }
 
 var departures = new Departures();

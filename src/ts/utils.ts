@@ -53,17 +53,17 @@ export module DateTime {
 
 export module m {
 
-  function _prop(store?: any, f?: (value: any) => void) {
+  function _prop(store?: any, f?: (value: any) => void, scope?: any) {
     var prop = function(s?: any) {
       if (s !== undefined) store = s;
-      f !== undefined && s !==undefined && f(s);
+      f !== undefined && s !==undefined && f.call(scope, s);
       return store
     }
     return prop;
   }
 
-  export function prop(value?: any, f?: (value: any) => void): (value?: any) => any {
-    return _prop(value, f);
+  export function prop(value?: any, f?: (value: any) => void, scope?: any): (value?: any) => any {
+    return _prop(value, f, scope);
   }
 }
 
