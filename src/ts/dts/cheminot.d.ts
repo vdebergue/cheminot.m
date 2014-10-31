@@ -1,4 +1,6 @@
 interface Departure {
+  startId: string;
+  endId: string;
   startTime: Date;
   endTime: Date;
   nbSteps: number;

@@ -59,7 +59,19 @@ function render(ctrl: Ctrl) {
   ]);
 
   var departuresList = ctrl.departures().map((departure) => {
-    return m('li', { key: departure.id }, [
+    var attrs = {
+      config: function(el: HTMLElement, isUpdate: boolean, context: any) {
+        if (!isUpdate) {
+          el.addEventListener('touchend', _.partial(ctrl.onDepartureTouched, ctrl));
+        }
+      },
+      key: departure.id,
+      'data-start-id': departure.startId,
+      'data-end-id' :departure.endId,
+      'data-start-time': departure.startTime.getTime()
+    };
+
+    return m('li', attrs, [
       m('div.meta', {}, renderMeta(departure)),
       m('div.start-end', {}, [
         m('span.alarm-clock'),
@@ -90,7 +102,6 @@ function render(ctrl: Ctrl) {
     config: function(el: HTMLElement, isUpdate: boolean, context: any) {
       if(!ctrl.shouldBeHidden()) {
         if(!isUpdate) {
-          el.addEventListener('touchend', _.partial(ctrl.onDepartureTouched, ctrl));
           lookForNextDepartures(ctrl, ctrl.at);
         } else {
           ctrl.iscroll().refresh();
@@ -170,7 +181,14 @@ export class Departures implements m.Module<Ctrl> {
       currentPageSize: m.prop(0),
 
       onDepartureTouched: (ctrl: Ctrl, e: Event) => {
-        //m.route(Routes.trip()); TODO
+        var departure = e.currentTarget;
+        var startId = departure.getAttribute('data-start-id');
+        var endId = departure.getAttribute('data-end-id');
+        var at = parseInt(departure.getAttribute('data-start-time'), 10);
+        var id = departure.getAttribute('key');
+        var trip = {};
+        console.log(id);
+        m.route(Routes.trip(startId, endId, new Date(at)), trip);
       },
 
       isPullUpDisplayed: m.prop(false),
@@ -234,6 +252,8 @@ function tripToDeparture(trip: StopTime[]): Departure {
   var endTime = _.last(trip).arrivalTime;
   var id = startTime.getTime() + '|' + endTime.getTime();
   return {
+    startId: _.head(trip).stopId,
+    endId: _.last(trip).stopId,
     startTime: startTime,
     endTime: endTime,
     nbSteps: trip.length,
