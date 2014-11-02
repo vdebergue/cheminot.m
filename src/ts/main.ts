@@ -21,7 +21,7 @@ Utils.qstart().then(() => {
   m.route(document.querySelector('#viewport'), "/", {
     "/": App.get(),
     "/departures/:start/:end/:at": App.get(),
-    "/trip/:startId/:endId/:departureTime": App.get()
+    "/trip/:id": App.get()
   });
 }).catch((e) => {
   console.log(e.stack);

@@ -12,7 +12,7 @@ export interface Ctrl {
   startStation: string;
   endStation: string;
   departures: (value?: Array<Departure>) => Array<Departure>;
-  onDepartureTouched: (ctrl: Ctrl, e: Event) => void;
+  onDepartureTouched: (departure: Departure, e: Event) => void;
   isPullUpDisplayed: (value?: boolean) => boolean;
   isPullUpLoading: (value?: boolean) => boolean;
   isPullUpFlip: (value?: boolean) => boolean;
@@ -62,13 +62,10 @@ function render(ctrl: Ctrl) {
     var attrs = {
       config: function(el: HTMLElement, isUpdate: boolean, context: any) {
         if (!isUpdate) {
-          el.addEventListener('touchend', _.partial(ctrl.onDepartureTouched, ctrl));
+          el.addEventListener('touchend', _.partial(ctrl.onDepartureTouched, departure));
         }
       },
-      key: departure.id,
-      'data-start-id': departure.startId,
-      'data-end-id' :departure.endId,
-      'data-start-time': departure.startTime.getTime()
+      key: departure.id
     };
 
     return m('li', attrs, [
@@ -180,15 +177,8 @@ export class Departures implements m.Module<Ctrl> {
 
       currentPageSize: m.prop(0),
 
-      onDepartureTouched: (ctrl: Ctrl, e: Event) => {
-        var departure = e.currentTarget;
-        var startId = departure.getAttribute('data-start-id');
-        var endId = departure.getAttribute('data-end-id');
-        var at = parseInt(departure.getAttribute('data-start-time'), 10);
-        var id = departure.getAttribute('key');
-        var trip = {};
-        console.log(id);
-        m.route(Routes.trip(startId, endId, new Date(at)), trip);
+      onDepartureTouched: (departure: Departure, e: Event) => {
+        m.route(Routes.trip(departure.id));
       },
 
       isPullUpDisplayed: m.prop(false),
@@ -233,6 +223,7 @@ function lookForNextDepartures(ctrl: Ctrl, at: Date): void {
       m.startComputation();
       var departure = tripToDeparture(trip);
       ctrl.departures().push(departure);
+      sessionStorage.setItem(departure.id, JSON.stringify(trip));
       ctrl.currentPageSize(ctrl.currentPageSize() + 1);
       ctrl.lastArrivalTime(departure.endTime);
       if(isMoreItemsNeeded(ctrl)) {

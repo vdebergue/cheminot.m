@@ -6,8 +6,8 @@ export function departures(startId: string, endId: string, at: number) {
   return '/departures/' + startId + '/' + endId + '/' + at;
 }
 
-export function trip(startId: string, endId: string, departureTime: Date) {
-  return ['/trip', startId, endId, departureTime.getTime()].join('/');
+export function trip(id: string) {
+  return '/trip/' + id;
 }
 
 export function matchHome(route: string) {
