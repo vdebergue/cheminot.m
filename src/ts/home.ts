@@ -19,6 +19,7 @@ export interface Ctrl {
   onDateTimeChange: (ctrl: Ctrl, e: Event) => void;
   onInputStationKeyUp: (ctrl: Ctrl, e: Event) => void;
   onScrollStations: (ctrl: Ctrl, e: Event) => void;
+  isScrollingStations: (value?: boolean) => boolean;
   inputStationStartTerm: (value?: string) => string;
   inputStationEndTerm: (value?: string) => string;
   inputStationStartSelected: (value?: string) => string;
@@ -33,7 +34,6 @@ export interface Ctrl {
   inputDateSelected: (value?: string) => string;
   inputTimeSelected: (value?: string) => string;
   isSubmitDisabled: (value?: boolean) => boolean;
-  isScrollingStations: (value?: boolean) => boolean;
   iscroll: () => IScroll;
   adaptWrapperTop: (ctrl: Ctrl) => void;
   isViewportUp: (value?: boolean) => boolean;

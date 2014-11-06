@@ -4970,6 +4970,7 @@ declare module _ {
         * @return The new partially applied function.
         **/
         partial<A,B,C>(f: (a: A, b: B) => C, a: A): (b: B) => C;
+        partial<A,B,C,D>(f: (a: A, b: B, c: C) => D, a: A, b: B): (c: C) => D;
         partial(func: Function, ...args: any[]): Function;
     }
 

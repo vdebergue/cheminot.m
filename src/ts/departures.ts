@@ -12,7 +12,7 @@ export interface Ctrl {
   startStation: string;
   endStation: string;
   departures: (value?: Array<Departure>) => Array<Departure>;
-  onDepartureTouched: (departure: Departure, e: Event) => void;
+  onDepartureSelected: (ctrl: Ctrl, departure: Departure, e: Event) => void;
   isPullUpDisplayed: (value?: boolean) => boolean;
   isPullUpLoading: (value?: boolean) => boolean;
   isPullUpFlip: (value?: boolean) => boolean;
@@ -22,6 +22,7 @@ export interface Ctrl {
   lastArrivalTime: (value?: Date) => Date;
   currentPageSize: (value?: number) => number;
   at: Date;
+  isScrollingDepartures: (value?: boolean) => boolean;
   iscroll: () => IScroll;
 }
 
@@ -62,7 +63,7 @@ function render(ctrl: Ctrl) {
     var attrs = {
       config: function(el: HTMLElement, isUpdate: boolean, context: any) {
         if (!isUpdate) {
-          el.addEventListener('touchend', _.partial(ctrl.onDepartureTouched, departure));
+          el.addEventListener('touchend', _.partial(ctrl.onDepartureSelected, ctrl, departure));
         }
       },
       key: departure.id
@@ -139,6 +140,10 @@ export class Departures implements m.Module<Ctrl> {
           }
         });
 
+        iscroll.on('scrollStart', () => {
+          this.isScrollingDepartures(true);
+        });
+
         iscroll.on('scroll', () => {
           this.pullUpProgress(computePullUpBar(iscroll));
           if(this.pullUpProgress() >= 100) {
@@ -152,6 +157,7 @@ export class Departures implements m.Module<Ctrl> {
         });
 
         iscroll.on('scrollEnd', () => {
+          this.isScrollingDepartures(false);
           if(this.isPullUpFlip() && !this.isPullUpLoading()) {
             this.isPullUpLoading(true);
             this.pullUpLabel('Chargement...');
@@ -177,8 +183,10 @@ export class Departures implements m.Module<Ctrl> {
 
       currentPageSize: m.prop(0),
 
-      onDepartureTouched: (departure: Departure, e: Event) => {
-        m.route(Routes.trip(departure.id));
+      onDepartureSelected: (ctrl: Ctrl, departure: Departure, e: Event) => {
+        if(!ctrl.isScrollingDepartures()) {
+          m.route(Routes.trip(departure.id));
+        }
       },
 
       isPullUpDisplayed: m.prop(false),
@@ -208,7 +216,9 @@ export class Departures implements m.Module<Ctrl> {
         if(pullUpLabel) pullUpLabel.textContent = label;
       }),
 
-      lastArrivalTime: m.prop()
+      lastArrivalTime: m.prop(),
+
+      isScrollingDepartures: m.prop(false)
     };
   }
 
