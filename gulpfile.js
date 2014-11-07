@@ -135,4 +135,24 @@ gulp.task('build', function() {
         }));
 });
 
+gulp.task('cheminotc-copy-lib', function() {
+  return gulp.src('../cheminot.c/lib/jsoncpp/jsoncpp.cpp')
+    .pipe(gulp.dest('app/plugins/m.cheminot.plugin/src/android/jni/jsoncpp/'));
+});
+
+gulp.task('cheminotc-copy', ['cheminotc-copy-lib'], function() {
+  gulp.src('../cheminot.c/cheminotc.cpp')
+    .pipe(gulp.dest('app/plugins/m.cheminot.plugin/src/android/jni/cheminotc/'));
+});
+
+gulp.task('cheminotc', ['cheminotc-copy'], function() {
+  return gulp.src('.')
+    .pipe(exec('tarifa plugin remove m.cheminot.plugin', {
+      pipeStdout: true
+    }))
+    .pipe(exec('tarifa plugin add m.cheminot.plugin', {
+      pipeStdout: true
+    }));
+});
+
 module.exports = gulp;
